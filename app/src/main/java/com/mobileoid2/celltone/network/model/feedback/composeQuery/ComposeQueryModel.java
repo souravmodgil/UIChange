@@ -9,7 +9,7 @@ public class ComposeQueryModel {
     private Integer status;
     @SerializedName("body")
     @Expose
-    private ComposeQuery body;
+    private ComposeQueryBody body;
     @SerializedName("message")
     @Expose
     private String message;
@@ -22,11 +22,11 @@ public class ComposeQueryModel {
         this.status = status;
     }
 
-    public Body getBody() {
+    public ComposeQueryBody getBody() {
         return body;
     }
 
-    public void setBody(Body body) {
+    public void setBody(ComposeQueryBody body) {
         this.body = body;
     }
 
