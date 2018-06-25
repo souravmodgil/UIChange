@@ -1,0 +1,125 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context="com.mobileoid2.celltone.view.activity.Login.ActivityLoginVerify">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3.0">
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@android:color/transparent"
+            android:padding="5dp"
+            android:src="@mipmap/large_logo_one" />
+
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2.0">
+
+        <com.mobileoid2.celltone.CustomWidget.TextView.TextVeiwEuro55Regular
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/text_verify_your_no"
+            android:textSize="30sp" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5.0"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_layout_grey_solid"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="1dp">
+
+            <EditText
+                android:id="@+id/edittext_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_layout_grey_dark_solid"
+                android:cursorVisible="false"
+                android:editable="false"
+                android:hint="@string/text_code"
+                android:paddingBottom="10dp"
+                android:paddingEnd="10dp"
+                android:paddingStart="20dp"
+                android:paddingTop="10dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@android:color/white"
+                android:textSize="14sp" />
+
+
+            <EditText
+                android:id="@+id/edittext_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:background="@android:color/transparent"
+                android:cursorVisible="false"
+                android:hint="@string/text_hint_no"
+                android:paddingBottom="10dp"
+                android:paddingEnd="10dp"
+                android:paddingStart="20dp"
+                android:paddingTop="10dp"
+                android:textSize="14sp" />
+
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/edittext_get_otp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/shape_layout_purple_solid"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingEnd="10dp"
+            android:paddingStart="20dp"
+            android:paddingTop="10dp"
+            android:text="@string/text_get_otp"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+
+        <com.mobileoid2.celltone.CustomWidget.TextView.TextVeiwEuro55Regular
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/will_send_you_one"
+            android:textColor="@color/color_dark_grey"
+            android:textSize="14sp" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

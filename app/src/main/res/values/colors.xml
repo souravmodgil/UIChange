@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#9575cd</color>
+    <color name="colorPrimaryTranslucent">#9575cd</color>
+    <color name="colorPrimaryDark">#9575cd</color>
+    <color name="colorPrimaryLight">#9575cd</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="white">#FFFFFF</color>
+    <color name="color_dark_grey">#75787B</color>
+    <color name="grey">#eeeeee</color>
+    <color name="colorEmptybackground">#dedede</color>
+    <color name="colorBlackTranslucent">#4D000000</color>
+    <color name="fen__default_bg">#aa000000</color>
+    <color name="tab_unselected">#adadad</color>
+    <color name="orange">#f6ab45</color>
+    <integer-array name="gplus_colors">
+        <item>@color/gplus_color_1</item>
+        <item>@color/gplus_color_2</item>
+        <item>@color/gplus_color_3</item>
+        <item>@color/gplus_color_4</item>
+    </integer-array>
+
+    <color name="gplus_color_1">#3e802f</color>
+    <color name="gplus_color_2">#f4b400</color>
+    <color name="gplus_color_3">#427fed</color>
+    <color name="gplus_color_4">#b23424</color>
+    <color name="profile_text_color">#303030</color>
+
+</resources>

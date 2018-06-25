@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_profile"
+            android:title="Profile" />
+        <item
+            android:id="@+id/nav_upload_own"
+            android:title="Upload own" />
+
+        <item
+            android:id="@+id/nav_contacts"
+            android:title="Contacts" />
+        <item
+            android:id="@+id/nav_offer"
+            android:title="Offers" />
+        <item
+            android:id="@+id/nav_plan"
+            android:title="My Plan" />
+        <item
+            android:id="@+id/nav_language"
+            android:title="Language" />
+        <item
+            android:id="@+id/nav_rate_app"
+            android:title="Rate App" />
+        <item
+            android:id="@+id/nav_terms"
+            android:title="Terms Of Use" />
+        <item
+            android:id="@+id/nav_privacy"
+            android:title="Privacy Policy" />
+        <item
+            android:id="@+id/nav_contact_us"
+            android:title="Contact Us" />
+        <item
+            android:id="@+id/nav_about_us"
+            android:title="About Us" />
+        <item
+            android:id="@+id/nav_faq"
+            android:title="FAQ" />
+        <item
+            android:id="@+id/nav_query"
+            android:title="Queries/Report" />
+    </group>
+
+
+    <group android:checkableBehavior="single">
+
+            <item
+                android:id="@+id/nav_logout"
+                android:title="Logout" />
+    </group>
+
+
+</menu>

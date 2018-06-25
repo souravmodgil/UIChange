@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "147931573623",
+    "firebase_url": "https://projectfirebase-8beea.firebaseio.com",
+    "project_id": "projectfirebase-8beea",
+    "storage_bucket": "projectfirebase-8beea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:147931573623:android:51fde1ac70a2fb98",
+        "android_client_info": {
+          "package_name": "com.mobileoid2.celltone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "147931573623-1f6606vs8mc4nhge5r30mru3al5bj12t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mobileoid2.celltone",
+            "certificate_hash": "37a3fc15aec9c6eb98a7577236b6c62fe0c765b7"
+          }
+        },
+        {
+          "client_id": "147931573623-qhl4git2gj1nvjg5dr5p1f7tfrb0nnr4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGovdbotyLhhs2nmM-QDKGLeh6u5ndb7k"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "147931573623-qhl4git2gj1nvjg5dr5p1f7tfrb0nnr4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

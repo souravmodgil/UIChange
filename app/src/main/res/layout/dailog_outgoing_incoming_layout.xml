@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:layout_height="130dp">
+
+  <android.support.v7.widget.RecyclerView
+      android:id="@+id/rc_dailog_list"
+      android:layout_width="match_parent"
+      android:layout_height="100dp"
+      tools:listitem="@layout/item_dailog_outgoing" >
+  </android.support.v7.widget.RecyclerView>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+      <com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview
+          android:id="@+id/txt_delete"
+          android:layout_width="60dp"
+          android:layout_height="wrap_content"
+          android:text="@string/delete"
+          android:textColor="@color/colorPrimary"/>
+
+      <com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview
+          android:id="@+id/txt_set"
+          android:layout_width="60dp"
+          android:layout_height="wrap_content"
+          android:text="@string/edit"
+          android:textColor="@color/colorPrimary"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>

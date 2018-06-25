@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">Celltone</string>
+    <string name="audio_tab"> Songs</string>
+    <string name="video_tab"> Videos</string>
+    <string name="upload_own">Upload</string>
+    <string name="contacts_tab"> Contacts</string>
+    <string name="selction_alert_box_text">Select an option</string>
+    <string name="music_set">Music is set.</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="text_contact_selection">Select contact</string>
+    <string name="text_done">DONE</string>
+    <string name="text_select_all">Select All</string>
+    <string name="my_profile_tab">Profile</string>
+    <string name="will_send_you_one">Will send you one time password on your phone number. Carrier charges may apply.</string>
+    <string name="tab_gerne">SONGS</string>
+    <string name="tab_album">ALBUMS</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="icon_power">&#xf011;</string>
+    <string name="icon_refresh">&#xf021;</string>
+    <string name="text_dashboard">DASHBOARD</string>
+    <string name="text_gerne">SONGS</string>
+    <string name="text_songs">SONGS</string>
+    <string name="text_videos">VIDEOS</string>
+    <string name="text_upload">UPLOAD MUSIC</string>
+    <string name="text_profile">PROFILE</string>
+    <string name="text_contacts">CONTACTS</string>
+    <string name="text_logout">LOGOUT</string>
+    <string name="text_guest_user">GUEST USER</string>
+    <string name="my_uploads">MY UPLOADS</string>
+    <string name="text_code">+972</string>
+    <string name="text_hint_no">9999999999</string>
+    <string name="text_get_otp">GET OTP</string>
+    <string name="text_verify_your_no">Verify your number</string>
+    <string name="text_song_">Song</string>
+    <string name="_assigned_to_multiple">assigned to Multiple contacts</string>
+    <string name="text_assigned_to">assigned to</string>
+    <string name="hint_search">Search music</string>
+    <string name="text_unable_to_create">Unable to make folder.Please clear some space</string>
+    <string name="text_selected_music_no_longer">Selected music is no longer available in device</string>
+    <string name="text_make_a_rec">Make a recording at least 10 seconds long.</string>
+    <string name="text_ok">OK</string>
+    <string name="text_cancel">CANCEL</string>
+    <string name="text_permissions_are_necessary">Permissions are necessary to run the application.</string>
+    <string name="text_set_an_option">Select an Option</string>
+    <string name="text_set_as_video">Set as Video</string>
+    <string name="text_Set_as_audio">Set as Audio</string>
+    <string name="text_set_as_incoming">Set as Incoming</string>
+    <string name="text_as_outgoing">Set as Outgoing</string>
+    <string name="text_synchronizing">Synchronizing...</string>
+    <string name="text_sync_songs">Syncronizing Songs...</string>
+    <string name="text_sync_videos">Syncronizing Videos...</string>
+    <string name="text_sync_contacts">Syncronizing Contacts...</string>
+    <string name="text_update_database">Updating Database...</string>
+    <string name="text_assigning_music">Assigning music...</string>
+    <string name="text_fetching_contacts">Fetching contacts...</string>
+    <string name="videos">VIDEOS</string>
+    <string name="my_profile">MY PROFILE</string>
+    <string name="name">Name</string>
+    <string name="phone_no">Phone no.</string>
+    <string name="_0">0</string>
+    <string name="verify">VERIFY</string>
+    <string name="choose_what_your_contacts_will_hear">Choose what your contacts will hear</string>
+    <string name="or_will_see">or will see</string>
+    <string name="contacts">Contacts</string>
+    <string name="logout">Logout</string>
+    <string name="upload_video">UPLOAD VIDEO</string>
+    <string name="upload_audio">UPLOAD AUDIO</string>
+    <string name="_00_00">00:00</string>
+    <string name="permission_name">Permission Name</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="song">song</string>
+    <string name="text_phoneCall_Accessibility">phoneCall Accessibility</string>
+    <string name="text_accesibility_option_description">This permission helps the application to read call status. Click OK to proceed and provide the permission.</string>
+    <string name="text_app_overlay">Application OverLay</string>
+    <string name="text_app_overlay_description">This permission helps the application to play our desired video on incoming and outgoing calls.</string>
+    <string name="text_dnd">Do Not Disturb Access</string>
+    <string name="text_dnd_description">This permission allows you to listen to your music even when the ringtone is set by phone.</string>
+    <string name="text_call_status">CALL STATUS</string>
+    <string name="text_camera">CAMERA</string>
+    <string name="text_audio_record">AUDIO RECORD</string>
+    <string name="text_storage">STORAGE</string>
+    <string name="text_phone_state_description">This permission is required to read the incoming/outgoing call status.</string>
+    <string name="text_record_video_description">This permission is required to record video.</string>
+    <string name="text_storage_description">This permission is required to save the recordings.</string>
+    <string name="text_contacts_description">This permission is required to fetch names and numbers of your contacts.</string>
+    <string name="text_record_audio_description">This permission is required to record audio.</string>
+    <string name="text_exit">Exit</string>
+    <string name="text_do_you_want">Do you want to Exit ?</string>
+
+    <string-array name="alert_box_music_type_list">
+        <item>Set Audio</item>
+        <item>Set Video</item>
+    </string-array>
+
+    <string-array name="alert_box_selection_type_list">
+        <item>Set As Incoming</item>
+        <item>Set As Outgoing</item>
+
+    </string-array>
+
+</resources>

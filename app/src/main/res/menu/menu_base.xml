@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/group"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_songs"
+            android:icon="@mipmap/nav_music"
+            android:title="@string/text_songs" />
+
+        <item
+            android:id="@+id/nav_videos"
+            android:icon="@mipmap/nav_videos"
+            android:title="@string/text_videos" />
+
+        <item
+            android:id="@+id/nav_contacts"
+            android:icon="@mipmap/nav_contacts"
+            android:title="@string/text_contacts" />
+
+        <item
+            android:id="@+id/nav_upload"
+            android:icon="@mipmap/nav_uploads"
+            android:title="@string/text_upload" />
+
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@mipmap/nav_logout"
+            android:title="@string/text_logout" />
+
+    </group>
+</menu>

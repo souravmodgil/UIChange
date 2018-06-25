@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "897636041254",
+    "firebase_url": "https://kolbeat-5d948.firebaseio.com",
+    "project_id": "kolbeat-5d948",
+    "storage_bucket": "kolbeat-5d948.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897636041254:android:51fde1ac70a2fb98",
+        "android_client_info": {
+          "package_name": "com.mobileoid2.celltone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897636041254-kj4treuvo8thpd01ddjrth8r78d2t129.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "897636041254-kj4treuvo8thpd01ddjrth8r78d2t129.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA000Mo_9PW5eX88ntkNKLGftbXpNIRzjk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
