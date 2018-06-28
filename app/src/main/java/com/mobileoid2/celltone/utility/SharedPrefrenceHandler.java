@@ -42,11 +42,13 @@ public class SharedPrefrenceHandler {
     private String ContactsUploadedResponse = "ContactsUploadedResponse";
     private String GET_MEDIA_RESPONSE = "GET_MEDIA_RESPONSE";
     private String AUDIORESPOSNE = "audio_response";
+    private String BANNERRESPONSE = "banner_response";
     private String VIDEORESPONSE = "video_resposne";
     private String COUTRYCODE = "coutry_code";
     private String  FCMIDSET = "fcm_id_set";
     private String GET_ALL_AUDIO = "GET_ALL_AUDIOS";
     private String GET_ALL_VIDEO = "GET_ALL_VIDEOS";
+    private String LANGUAGE_CODE = "language_code";
 
 
     /////////////Save data here
@@ -94,6 +96,14 @@ public class SharedPrefrenceHandler {
     public String getGET_MEDIA_RESPONSE() {
         return pSharedPref.getString(GET_MEDIA_RESPONSE, null);
 
+    }
+
+    public void setBannerResponse(String response) {
+        pSharedPref.edit().putString(BANNERRESPONSE, response).apply();
+    }
+    public String getBannerResponse() {
+
+        return pSharedPref.getString(BANNERRESPONSE, "");
     }
 
     public void setGET_MEDIA_RESPONSE(String response) {
@@ -165,6 +175,15 @@ public class SharedPrefrenceHandler {
 
     public void setFCMID_SEND(boolean response) {
         pSharedPref.edit().putBoolean(FCMIDSET, response).apply();
+    }
+    public String getLanguageCode()
+    {
+        return pSharedPref.getString(LANGUAGE_CODE, "en");
+    }
+    public void setLanguageCode(String value)
+    {
+        pSharedPref.edit().putString(LANGUAGE_CODE, value).apply();
+
     }
 
 }

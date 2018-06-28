@@ -26,7 +26,7 @@ public class PlanActivity extends AppCompatActivity implements ChangeToolBarTitl
 
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("My Plan");
+        getSupportActionBar().setTitle(getString(R.string.my_plan));
         Fragment fragment = PlanFragment.newInstance(this);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
@@ -51,6 +51,12 @@ public class PlanActivity extends AppCompatActivity implements ChangeToolBarTitl
         getSupportActionBar().setTitle(text);
 
     }
+
+    @Override
+    public void setTitle(String text, String songName) {
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

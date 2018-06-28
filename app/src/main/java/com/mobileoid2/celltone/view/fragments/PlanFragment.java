@@ -101,13 +101,6 @@ public class PlanFragment extends Fragment implements NetworkCallBack,PlanListin
         return view;
     }
 
-    @Override
-    public void onDestroyView() {
-        Toast.makeText(getActivity(),"OndestroyView",Toast.LENGTH_LONG).show();
-
-        super.onDestroyView();
-
-    }
 
     @Override
     public void onDetach() {

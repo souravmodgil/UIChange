@@ -47,7 +47,8 @@ public class ProfileActivity extends AppCompatActivity implements ChangeToolBarT
 
     private void setProfileFragment() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("My Profile");
+     //   getSupportActionBar().setTitle("My Profile");
+        getSupportActionBar().setTitle(getString(R.string.my_profile));
         Fragment fragment = ProfileFragment.newInstance(this);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
@@ -134,5 +135,10 @@ public class ProfileActivity extends AppCompatActivity implements ChangeToolBarT
     @Override
     public void setTitle(String text) {
         getSupportActionBar().setTitle(text);
+    }
+
+    @Override
+    public void setTitle(String text, String songName) {
+
     }
 }

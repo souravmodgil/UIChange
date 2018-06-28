@@ -97,7 +97,7 @@ public class MyHomeSongsListRecyclerViewAdapter extends RecyclerView.Adapter<MyH
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final OptimaBoldTextview mIdView;
+        public final TextView mIdView;
         public final TextView mContentView;
         public final RecyclerView mHorizontalRV;
         public Category mItem;
@@ -105,9 +105,9 @@ public class MyHomeSongsListRecyclerViewAdapter extends RecyclerView.Adapter<MyH
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (OptimaBoldTextview) view.findViewById(R.id.tvTitle);
-            mContentView = (TextView) view.findViewById(R.id.viewAll);
-            mHorizontalRV = (RecyclerView) view.findViewById(R.id.rvHorizontal);
+            mIdView =  view.findViewById(R.id.tvTitle);
+            mContentView = view.findViewById(R.id.viewAll);
+            mHorizontalRV = view.findViewById(R.id.rvHorizontal);
         }
 
         @Override

@@ -1,5 +1,6 @@
-package  com.mobileoid2.celltone.view.fragments;
+package com.mobileoid2.celltone.view.fragments;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyLog;
@@ -39,6 +41,9 @@ import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.NetworkCallBack;
 import com.mobileoid2.celltone.network.SendRequest;
 import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
+import com.mobileoid2.celltone.network.model.banner.BannerBody;
+import com.mobileoid2.celltone.network.model.banner.BannerModel;
+import com.mobileoid2.celltone.network.model.banner.Medium;
 import com.mobileoid2.celltone.network.model.treadingMedia.Category;
 import com.mobileoid2.celltone.network.model.treadingMedia.MediaModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
@@ -47,6 +52,8 @@ import com.mobileoid2.celltone.pojo.mediapojo.CategoriesSongs;
 import com.mobileoid2.celltone.pojo.mediapojo.MediaPojo;
 import com.mobileoid2.celltone.utility.Config_URL;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
+import com.mobileoid2.celltone.view.activity.BannerListActivity;
+import com.mobileoid2.celltone.view.activity.ViewAllSongActivity;
 import com.mobileoid2.celltone.view.listener.NavigationLisitner;
 
 import java.util.ArrayList;
@@ -75,11 +82,13 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     private ImageView mtNav, mtMenu;
     private ProgressBar loadingSpinner;
     private NavigationLisitner navigationLisitner;
-    private int isEdit =0;
-    private String mobileNo ="";
+    private int isEdit = 0;
+    private String mobileNo = "";
     private String name = "";
-    private int isIncoming =-1;
+    private int isIncoming = -1;
     private ContactEntity contactEntity;
+    private SliderLayout mDemoSlider;
+    private List<BannerBody> bannerBodyList;
 
     public static final String TAG = HomeFragment.class.getSimpleName();
 
@@ -102,11 +111,11 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     public static HomeFragment newInstance(NavigationLisitner navigationLisitner, int isEdit, String mobileNo, String name, int isIncoming, ContactEntity contactEntity) {
         HomeFragment fragment = new HomeFragment();
         fragment.navigationLisitner = navigationLisitner;
-        fragment.isEdit =isEdit;
-        fragment.mobileNo =mobileNo;
-        fragment.name =name;
-        fragment.isIncoming =isIncoming;
-        fragment.contactEntity =contactEntity;
+        fragment.isEdit = isEdit;
+        fragment.mobileNo = mobileNo;
+        fragment.name = name;
+        fragment.isIncoming = isIncoming;
+        fragment.contactEntity = contactEntity;
         return fragment;
     }
 
@@ -141,36 +150,10 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
         tabLayout.setupWithViewPager(viewPager);
         setCustomFont();
 
-        SliderLayout mDemoSlider = (SliderLayout) view.findViewById(R.id.slider);
-        /*sliderr*/
-        HashMap<String, String> url_maps = new HashMap<String, String>();
-        url_maps.put("KARAN ARJUN", "https://i.ytimg.com/vi/pyKhQFdGX2Q/maxresdefault.jpg");
-        url_maps.put("Country Music Freaks", "https://cdn.images.express.co.uk/img/dynamic/galleries/x701/199694.jpg");
-        url_maps.put("Country", "https://img.wennermedia.com/920-width/rs_lead_bestcountryalbums2018-cc721e3c-6b20-4feb-9345-95ac983eaf77.jpg");
-        url_maps.put("Madonna new album", "https://cdn.images.express.co.uk/img/dynamic/35/590x/MADONNA-890262.jpg");
-
+        mDemoSlider = (SliderLayout) view.findViewById(R.id.slider);
         mtNav.setOnClickListener(this);
         mtMenu.setOnClickListener(this);
 
-        for (String name : url_maps.keySet()) {
-            TextSliderView textSliderView = new TextSliderView(getContext());
-            // initialize a SliderLayout
-            textSliderView.description(name).image(url_maps.get(name)).setScaleType(BaseSliderView.ScaleType.Fit).setOnSliderClickListener(new BaseSliderView.OnSliderClickListener() {
-                @Override
-                public void onSliderClick(BaseSliderView slider) {
-
-                }
-            });
-            //add your extra information
-            textSliderView.bundle(new Bundle());
-            textSliderView.getBundle().putString("extra", name);
-
-            mDemoSlider.addSlider(textSliderView);
-        }
-        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
-        mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
-        mDemoSlider.setCustomAnimation(new DescriptionAnimation());
-        mDemoSlider.setDuration(5000);
 
         return view;
     }
@@ -191,7 +174,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                     //Put your font in assests folder
                     //assign name of the font here (Must be case sensitive)
                     ((TextView) tabViewChild).setTypeface(Typeface.createFromAsset(getActivity().getAssets(),
-                            "fonts/OPTIMA_B.TTF"));
+                            "fonts/ProximaNova-Regular.otf"));
                 }
             }
         }
@@ -265,17 +248,19 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                 case ApiConstant.VIDEOAPI:
                     SharedPrefrenceHandler.getInstance().setVedioResponse(response.getObject());
                     break;
+                case ApiConstant.BANNER_API:
+                    SharedPrefrenceHandler.getInstance().setBannerResponse(response.getObject());
+                    break;
 
 
             }
-            if (noOfAPiHint == 2) {
+            if (noOfAPiHint == 3) {
                 setViewPager();
                 loadingSpinner.setVisibility(View.GONE);
             }
 
 
-        }
-        else
+        } else
             loadingSpinner.setVisibility(View.GONE);
 
 
@@ -353,6 +338,16 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
         }
     }
 
+    private List<BannerBody> parseBaners(String response) {
+
+
+        Gson gsonObj = new Gson();
+        BannerModel mediaModel = gsonObj.fromJson(response, BannerModel.class);
+
+        return mediaModel.getBody();
+
+    }
+
     private List<Category> parseaudio(String response) {
         List<Category> categoriesLsit = new ArrayList<>();
 
@@ -418,6 +413,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     private void setViewPager() {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
 
+
         new AsyncTask<Void, Void, List<MediaPojo>>() {
             @Override
             protected List<MediaPojo> doInBackground(Void... voids) {
@@ -429,6 +425,8 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                 mediaPojo = new MediaPojo();
                 mediaPojo.setCategoryList(parseaudio(SharedPrefrenceHandler.getInstance().getVideoRespose()));
                 list.add(mediaPojo);
+                bannerBodyList = parseBaners(SharedPrefrenceHandler.getInstance().getBannerResponse());
+
 
                 return list;
             }
@@ -436,10 +434,69 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
             @Override
             protected void onPostExecute(List<MediaPojo> lists) {
                 super.onPostExecute(lists);
+                int isAudio = 1;
+                try {
+
+                    mDemoSlider.removeAllSliders();
+                } catch (Exception ex) {
+
+                }
+
+
+                for (BannerBody bannerBody : bannerBodyList) {
+                    TextSliderView textSliderView = new TextSliderView(getContext());
+                    // initialize a SliderLayout
+                    textSliderView.description(bannerBody.getTitle()).image(ApiConstant.MEDIA_URL + bannerBody.getBanner()).setScaleType(BaseSliderView.ScaleType.Fit).setOnSliderClickListener(new BaseSliderView.OnSliderClickListener() {
+                        @Override
+                        public void onSliderClick(BaseSliderView slider) {
+
+                        }
+                    });
+                    //add your extra information
+                    textSliderView.bundle(new Bundle());
+                    textSliderView.getBundle().putString("extra", name);
+
+                    textSliderView.setOnSliderClickListener(new BaseSliderView.OnSliderClickListener() {
+                        @Override
+                        public void onSliderClick(BaseSliderView slider) {
+                            ArrayList<Song> songList = new ArrayList<>();
+                            for (Medium medium : bannerBody.getMedia()) {
+                                Song song = new Song();
+                                song.setClipArtUrl(medium.getClipArtUrl());
+                                song.setTitle(medium.getTitle());
+                                song.setArtistName("");
+                                song.setSampleFileUrl(medium.getSampleFileUrl());
+                                song.setOriginalFileUrl(medium.getOriginalFileUrl());
+                                if (medium.getContentType().equals("video"))
+                                    song.setIsAudio(0);
+                                else
+                                    song.setIsAudio(1);
+                                songList.add(song);
+
+
+                            }
+
+                            Intent intent = new Intent(getActivity(), BannerListActivity.class);
+                            intent.putExtra("songsList", songList);
+                            startActivity(intent);
+
+
+                            //    Toast.makeText(getActivity(), "ONClick:" + mDemoSlider.getCurrentPosition(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                    mDemoSlider.addSlider(textSliderView);
+
+                }
+                mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
+                mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+                mDemoSlider.setCustomAnimation(new DescriptionAnimation());
+                mDemoSlider.setDuration(5000);
+
 
                 if (lists != null && lists.size() >= 2) {
-                    adapter.addFragment(HomeVideoFragment.newInstance(getContext(), lists.get(0).getCategoryList(), 1,isEdit,mobileNo,name,isIncoming,contactEntity), "Audio");
-                    adapter.addFragment(HomeVideoFragment.newInstance(getContext(), lists.get(1).getCategoryList(), 0,isEdit,mobileNo,name,isIncoming,contactEntity), "Video");
+                    adapter.addFragment(HomeVideoFragment.newInstance(getContext(), lists.get(0).getCategoryList(), 1, isEdit, mobileNo, name, isIncoming, contactEntity), getString(R.string.audio));
+                    adapter.addFragment(HomeVideoFragment.newInstance(getContext(), lists.get(1).getCategoryList(), 0, isEdit, mobileNo, name, isIncoming, contactEntity), getString(R.string.video));
                     viewPager.setAdapter(adapter);
                 }
             }
@@ -449,107 +506,14 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     }
 
     private void getALLAUDIO() {
-//        final int type, Call<String> sendRequestMethod,
-//        final NetworkCallBack callBack)
-        totalApiToBeHint = 2;
+        totalApiToBeHint = 3;
         SendRequest.sendRequest(ApiConstant.AUDIOAPI, apiInterface.getAllAudio(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()), this);
         SendRequest.sendRequest(ApiConstant.VIDEOAPI, apiInterface.getAllVideo(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()), this);
+        SendRequest.sendRequest(ApiConstant.BANNER_API, apiInterface.getAllBannes(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()), this);
 
 
-        // JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, Config_URL.URL_GET_AUDIO, null, response -> {
-//            try {
-//                System.out.println("HomeActivity.refreshMediaSetByOther" + response.toString());
-//
-//
-//                PojoGETALLMEDIA_Request pojoContactsUploadResonse = Arrays.asList(new Gson().fromJson(response.toString(), PojoGETALLMEDIA_Request.class)).get(0);
-//                if (pojoContactsUploadResonse.getStatus() == 1000) {
-//
-//                    new AsyncTask<Void, Void, Void>() {
-//                        @Override
-//                        protected Void doInBackground(Void... voids) {
-//                            CellToneRoomDatabase.getDatabase(getContext()).get_pojoALLMediaDAO().insertList(pojoContactsUploadResonse.getBody());
-//                            return null;
-//                        }
-//                    }.execute();
-//                    SharedPrefrenceHandler.getInstance().setGET_ALL_AUDIO(true);
-//                } else {
-//                }
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//
-//        }, error -> {
-//            VolleyLog.d(TAG, "Error: " + error.getMessage());
-//            // hide the progress dialog
-//        }) {
-//
-//        /*@Override
-//        public Map<String, String> getHeaders() throws AuthFailureError {
-//            HashMap<String, String> headers = new HashMap<String, String>();
-//            headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-//            return headers;
-//        }*/
-//
-//            @Override
-//            protected Map<String, String> getParams() {
-//                HashMap<String, String> headers = new HashMap<String, String>();
-//                headers.put("Content-Type", "application/json; charset=utf-8");
-//                //headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-//                return headers;
-//            }
-//        };
-//        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
     }
 
-    private void getALLVIDEO() {
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, Config_URL.URL_GET_VIDEO, null, response -> {
-            try {
-                System.out.println("HomeActivity.refreshMediaSetByOther" + response.toString());
-
-
-                PojoGETALLMEDIA_Request pojoContactsUploadResonse = Arrays.asList(new Gson().fromJson(response.toString(), PojoGETALLMEDIA_Request.class)).get(0);
-                if (pojoContactsUploadResonse.getStatus() == 1000) {
-                    new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... voids) {
-                            CellToneRoomDatabase.getDatabase(getContext()).get_pojoALLMediaDAO().insertList(pojoContactsUploadResonse.getBody());
-                            return null;
-                        }
-                    }.execute();
-                    SharedPrefrenceHandler.getInstance().setGET_ALL_VIDEO(true);
-
-                } else {
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }, error -> {
-            VolleyLog.d(TAG, "Error: " + error.getMessage());
-            // hide the progress dialog
-        }) {
-
-        /*@Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            HashMap<String, String> headers = new HashMap<String, String>();
-            headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-            return headers;
-        }*/
-
-            @Override
-            protected Map<String, String> getParams() {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                //headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-                return headers;
-            }
-        };
-        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
-    }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();

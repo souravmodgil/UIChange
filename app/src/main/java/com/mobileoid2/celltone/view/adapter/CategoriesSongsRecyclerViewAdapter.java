@@ -61,6 +61,11 @@ public class CategoriesSongsRecyclerViewAdapter extends RecyclerView.Adapter<Cat
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_category, parent, false);
         return new CategoriesSongsRecyclerViewAdapter.ViewHolder(view);
     }
+    public void updateAdapter(List<Song> songList)
+    {
+        mValues.addAll(mValues.size()-1,songList);
+        notifyDataSetChanged();
+    }
 
     @Override
     public void onBindViewHolder(final CategoriesSongsRecyclerViewAdapter.ViewHolder holder, final int position) {

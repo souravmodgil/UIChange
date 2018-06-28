@@ -6,44 +6,55 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_profile"
-            android:title="Profile" />
+            android:title="@string/profile" />
         <item
             android:id="@+id/nav_upload_own"
-            android:title="Upload own" />
+            android:title="@string/uploadOwn"
+           />
 
         <item
             android:id="@+id/nav_contacts"
-            android:title="Contacts" />
+            android:title="@string/contacts"
+          />
         <item
             android:id="@+id/nav_offer"
-            android:title="Offers" />
+            android:title="@string/offer"
+            />
         <item
             android:id="@+id/nav_plan"
-            android:title="My Plan" />
+            android:title="@string/my_plan"
+            />
         <item
             android:id="@+id/nav_language"
-            android:title="Language" />
+            android:title="@string/language"
+             />
         <item
             android:id="@+id/nav_rate_app"
-            android:title="Rate App" />
+            android:title="@string/rate_app"
+           />
         <item
             android:id="@+id/nav_terms"
-            android:title="Terms Of Use" />
+            android:title="@string/terms"
+            />
         <item
             android:id="@+id/nav_privacy"
-            android:title="Privacy Policy" />
+            android:title="@string/privacy"
+           />
         <item
             android:id="@+id/nav_contact_us"
-            android:title="Contact Us" />
+
+            android:title="@string/contact_us" />
         <item
             android:id="@+id/nav_about_us"
-            android:title="About Us" />
+            android:title="@string/about_us" />
         <item
             android:id="@+id/nav_faq"
-            android:title="FAQ" />
+            android:title="@string/faq"
+            />
         <item
             android:id="@+id/nav_query"
-            android:title="Queries/Report" />
+            android:title="@string/query_report"
+          />
     </group>
 
 
@@ -51,7 +62,8 @@
 
             <item
                 android:id="@+id/nav_logout"
-                android:title="Logout" />
+                android:title="@string/logout"
+               />
     </group>
 
 

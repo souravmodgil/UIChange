@@ -28,7 +28,7 @@ public class QueryActivity extends AppCompatActivity implements QueryLisiner {
         setSupportActionBar(toolbar);
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Query");
+        getSupportActionBar().setTitle(getString(R.string.query));
         setFragment(QueryListFragment.newInstance(this));
 
     }

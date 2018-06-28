@@ -66,7 +66,8 @@ public class MediaSetByUserFregment extends Fragment implements NetworkCallBack 
         progressBar =view.findViewById(R.id.media_player_progress_bar);
         llMain =view.findViewById(R.id.ll_main);
         btUpload =view.findViewById(R.id.bt_upload);
-        changeToolBarTitleListiner.setTitle("Usage");
+       // changeToolBarTitleListiner.setTitle("Usage");
+        changeToolBarTitleListiner.setTitle(getString(R.string.profile_usage));
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
         getMediaList();
 

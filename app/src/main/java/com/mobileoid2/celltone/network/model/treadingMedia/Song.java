@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 
 public class Song  implements Serializable{
+    private int isAudio =0;
 
     @SerializedName("genre")
     @Expose
@@ -172,5 +173,13 @@ public class Song  implements Serializable{
 
     public void setSampleFileUrl(String sampleFileUrl) {
         this.sampleFileUrl = sampleFileUrl;
+    }
+
+    public int getIsAudio() {
+        return isAudio;
+    }
+
+    public void setIsAudio(int isAudio) {
+        this.isAudio = isAudio;
     }
 }

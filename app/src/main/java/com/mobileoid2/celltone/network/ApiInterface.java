@@ -3,6 +3,7 @@ package com.mobileoid2.celltone.network;
 
 
 import com.mobileoid2.celltone.network.model.contacts.SendContactsModel;
+import com.mobileoid2.celltone.pojo.CategeoryRequest;
 import com.mobileoid2.celltone.pojo.CommentRequest;
 import com.mobileoid2.celltone.pojo.ComposeQueryRequest;
 import com.mobileoid2.celltone.pojo.FCMMODELREQUEST;
@@ -100,14 +101,15 @@ public interface ApiInterface {
     @POST("user/update/avatar")
     Call<String> uploadAvatar(@Header("token") String token,
                              @Part MultipartBody.Part file);
+    @GET("promotion/all")
+    public Call<String> getAllBannes(@Header("token") String token);
 
+    @GET("legal/faq")
+    public Call<String> getAllFAQ();
 
-
-
-
-
-
-
+    @Headers("Content-Type: application/json")
+    @POST("media/all")
+    public Call<String> getSongs( @Header("token") String token,@Body CategeoryRequest categeoryRequest);
 
 
 

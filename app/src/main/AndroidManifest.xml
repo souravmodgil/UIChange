@@ -160,7 +160,11 @@
         <activity
             android:name=".view.activity.QueryListActivity"
             android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".view.activity.ComposeQueryActivity"></activity>
+        <activity android:name=".view.activity.ComposeQueryActivity" />
+        <activity android:name=".view.activity.BannerListActivity" />
+        <activity android:name=".view.activity.LanguageActivity" />
+        <activity android:name=".view.activity.FAQActivity" />
+        <activity android:name=".view.activity.SearchActivity"></activity>
     </application>
 
 </manifest>

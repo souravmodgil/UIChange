@@ -68,7 +68,8 @@ public class UserMediaUploadFragment extends Fragment implements NetworkCallBack
         txtUserUploadCount = view.findViewById(R.id.txt_user_upload_count);
         progressBar =view.findViewById(R.id.media_player_progress_bar);
         llMain =view.findViewById(R.id.ll_main);
-        changeToolBarTitleListiner.setTitle("Upload");
+      //  changeToolBarTitleListiner.setTitle("Upload");
+        changeToolBarTitleListiner.setTitle(getString(R.string.upload));
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
         btUpload.setOnClickListener(new View.OnClickListener() {
             @Override

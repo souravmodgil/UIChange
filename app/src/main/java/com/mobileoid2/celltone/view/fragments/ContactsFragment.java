@@ -232,7 +232,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                         contactEntity.setOutgoingIsVideo(0);
                     else
                         contactEntity.setOutgoingIsVideo(1);
-                    contactEntity.setIncomingSongName(contactsMedia.getBody().get(i).getIncommingother().getTitle());
+                    contactEntity.setOutgoingSongName(contactsMedia.getBody().get(i).getOutgoingself().getTitle());
                 } else
                     contactEntity.setIsOutgoing(0);
                 contactList.add(contactEntity);
@@ -594,7 +594,6 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                             contactEntity.setOutgoingSongName(songs.getTitle());
                             contactEntity.setIsOutgoing(1);
                             contactEntity.setOutgoingArtistName(songs.getArtistName());
-                            contactEntities.add(contactEntity);
 
 
                         } else {
@@ -605,12 +604,12 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                             contactEntity.setIncomingSongName(songs.getTitle());
                             contactEntity.setIsIncoming(1);
                             contactEntity.setInComingArtistName(songs.getArtistName());
-                            contactEntities.add(contactEntity);
                         }
+                        appDatabase.daoContacts().update(contactEntity);
                     }
 
 
-                    appDatabase.daoContacts().insertAll(contactList);
+                   // appDatabase.daoContacts().update(contactEntities);
 
 
                 }

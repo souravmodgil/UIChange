@@ -40,7 +40,7 @@ public class UploadActivity extends AppCompatActivity {
 
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Upload");
+        getSupportActionBar().setTitle(getString(R.string.upload));
         Fragment fragment = FragmentMusicUpload.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);

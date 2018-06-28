@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiConstant;
@@ -25,6 +26,8 @@ import com.mobileoid2.celltone.network.SendRequest;
 import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
 import com.mobileoid2.celltone.network.model.feedback.Comment;
 import com.mobileoid2.celltone.network.model.feedback.FeedBackList;
+import com.mobileoid2.celltone.network.model.feedback.comment.CommentModel;
+import com.mobileoid2.celltone.network.model.feedback.composeQuery.ComposeQueryModel;
 import com.mobileoid2.celltone.pojo.ComposeQueryRequest;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
@@ -33,6 +36,14 @@ import com.mobileoid2.celltone.view.adapter.QueryReplyAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 
 public class ComposeQueryFragment extends Fragment implements AdapterView.OnItemSelectedListener, NetworkCallBack {
     private ApiInterface apiInterface;
@@ -69,7 +80,7 @@ public class ComposeQueryFragment extends Fragment implements AdapterView.OnItem
 
         return view;
     }
-    private  void composeQuery()
+    public   void composeQuery()
     {
         if(!selectedType.equals("Type") &&inputComments.length()>0 && inputSubject.length()>0 )
         {
@@ -99,9 +110,62 @@ public class ComposeQueryFragment extends Fragment implements AdapterView.OnItem
 
     }
 
+    private void parseResponse(String response) {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(getList(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(UploadMediaObserver()));
+    }
+
+    private DisposableObserver<ComposeQueryModel> UploadMediaObserver() {
+        return new DisposableObserver<ComposeQueryModel>() {
+
+            @Override
+            public void onNext(ComposeQueryModel modle) {
+
+                Toast.makeText(getActivity(),modle.getMessage(),Toast.LENGTH_LONG).show();
+
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+
+    private Observable<ComposeQueryModel> getList(String response) {
+        Gson gsonObj = new Gson();
+        final ComposeQueryModel responseUpload = gsonObj.fromJson(response, ComposeQueryModel.class);
+
+        return Observable.create(new ObservableOnSubscribe<ComposeQueryModel>() {
+            @Override
+            public void subscribe(ObservableEmitter<ComposeQueryModel> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(responseUpload);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
     @Override
     public void getResponse(JsonResponse response, int type) {
 
+        if (response.getObject() != null) {
+            parseResponse(response.getObject());
+        }
+        progressBar.setVisibility(View.GONE);
 
     }
 }

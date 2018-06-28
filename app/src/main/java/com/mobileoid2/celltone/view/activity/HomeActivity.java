@@ -400,6 +400,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_upload_own:
                 startActivity(new Intent(this, UploadActivity.class));
                 break;
+            case R.id.nav_faq:
+                startActivity(new Intent(this, FAQActivity.class));
+                break;
+
+
 
             case R.id.nav_profile:
                 startActivity(new Intent(this, ProfileActivity.class));
@@ -417,7 +422,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
             case R.id.nav_contact_us:
                 Intent contactUs = new Intent(this,AbousUs.class);
-                contactUs.putExtra("typeName","Contact Us");
+                contactUs.putExtra("typeName",getString(R.string.contact_us));
                 contactUs.putExtra("type","legal/one/contact");
                 startActivity(contactUs);
                 break;
@@ -425,13 +430,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
             case R.id.nav_about_us:
                 Intent aboutUs = new Intent(this,AbousUs.class);
-                aboutUs.putExtra("typeName","About Us");
+                aboutUs.putExtra("typeName",getString(R.string.about_us));
                 aboutUs.putExtra("type","legal/one/about");
                 startActivity(aboutUs);
                 break;
             case R.id.nav_privacy:
                 Intent privacy = new Intent(this,AbousUs.class);
-                privacy.putExtra("typeName","Privacy policy");
+                privacy.putExtra("typeName",getString(R.string.privacy_policy));
                 privacy.putExtra("type","legal/one/privacy");
                 startActivity(privacy);
                 break;
@@ -439,6 +444,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
                 startActivity(new Intent(this,QueryActivity.class));
                 break;
+            case R.id.nav_language:
+                startActivity(new Intent(this,LanguageActivity.class));
+                break;
+
 
 
 

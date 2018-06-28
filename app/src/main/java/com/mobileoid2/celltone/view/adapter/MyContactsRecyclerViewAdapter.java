@@ -95,9 +95,12 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         if (holder.mItem.getIsOutgoing() == 1) {
             holder.llOutgoing.setVisibility(View.VISIBLE);
             if (holder.mItem.getOutgoingIsVideo() == 0)
-                holder.outgoingMediaIcon.setBackgroundResource(R.drawable.audio_icon);
+                holder.txtOutgoingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.audio_icon,0);
             else
-                holder.outgoingMediaIcon.setBackgroundResource(R.drawable.video_icon);
+                holder.txtOutgoingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.video_icon,0);
+
+
+
             holder.txtOutgoingSongTitle.setText(holder.mItem.getOutgoingSongName());
         } else
             holder.llOutgoing.setVisibility(View.GONE);
@@ -105,9 +108,9 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         if (holder.mItem.getIsIncoming() == 1) {
             holder.llIncoming.setVisibility(View.VISIBLE);
             if (holder.mItem.getIsincomingVideo() == 0)
-                holder.incomingMediaIcon.setBackgroundResource(R.drawable.audio_icon);
+                holder.txtIncomingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.audio_icon,0);
             else
-                holder.incomingMediaIcon.setBackgroundResource(R.drawable.video_icon);
+                holder.txtIncomingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.video_icon,0);
             holder.txtIncomingSongTitle.setText(holder.mItem.getIncomingSongName());
         } else {
             holder.llIncoming.setVisibility(View.GONE);
@@ -251,7 +254,7 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         public final TextView mContactsLetter;
         public final TextView txtIncomingSongTitle, txtOutgoingSongTitle;
         public ContactEntity mItem;
-        public ImageView incomingMediaIcon, outgoingMediaIcon, imageView;
+        public ImageView   imageView;
         public CheckBox cbContact;
         public LinearLayout llOutgoing, llIncoming;
 
@@ -263,12 +266,9 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
             mContentView = (TextView) view.findViewById(R.id.content);
             mContactsLetter = (TextView) view.findViewById(R.id.contactsLetter);
             txtIncomingSongTitle = view.findViewById(R.id.txt_incoming_song_title);
-            incomingMediaIcon = view.findViewById(R.id.incoming_media_icon);
             editIcon = view.findViewById(R.id.edit_icon);
-            incomingMediaIcon = view.findViewById(R.id.incoming_media_icon);
             llOutgoing = view.findViewById(R.id.ll_outgoing);
             txtOutgoingSongTitle = view.findViewById(R.id.txt_outgoing_song_title);
-            outgoingMediaIcon = view.findViewById(R.id.outgoing_media_icon);
             cbContact = view.findViewById(R.id.cb_contact);
             imageView = view.findViewById(R.id.image_view);
             llIncoming = view.findViewById(R.id.ll_incoming);

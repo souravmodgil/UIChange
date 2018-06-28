@@ -7,11 +7,7 @@
     android:backgroundTint="@android:color/white"
     android:orientation="vertical"
     android:layout_marginTop="10dp"
-    android:layout_marginBottom="10dp"
-    app:cardElevation="8dp"
-    app:contentPadding="4dp"
-    app:cardCornerRadius="0dp"
-    android:padding="8dp">
+  >
 
     <LinearLayout
         android:orientation="vertical"
@@ -23,7 +19,7 @@
         android:layout_height="wrap_content"
         android:padding="2dp">
 
-        <com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview
+        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumSemiBoldItalicTextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,16 +28,14 @@
             android:layout_gravity="center_vertical"
             android:layout_toStartOf="@+id/viewAll"
             android:layout_marginLeft="10dp"
-            android:textStyle="italic"
+            android:textStyle="bold"
             android:textColor="@android:color/black"
             android:textSize="15dp" />
 
-        <TextView
+        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView
             android:id="@+id/viewAll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
             android:layout_alignParentEnd="true"
             android:text="@string/view_all"
             android:layout_marginRight="10dp"
@@ -53,8 +47,9 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
         android:layout_gravity="center_vertical"
         android:orientation="horizontal" />
 

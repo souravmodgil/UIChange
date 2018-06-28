@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_marginTop="10dp"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/que">
+        </com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView>
+        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView
+            android:id="@+id/txt_question"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            >
+
+        </com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView>
+
+</LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_height="wrap_content">
+        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ans">
+        </com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView>
+        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumLightTextView
+            android:id="@+id/txt_answer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            >
+
+
+        </com.mobileoid2.celltone.CustomWidget.TextView.ProximumLightTextView>
+
+    </LinearLayout>
+
+
+</LinearLayout>

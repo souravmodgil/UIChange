@@ -21,7 +21,7 @@ public class OfferActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Offer");
+        getSupportActionBar().setTitle(getString(R.string.offer));
         Fragment fragment = OfferFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);

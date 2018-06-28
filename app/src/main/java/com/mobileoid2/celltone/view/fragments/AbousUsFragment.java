@@ -1,6 +1,7 @@
 package com.mobileoid2.celltone.view.fragments;
 
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -8,9 +9,11 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
@@ -74,6 +77,14 @@ public class AbousUsFragment extends Fragment implements NetworkCallBack {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(getPlanObserver()));
     }
+    private int getScale(){
+        Display display = ((WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        int width = display.getWidth();
+        Double val = new Double(width)/new Double(1200);
+        val = val * 100d;
+        return val.intValue();
+    }
+
 
     private DisposableObserver<AboutUsModel> getPlanObserver() {
         return new DisposableObserver<AboutUsModel>() {
@@ -84,6 +95,8 @@ public class AbousUsFragment extends Fragment implements NetworkCallBack {
                 if(model.getBody()!=null && model.getBody().getDescription()!=null) {
                     webview.getSettings().setJavaScriptEnabled(true);
                     webview.loadDataWithBaseURL("", model.getBody().getDescription(), "text/html", "UTF-8", "");
+                    webview.setPadding(0, 0, 0, 0);
+                  //  webview.setInitialScale(getScale());
                     progressBar.setVisibility(View.GONE);
                 }
 

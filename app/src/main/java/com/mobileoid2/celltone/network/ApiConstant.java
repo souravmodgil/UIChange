@@ -12,6 +12,7 @@ public class ApiConstant {
     public static String MEDIA_URL = "http://13.126.37.207/celltone-media/media/";
     public final static int VIDEOAPI = 1;
     public final static int AUDIOAPI = 2;
+    public final static int BANNER_API = 14;
     public final static int GET_ALL_CONTACT = 3;
     public final static int SET_MEDIA_FOR_CONTACT = 4;
     public final static int  ALL_PLAN_LIST_API = 5;
@@ -24,6 +25,7 @@ public class ApiConstant {
     public final static int  ABOUT_US_API = 12;
     public final static int  QUERY_LIST_API = 13;
     public final static int  QUERY_SEND_COMMENT_API = 13;
+    public final static int  FAQ_API = 14;
     //
 
 

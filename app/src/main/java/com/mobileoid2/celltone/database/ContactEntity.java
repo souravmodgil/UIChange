@@ -38,6 +38,8 @@ public class ContactEntity  implements Serializable {
     @ColumnInfo(name = "outgoing_artist_name" )
     private String outgoingArtistName;
 
+
+
     public ContactEntity() {
 
     }

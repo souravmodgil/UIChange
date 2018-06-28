@@ -11,14 +11,12 @@
         android:id="@+id/ivThumb"
         android:layout_width="120dp"
         android:layout_height="100dp"
-        android:background="@drawable/media_bg"
-        android:src="@drawable/thumb_image"
         android:scaleType="fitXY"
         android:padding="3dp"
         />
 
 
-    <com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview
+    <com.mobileoid2.celltone.CustomWidget.TextView.ProximumExtraBoldTextView
         android:id="@+id/txtTitle"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
@@ -27,13 +25,12 @@
         android:lines="1"
         android:textColor="@android:color/black" />
 
-    <TextView
+    <com.mobileoid2.celltone.CustomWidget.TextView.ProximumLightTextView
         android:id="@+id/txtSubTitle"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:lines="1"
-        android:paddingBottom="5dp"
         android:textColor="@android:color/black"
         android:textSize="10dp"
         android:textStyle="italic" />

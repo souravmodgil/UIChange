@@ -25,7 +25,9 @@ import android.util.Log;
 
 public class PermissionsActivity extends Activity {
 
-
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION = 6;
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS = 7;
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY = 8138;
 
     public static final String TAG = PermissionsActivity.class.getSimpleName();
 
@@ -35,7 +37,7 @@ public class PermissionsActivity extends Activity {
             Manifest.permission.INTERNET, Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.SYSTEM_ALERT_WINDOW,
             Manifest.permission.READ_CONTACTS,
-            };
+          };
 
 
     @Override
@@ -64,12 +66,56 @@ public class PermissionsActivity extends Activity {
 
     private void requestOtherPermissionsOrLaunchMainActivity() {
 
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
-        PermissionsActivity.this.finish();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(PermissionsActivity.this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
+            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !notificationManager.isNotificationPolicyAccessGranted()) {
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION);
 
+        } else if (!isAccessibilitySettingsOn(getApplicationContext())) {
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
+        } else {
+            startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
+            PermissionsActivity.this.finish();
+        }
     }
 
+    private boolean isAccessibilitySettingsOn(Context mContext) {
+        int accessibilityEnabled = 0;
+        final String service = getPackageName() + "/" + ServiceCallScreenChanged.class.getCanonicalName();
+        try {
+            accessibilityEnabled = Settings.Secure.getInt(mContext.getApplicationContext().getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED);
+            Log.e(TAG, "accessibilityEnabled = " + accessibilityEnabled);
+        } catch (Settings.SettingNotFoundException e) {
+            Log.e(TAG, "Error finding setting, default accessibility to not found: " + e.getMessage());
+        }
+        TextUtils.SimpleStringSplitter mStringColonSplitter = new TextUtils.SimpleStringSplitter(':');
+
+        if (accessibilityEnabled == 1) {
+            Log.e(TAG, "***ACCESSIBILITY IS ENABLED*** -----------------");
+            String settingValue = Settings.Secure.getString(mContext.getApplicationContext().getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+            if (settingValue != null) {
+                mStringColonSplitter.setString(settingValue);
+                while (mStringColonSplitter.hasNext()) {
+                    String accessibilityService = mStringColonSplitter.next();
+
+                    Log.e(TAG, "-------------- > accessibilityService :: " + accessibilityService + " " + service);
+                    if (accessibilityService.equalsIgnoreCase(service)) {
+                        Log.e(TAG, "We've found the correct setting - accessibility is switched on!");
+                        return true;
+                    }
+                }
+            }
+        } else {
+            Log.e(TAG, "***ACCESSIBILITY IS DISABLED***");
+        }
+
+        return false;
+    }
 
     private boolean isAccessGranted() {
         try {
@@ -153,6 +199,25 @@ public class PermissionsActivity extends Activity {
                     requestPermissions(PERMISSIONS, PERMISSIONS_MULTIPLE_REQUEST);
                 }
             }
+        } else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                assert notificationManager != null;
+                if (!notificationManager.isNotificationPolicyAccessGranted()) {
+                    Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+                    startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION);
+                }
+            }
+        } else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS) {
+            if (!isAccessibilitySettingsOn(getApplicationContext())) {
+                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
+            }
+
+
+        } else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY) {
+            startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
+            PermissionsActivity.this.finish();
         }
 
     }

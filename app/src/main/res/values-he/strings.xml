@@ -99,6 +99,85 @@
     <string name="text_record_audio_description">אישור זה נדרש כדי להקליט אודיו.</string>
     <string name="text_exit">יְצִיאָה</string>
     <string name="text_do_you_want">האם ברצונך לצאת?</string>
+    <string name="compoase_query_validation">מלא את כל השדות</string>
+    <string name="view_all">צפה בהכל</string>
+    <string name="submit">בחר</string>
+    <string name="refresh">לְרַעֲנֵן</string>
+    <string name="mobile_validation_message">הזן נייד חוקי</string>
+    <string name="coutry_code_validation_message">בחר קוד מדינה </string>
+    <string name="not_yet_register">עדיין לא רשום</string>
+    <string name="register_now"><u>הירשם עכשיו?</u> </string>
+    <string name="plan_upgrade_text">אתה יכול לשדרג את התוכנית שלך על ידי בחירת אחת התוכניות להלן</string>
+    <string name="recomendation">המלצה</string>
+    <string name="current_plan">תכנית נוכחית:</string>
+    <string name="expried">לא בתוקף</string>
+    <string name="renew">לְחַדֵשׁ</string>
+    <string name="button_upgrade_text">שדרג את התוכנית שלך
+</string>
+    <string name="button_apply_text">החל כעת</string>
+    <string name="promocode_text">יש הצעה או קידוד?</string>
+    <string name="payment_text">תשלום מראש עם תשלום Google</string>
+    <string name="total_pay_text">סך הכל תשלום</string>
+    <string name="select_plan">תכנית נבחרת</string>
+    <string name="plan_price"> שם התכנית</string>
+    <string name="discount_price">הנחה
+</string>
+    <string name="upload_file_text">upto 30 שניות ארוכות אודיו / וידאו</string>
+    <string name="file_name_hint">שם קובץ</string>
+    <string name="txt_cancel">לְבַטֵל</string>
+    <string name="txt_save">להציל</string>
+    <string name="file_name_message">שם הקובץ אינו יכול להיות ריק
+</string>
+    <string name="register">הירשם</string>
+    <string name="coutry_prompt">בחר מדינה</string>
+    <string name="profile_info">פרטי פרופיל</string>
+    <string name="profile_name">שֵׁם:</string>
+    <string name="profile_Contact">איש קשר:</string>
+    <string name="profile_plan">לְתַכְנֵן</string>
+    <string name="profile_current_plan">נוֹכְחִי:</string>
+    <string name="profile_validity">לְאַמֵת</string>
+    <string name="upgrade">שדרוג</string>
+    <string name="profile_usage">נוֹהָג</string>
+    <string name="profile_user_upload">העלאות משתמש</string>
+    <string name="default_notification_channel_id">Primary Channel</string>
+    <string name="date">תַאֲרִיך</string>
+    <string name="media_name">שם מדיה</string>
+    <string name="status">סטָטוּס</string>
+    <string name="history">הִיסטוֹרִיָה</string>
+    <string name="upload">העלה</string>
+    <string name="applied">מופעל על</string>
+    <string name="delete">לִמְחוֹק</string>
+    <string name="edit">לַעֲרוֹך</string>
+    <string name="update_incoming_media_text">אתה מתכוון להגדיר שיחה נכנסת
+</string>
+    <string name="update_outgoing_media_text">אתה מתכוון להגדיר את השיחה היוצאת
+</string>
+    <string name="label_reply">השב להודעה</string>
+    <string name="kolbeat_support">תמיכת Kolbeat</string>
+    <string name="reply_title">השב להודעה</string>
+    <string name="hint_query">הערות</string>
+    <string name="query">שאילתא</string>
+    <string name="hint_subject">נושא</string>
+    <string name="privacy_policy">מדיניות פרטיות</string>
+    <string name="about_us">עלינו</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="choose_language">בחר שפה</string>
+    <string name="english">אנגלית</string>
+    <string name="hebrew">עברית	</string>
+    <string name="german">גֶרמָנִיָת</string>
+    <string name="italian">אִיטַלְקִית</string>
+    <string name="spanish">ספרדית</string>
+    <string name="arabic">עֲרָבִית</string>
+    <string name="indonesian">אינדונזית</string>
+    <string name="profile">פּרוֹפִיל</string>
+    <string name="uploadOwn">העלה את עצמו</string>
+    <string name="my_plan">התוכנית שלי</string>
+    <string name="language">שפה</string>
+    <string name="rate_app">דרג אפליקציה</string>
+    <string name="terms">תנאי שימוש</string>
+    <string name="privacy">מדיניות פרטיות</string>
+    <string name="query_report">שאילתות / דוח</string>
+    <string name="faq">שאלות נפוצות</string>
 
     <string-array name="alert_box_music_type_list">
         <item>הגדר צליל</item>

@@ -25,7 +25,7 @@ import com.splunk.mint.Mint;
 
 import java.util.List;
 
-public class ViewAllSongActivity extends AppCompatActivity {
+public class ViewAllSongActivity extends AppCompatActivity implements ChangeToolBarTitleListiner  {
 
     private String type;
     private int isAudio;
@@ -63,7 +63,7 @@ public class ViewAllSongActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getIntent().getStringExtra("category"));
         Fragment fragment = ViewAllSongsFragment.newInstance(this, songList, isAudio, type, categoryId, postion,
-                isEdit,mobileNo,name,isIncoming,contactEntity);
+                isEdit,mobileNo,name,isIncoming,contactEntity,this);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
         fragmentTransaction.addToBackStack(fragment.getClass().getName());
@@ -130,4 +130,16 @@ public class ViewAllSongActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    public void setTitle(String text) {
+
+    }
+
+    @Override
+    public void setTitle(String text ,String songName) {
+        getSupportActionBar().setTitle(text);
+        getSupportActionBar().setSubtitle(songName);
+
+
+    }
 }

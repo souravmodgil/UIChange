@@ -1,9 +1,7 @@
 package com.mobileoid2.celltone.view.fragments;
 
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -43,14 +41,19 @@ import com.mobileoid2.celltone.network.ApiInterface;
 import com.mobileoid2.celltone.network.NetworkCallBack;
 import com.mobileoid2.celltone.network.SendRequest;
 import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
+import com.mobileoid2.celltone.network.model.category.CategoryModel;
 import com.mobileoid2.celltone.network.model.contacts.SaveContactsResponse;
 import com.mobileoid2.celltone.network.model.contacts.SendContactsModel;
+import com.mobileoid2.celltone.network.model.feedback.FeedBackModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
+import com.mobileoid2.celltone.pojo.CategeoryRequest;
+import com.mobileoid2.celltone.pojo.QUERYREQUEST;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.SeparatorDecoration;
-import com.mobileoid2.celltone.view.activity.ContactActivity;
+import com.mobileoid2.celltone.view.activity.ChangeToolBarTitleListiner;
 import com.mobileoid2.celltone.view.adapter.CategoriesSongsRecyclerViewAdapter;
+import com.mobileoid2.celltone.view.adapter.QueryListAdapter;
 import com.mobileoid2.celltone.view.listener.IncomingOutgoingListener;
 import com.mobileoid2.celltone.view.listener.OnSongsClickLisner;
 
@@ -66,17 +69,28 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
+
 public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner, IncomingOutgoingListener, SeekBar.OnSeekBarChangeListener,
         View.OnClickListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, NetworkCallBack {
 
 
     private RecyclerView listSongs;
     private VideoView videoView;
+    private  CategoriesSongsRecyclerViewAdapter  categoriesSongsRecyclerViewAdapter;
     private ImageView preview, previous, playButton, playNext, iconAddTone;
     private TextView txtSongDuration, txtCurrentTime, txtTitle, txtArtistName;
     private ImageButton imageButtonMute;
     private SeekBar seekBar;
     private LinearLayout llMediaButton;
+    private int noCount =1;
+    private boolean loading = true;
     private int isVideoPlaying = 0;
     private Boolean isMute = false;
     StringBuilder mFormatBuilder;
@@ -98,7 +112,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     private int songPostion = 0;
     private String artistName;
     private UpdateSeekBarThread updateSeekBarThread;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private android.support.v7.widget.LinearLayoutManager mLayoutManager;
     private int isEdit = 0;
     private String mobileNo = "";
     private String name = "";
@@ -109,10 +123,16 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     private String sampleUrl = "";
     private AppDatabase appDatabase;
     private int currentSongPostion;
+    private  ChangeToolBarTitleListiner changeToolBarTitleListiner;
+    int skip =0;
+    int limit =10;
+    private int noOfPages =0;
+    int pastVisiblesItems, visibleItemCount, totalItemCount;
 
     public static ViewAllSongsFragment newInstance(Context context, List<Song> songList, int isAudio,
                                                    String type, String categoryId, int postion,
-                                                   int isEdit, String mobileNo, String name, int isIncoming, ContactEntity contactEntity) {
+                                                   int isEdit, String mobileNo, String name, int isIncoming,
+                                                   ContactEntity contactEntity, ChangeToolBarTitleListiner changeToolBarTitleListiner) {
         ViewAllSongsFragment fragment = new ViewAllSongsFragment();
         fragment.context = context;
         fragment.songList = songList;
@@ -124,6 +144,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         fragment.mobileNo = mobileNo;
         fragment.isIncoming = isIncoming;
         fragment.name = name;
+        fragment.changeToolBarTitleListiner=changeToolBarTitleListiner;
         fragment.contactEntity = contactEntity;
         return fragment;
 
@@ -156,13 +177,6 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         progressBar.setVisibility(View.GONE);
         mFormatBuilder = new StringBuilder();
         mFormatter = new Formatter(mFormatBuilder, Locale.getDefault());
-        SeparatorDecoration separatorDecoration = new SeparatorDecoration(getActivity(), Color.parseColor("#e8e8e8"), 1.5F);
-        mLayoutManager = new LinearLayoutManager(context);
-        listSongs.setLayoutManager(mLayoutManager);
-        listSongs.setItemAnimator(new DefaultItemAnimator());
-        listSongs.addItemDecoration(separatorDecoration);
-        listSongs.setAdapter(new CategoriesSongsRecyclerViewAdapter(context, songList, isAudio, this, this,
-                isEdit));
         videoPath = songList.get(postion).getSampleFileUrl();
         clipArt = songList.get(postion).getClipArtUrl();
 
@@ -172,11 +186,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
             previous.setEnabled(false);
 
         }
-        playVideo();
-        if (isAudio == 1)
-            preview.setVisibility(View.VISIBLE);
-        else
-            preview.setVisibility(View.GONE);
+        initalizeView();
 
         iconAddTone.setOnClickListener(this);
         previous.setOnClickListener(this);
@@ -206,6 +216,64 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         playButton.setOnClickListener(this);
         imageButtonMute.setOnClickListener(this);
         return view;
+    }
+    private void initalizeView()
+    {
+        SeparatorDecoration separatorDecoration = new SeparatorDecoration(getActivity(), Color.parseColor("#e8e8e8"), 1.5F);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        listSongs.setLayoutManager(mLayoutManager);
+        listSongs.setItemAnimator(new DefaultItemAnimator());
+        listSongs.addItemDecoration(separatorDecoration);
+        categoriesSongsRecyclerViewAdapter = new CategoriesSongsRecyclerViewAdapter(context, songList, isAudio, this, this,
+                isEdit);
+        listSongs.setAdapter(categoriesSongsRecyclerViewAdapter);
+        playVideo();
+        if (isAudio == 1)
+            preview.setVisibility(View.VISIBLE);
+        else
+            preview.setVisibility(View.GONE);
+
+
+        listSongs.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 0) //check for scroll down
+                {
+                    visibleItemCount = mLayoutManager.getChildCount();
+                    totalItemCount = mLayoutManager.getItemCount();
+                    pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+
+                    if (loading & noCount>skip)  {
+                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                            loading = false;
+                            skip = skip + limit;
+                            getSongList();
+
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+    private void getSongList()
+    {
+
+        CategeoryRequest categeoryRequest = new CategeoryRequest();
+        categeoryRequest.setLimit(limit);
+        categeoryRequest.setSkip(skip);
+        categeoryRequest.setCategoryId(categoryId);
+        categeoryRequest.setRequiredActive(true);
+        categeoryRequest.setOrderby("createdAt");
+        if(isAudio==1)
+            categeoryRequest.setMediaType("audio");
+        else
+            categeoryRequest.setMediaType("video");
+        categeoryRequest.setTerm("");
+
+        SendRequest.sendRequest(ApiConstant.VIDEOAPI, apiInterface.getSongs(SharedPrefrenceHandler.getInstance().getUSER_TOKEN(),
+                categeoryRequest), this);
+
     }
 
 
@@ -310,6 +378,61 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         currentSongPostion = songPostion;
         sendContact(id);
     }
+    private void  parseSong(String response)
+    {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(getSongList(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(UploadMediaObserver()));
+
+    }
+    private DisposableObserver<CategoryModel> UploadMediaObserver() {
+        return new DisposableObserver<CategoryModel>() {
+
+            @Override
+            public void onNext(CategoryModel modle) {
+                if(modle.getBody()!=null) {
+
+                    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+                    noCount = modle.getBody().getCount();
+                    categoriesSongsRecyclerViewAdapter.updateAdapter(modle.getBody().getData());
+
+                }
+                progressBar.setVisibility(View.GONE);
+
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+    private Observable<CategoryModel> getSongList(String response) {
+        Gson gsonObj = new Gson();
+        final CategoryModel categoryModel = gsonObj.fromJson(response, CategoryModel.class);
+
+        return Observable.create(new ObservableOnSubscribe<CategoryModel>() {
+            @Override
+            public void subscribe(ObservableEmitter<CategoryModel> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(categoryModel);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
 
     @Override
     public void getResponse(JsonResponse response, int type) {
@@ -318,6 +441,10 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
             switch (type) {
                 case ApiConstant.SET_MEDIA_FOR_CONTACT:
                     parseSaveContactResponse(response.getObject());
+                    break;
+                case ApiConstant.VIDEOAPI:
+                    parseSong(response.getObject());
+                    break;
 
 
             }
@@ -326,6 +453,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
             progressBar.setVisibility(View.GONE);
 
     }
+
 
     private void parseSaveContactResponse(String response) {
         new AsyncTask<Void, Void, Integer>() {
@@ -577,7 +705,11 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
     private void setRingTone(int callType, Song song) {
 
-        Intent intent = new Intent(getActivity(), ContactActivity.class);
+       // Intent intent = new Intent(getActivity(), ContactActivity.class);
+        if(callType==1)
+        changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Outgoing)",song.getTitle());
+        else
+            changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Incoming)",song.getTitle());
         Fragment fragment = ContactsFragment.newInstance(song, callType, isAudio, 0);
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);

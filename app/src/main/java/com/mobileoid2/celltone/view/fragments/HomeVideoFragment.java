@@ -141,7 +141,7 @@ public class HomeVideoFragment extends Fragment {
                     //Put your font in assests folder
                     //assign name of the font here (Must be case sensitive)
                     ((TextView) tabViewChild).setTypeface(Typeface.createFromAsset(getActivity().getAssets(),
-                            "fonts/OPTIMA.TTF"));
+                            "fonts/ProximaNova-Regular.otf"));
                 }
             }
         }

@@ -30,6 +30,7 @@ import com.mobileoid2.celltone.network.model.upload_media_list.UploadMediaListMo
 import com.mobileoid2.celltone.pojo.QUERYREQUEST;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
+import com.mobileoid2.celltone.view.activity.ComposeQueryActivity;
 import com.mobileoid2.celltone.view.activity.QueryListActivity;
 import com.mobileoid2.celltone.view.adapter.MediaUploadAdapter;
 import com.mobileoid2.celltone.view.adapter.QueryListAdapter;
@@ -77,6 +78,12 @@ public class QueryListFragment extends Fragment implements NetworkCallBack,Query
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
         mLayoutManager = new LinearLayoutManager(getActivity());
         getQueryList();
+        fabCompose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().startActivity(new Intent(getActivity(), ComposeQueryActivity.class));
+            }
+        });
         recyleViewQuery.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -90,8 +97,7 @@ public class QueryListFragment extends Fragment implements NetworkCallBack,Query
                         if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
                             loading = false;
 
-                            skip = limit + 1;
-                            limit =limit+10;
+                            skip = skip + limit;
                             getQueryList();
 
                         }
