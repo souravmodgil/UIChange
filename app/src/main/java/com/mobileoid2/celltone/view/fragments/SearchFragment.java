@@ -2,12 +2,8 @@ package com.mobileoid2.celltone.view.fragments;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -19,16 +15,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.database.AppDatabase;
@@ -50,6 +40,7 @@ import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.SeparatorDecoration;
 import com.mobileoid2.celltone.view.activity.ChangeToolBarTitleListiner;
 import com.mobileoid2.celltone.view.adapter.CategoriesSongsRecyclerViewAdapter;
+import com.mobileoid2.celltone.view.adapter.SearchAdapter;
 import com.mobileoid2.celltone.view.listener.IncomingOutgoingListener;
 import com.mobileoid2.celltone.view.listener.OnSongsClickLisner;
 
@@ -79,13 +70,12 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
 
     private RecyclerView listSongs;
     private TextView txtSearchCount,txtSongName;
-    private CategoriesSongsRecyclerViewAdapter categoriesSongsRecyclerViewAdapter;
+    private int isAudio =0;
+    private SearchAdapter searchAdapter;
     StringBuilder mFormatBuilder;
     private ProgressBar mediaPlayerProgressBar, progressBar;
     Formatter mFormatter;
     private List<Song> songList;
-    private int isAudio;
-    private String categoryId;
     private Context context;
     private int postion;
     private android.support.v7.widget.LinearLayoutManager mLayoutManager;
@@ -100,21 +90,15 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
     private AppDatabase appDatabase;
     private int currentSongPostion;
     private ChangeToolBarTitleListiner changeToolBarTitleListiner;
-    private String type ="";
     private String terms = "";
 
-    public static SearchFragment newInstance(Context context, List<Song> songList, int isAudio,
-                                             String type, String categoryId, int postion,
+    public static SearchFragment newInstance(Context context,
                                              int isEdit, String mobileNo, String name, int isIncoming,
-                                             ContactEntity contactEntity, ChangeToolBarTitleListiner changeToolBarTitleListiner,String terms) {
+                                             ContactEntity contactEntity, ChangeToolBarTitleListiner changeToolBarTitleListiner,
+                                             String terms) {
         SearchFragment fragment = new SearchFragment();
         fragment.context = context;
-        fragment.songList = songList;
-        fragment.isAudio = isAudio;
-        fragment.categoryId = categoryId;
         fragment.terms =terms;
-        fragment.type = type;
-        fragment.postion = postion;
         fragment.isEdit = isEdit;
         fragment.mobileNo = mobileNo;
         fragment.isIncoming = isIncoming;
@@ -147,13 +131,15 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
 
     private void initalizeView() {
         SeparatorDecoration separatorDecoration = new SeparatorDecoration(getActivity(), Color.parseColor("#e8e8e8"), 1.5F);
+        txtSearchCount.setText(+songList.size()+ " Result found for");
+        txtSongName.setText(terms);
         mLayoutManager = new LinearLayoutManager(getActivity());
         listSongs.setLayoutManager(mLayoutManager);
         listSongs.setItemAnimator(new DefaultItemAnimator());
         listSongs.addItemDecoration(separatorDecoration);
-        categoriesSongsRecyclerViewAdapter = new CategoriesSongsRecyclerViewAdapter(context, songList, isAudio, this, this,
+        searchAdapter = new SearchAdapter(context, songList, isAudio, this, this,
                 isEdit);
-        listSongs.setAdapter(categoriesSongsRecyclerViewAdapter);
+        listSongs.setAdapter(searchAdapter);
 
 
 
@@ -164,15 +150,10 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
         CategeoryRequest categeoryRequest = new CategeoryRequest();
         categeoryRequest.setLimit(0);
         categeoryRequest.setSkip(0);
-        categeoryRequest.setCategoryId(categoryId);
+        categeoryRequest.setCategoryId(null);
         categeoryRequest.setRequiredActive(true);
         categeoryRequest.setOrderby("createdAt");
-        if (isAudio == 1)
-            categeoryRequest.setMediaType("audio");
-        else
-            categeoryRequest.setMediaType("video");
         categeoryRequest.setTerm(terms);
-
         SendRequest.sendRequest(ApiConstant.VIDEOAPI, apiInterface.getSongs(SharedPrefrenceHandler.getInstance().getUSER_TOKEN(),
                 categeoryRequest), this);
 
@@ -210,7 +191,7 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
 
 
     @Override
-    public void setMedia(String id, String url, int songPostion) {
+    public void setMedia(String id, String url, int songPostion ) {
         mediaId = id;
         this.sampleUrl = sampleUrl;
         currentSongPostion = songPostion;
@@ -314,7 +295,7 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
                         ringtoneEntity.setActionType("self");
                         ringtoneEntity.setNumber(mobileNo);
                         ringtoneEntity.setSampleFileUrl(sampleUrl);
-                        long id = appDatabase.daoRingtone().insertAll(ringtoneEntity);
+                        long id = appDatabase.daoRingtone().insert(ringtoneEntity);
                         if (id == -1) {
                             appDatabase.daoRingtone().update(ringtoneEntity);
                         }
@@ -469,12 +450,13 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
     }
 
     private void setRingTone(int callType, Song song) {
-
         // Intent intent = new Intent(getActivity(), ContactActivity.class);
         if (callType == 1)
             changeToolBarTitleListiner.setTitle("Set Ringtone" + "(Outgoing)", song.getTitle());
         else
             changeToolBarTitleListiner.setTitle("Set Ringtone" + "(Incoming)", song.getTitle());
+        if(song.getContentType().equals("audio"))
+            isAudio=1;
         Fragment fragment = ContactsFragment.newInstance(song, callType, isAudio, 0);
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);

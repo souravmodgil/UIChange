@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.mobileoid2.celltone.Util.AppUtils;
 import com.mobileoid2.celltone.utility.AudioPlayerTest;
+import com.mobileoid2.celltone.utility.Utils;
 
 import java.util.Iterator;
 
@@ -23,73 +24,23 @@ public class NotificationListener extends NotificationListenerService {
 
     int iSamsungCallUIAppeared = 0;
 
-    /*@Override
+    @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
 
-        String pack = sbn.getPackageName();
-        String ticker = "";
-        String title = "";
-        String text = "";
-        String category = "";
+        Bundle extras = sbn.getNotification().extras;
 
-
-        Notification notification = sbn.getNotification();
-        if (notification != null) {
-            ticker = "" + notification.tickerText;
-            Bundle extras = sbn.getNotification().extras;
-            title = extras.getString("android.title");
-            text = "" + extras.getCharSequence("android.text");
-            category = "" + notification.category;
-
-            System.out.println("NotificationListener.onNotificationPosted" +
-                    sbn.getPackageName() + "\t" +
-                    sbn.getTag() + "\t" +
-                    ticker + "\t" +
-                    text + "\t" +
-                    category + "\t"
-            );
-        }
-        Log.e(TAG, "text :: mycompanyapplicationserchtext " + text + " mycompanyapplicationserchtext");
-
-
-        if (ticker != null) {
-            StringBuffer stringBuffer = new StringBuffer(ticker);
-            StringBuffer newStringBuffer = new StringBuffer(stringBuffer.toString().replaceAll("[\r\n]+", ""));
-            ticker = newStringBuffer.toString();
-        }
-
-        if (title != null) {
-            StringBuffer stringBuffer = new StringBuffer(title);
-            StringBuffer newStringBuffer = new StringBuffer(stringBuffer.toString().replaceAll("[\r\n]+", ""));
-            title = newStringBuffer.toString();
-        }
-
-        if (text != null) {
-            StringBuffer stringBuffer = new StringBuffer(text);
-            StringBuffer newStringBuffer = new StringBuffer(stringBuffer.toString().replaceAll("[\r\n]+", ""));
-            text = newStringBuffer.toString();
-        }
-
-        Log.e(TAG, "ticker :: mycompanyapplicationserchtext " + ticker + " mycompanyapplicationserchtext");
-        Log.e(TAG, "title :: mycompanyapplicationserchtext " + title + " mycompanyapplicationserchtext");
-        Log.e(TAG, "text :: mycompanyapplicationserchtext " + text + " mycompanyapplicationserchtext");
-        Log.e(TAG, "category :: mycompanyapplicationserchtext " + category + " mycompanyapplicationserchtext");
-
-
-        text = text.trim();
-        text = text.replaceAll("-", "");
-        text = text.replaceAll(" ", "");
-        text = text.toLowerCase();
-
-        if (text.equals("ongoingcall")) {
-            if (isMyServiceRunning(getApplicationContext(), ServicePlayMusicOnCall.class)) {
-                stopService(new Intent(this, ServicePlayMusicOnCall.class));
-                Log.e(TAG, "Main Service called");
+        if ("Ongoing call".equals(extras.getString(Notification.EXTRA_TEXT))) {
+            Toast.makeText(this,"Call picked",Toast.LENGTH_LONG).show();
+            if (Utils.isMyServiceRunning(getApplicationContext(), OverlayShowingService.class)) {
+                Toast.makeText(this,"Call picked",Toast.LENGTH_LONG).show();
+                stopService(new Intent(this, OverlayShowingService.class));
+                Log.e("myaccess", "Main Service called");
             }
         }
 
 
-    }*/
+
+    }
 
     private boolean isMyServiceRunning(Context ctx, Class<?> serviceClass) {
         try {
@@ -116,66 +67,6 @@ public class NotificationListener extends NotificationListenerService {
     }
 
 
-    @Override
-
-    public void onNotificationPosted(StatusBarNotification sbn) {
-
-
-//        if (!isMyServiceRunning(getApplicationContext(), ServicePlayMusicOnCall.class)) {
-//            return;
-//        }
-
-        String pack = sbn.getPackageName();
-//        String ticker = sbn.getNotification().tickerText.toString();
-        Bundle extras = sbn.getNotification().extras;
-
-        String title = extras.getString("android.title");
-
-        Log.e(TAG, "NotificationService.onNotificationPosted-----" + pack + "\tcom.android.incallui+\t" + "\t");
-        //if ("Ongoing call".equals(extras.getString(Notification.EXTRA_TEXT)))
-        if (pack.contains("com.android.incallui")) {
-            ++iSamsungCallUIAppeared;
-        }
-
-        if (iSamsungCallUIAppeared >= 4) {
-
-         //   showToast();
-            iSamsungCallUIAppeared = 0;
-        }
-      /*
-        String text = extras.getCharSequence("android.text").toString();
-
-       */
-        final Iterator<String> iterator = (Iterator<String>) extras.keySet().iterator();
-
-        while (iterator.hasNext()) {
-
-//            System.out.println("NotificationService.onNotificationPosted-------"+s2+"\t\t"+iterator.next());
-
-            final String s2 = iterator.next();//""+extras.getCharSequence(iterator.next());
-
-
-            boolean isCallAnswered = checkCall("ongoing call", s2);
-
-            if (isCallAnswered) {
-                ///////call is answered
-                Log.e(TAG, "NotificationService.onNotificationPosted-------" + s2);
-                //showToast();
-            }
-
-
-            if (!isCallAnswered) {
-                if (checkCall("com.samsung.android.incallui", s2)) {
-                    ///////call is answered
-                    Log.e(TAG, "NotificationService.onNotificationPosted-------" + s2);
-                   // showToast();
-                }
-
-            }
-
-
-        }
-    }
 
 //    private void showToast() {
 //

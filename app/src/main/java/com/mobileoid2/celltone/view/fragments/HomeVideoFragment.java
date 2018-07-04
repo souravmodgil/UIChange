@@ -1,6 +1,7 @@
 package  com.mobileoid2.celltone.view.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -22,6 +23,7 @@ import com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.database.ContactEntity;
 import com.mobileoid2.celltone.network.model.treadingMedia.Category;
+import com.mobileoid2.celltone.view.activity.PlanActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,25 +100,24 @@ public class HomeVideoFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home_video, container, false);
         ViewPager viewPager = (ViewPager) view.findViewById(R.id.viewpager);
         setupViewPager(viewPager);
-        OptimaBoldTextview textView = view.findViewById(R.id.txt_register_now);
+        TextView txtRegisterNow = view.findViewById(R.id.txt_register_now);
         SpannableString content = new SpannableString(getString(R.string.register_now));
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-        textView.setText(content);
+        txtRegisterNow.setText(content);
 
         tabLayout = (TabLayout) view.findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FFFFFF"));
         tabLayout.setSelectedTabIndicatorHeight((int) (5 * getResources().getDisplayMetrics().density));
         tabLayout.setTabTextColors(Color.parseColor("#adadad"), Color.parseColor("#000000"));
-//        if(isEdit==1) {
-//            cvFooter.setVisibility(View.VISIBLE);
-//            if(isIncoming==1)
-//            txtFooter.setText(getString(R.string.update_incoming_media_text)+name);
-//            else
-//                txtFooter.setText(getString(R.string.update_outgoing_media_text)+name);
-//        }
-//        else
-//            cvFooter.setVisibility(View.GONE);
+
+        txtRegisterNow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), PlanActivity.class));
+
+            }
+        });
 
 
             setCustomFont();

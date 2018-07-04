@@ -191,6 +191,8 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
     {
         List<ContactEntity> contactList = new ArrayList<>();
+        List<RingtoneEntity> ringtoneEntities = new ArrayList<>();
+
         if (contactsMedia != null) {
             int length = contactsMedia.getBody().size();
             ContactEntity contactEntity;
@@ -199,6 +201,26 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
                 contactEntity = new ContactEntity();
                 String mobileno = contactsMedia.getBody().get(i).getMobile();
+                Incommingother incommingother ;
+                incommingother =contactsMedia.getBody().get(i).getOutgoingself();
+                if(incommingother!=null)
+                {
+                    RingtoneEntity ringtoneEntity = new RingtoneEntity();
+                    if (incommingother.getContentType().equals("video"))
+                        ringtoneEntity.setContentType("video");
+                         else
+                        ringtoneEntity.setContentType("audio");
+
+
+                    ringtoneEntity.setMediaId(incommingother.getId());
+                    ringtoneEntity.setActionType("self");
+                    ringtoneEntity.setNumber(mobileno);
+                    ringtoneEntity.setSampleFileUrl(incommingother.getSampleFileUrl());
+                    ringtoneEntities.add(ringtoneEntity);
+
+
+
+                }
                 //   "[^a-zA-Z]+", " "
                 String name = contactMap.get(mobileno);
                 contactEntity.setNumber(mobileno);
@@ -206,6 +228,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                     contactEntity.setName(name);
                 else
                     contactEntity.setName(mobileno);
+
 
 
                 if (contactsMedia.getBody().get(i).getIncommingother() instanceof Incommingother &&
@@ -240,6 +263,8 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
             }
             appDatabase.daoContacts().insertAll(contactList);
+            appDatabase.daoRingtone().insertAll(ringtoneEntities);
+
 
 
         }
@@ -559,6 +584,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
     }
 
     private void parseSaveContactResponse(String response) {
+
         new AsyncTask<Void, Void, Integer>() {
             @Override
             protected Integer doInBackground(Void... voids) {
@@ -581,7 +607,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                             ringtoneEntity.setActionType("self");
                             ringtoneEntity.setNumber(selectedContacts.get(i).getPhoneNumber());
                             ringtoneEntity.setSampleFileUrl(songs.getSampleFileUrl());
-                            long id = appDatabase.daoRingtone().insertAll(ringtoneEntity);
+                            long id = appDatabase.daoRingtone().insert(ringtoneEntity);
                             if (id == -1) {
                                 appDatabase.daoRingtone().update(ringtoneEntity);
                             }
@@ -620,87 +646,21 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             protected void onPostExecute(Integer status) {
                 super.onPostExecute(status);
                 if (status == 1000)
-                    new DownloadTask(getActivity().getApplicationContext()).execute(songs.getSampleFileUrl());
+                {
+                    Utils utils = new Utils();
+                    utils.download(getActivity(),songs.getSampleFileUrl());
+                    Toast.makeText(getActivity(), "Song set  successfully", Toast.LENGTH_LONG).show();
+                    getActivity().onBackPressed();
+
+                }
+                  //  new DownloadTask(getActivity().getApplicationContext()).execute(songs.getSampleFileUrl());
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), "Song set  successfully", Toast.LENGTH_LONG).show();
 
 
             }
         }.execute();
     }
 
-    private class DownloadTask extends AsyncTask<String, Integer, String> {
-
-        private Context context;
-        private PowerManager.WakeLock mWakeLock;
-
-        public DownloadTask(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected String doInBackground(String... sUrl) {
-
-            File directoryToZip = new File(Utils.getFilePath(context));
-            downloadFiles(directoryToZip, sUrl[0]);
-            return null;
-        }
-
-
-        private boolean downloadFiles(File directoryToZip, String filePath) {
-            InputStream input = null;
-            OutputStream output = null;
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL(ApiConstant.MEDIA_URL + filePath);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-
-                // expect HTTP 200 OK, so we don't mistakenly save error report
-                // instead of the file
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return true;
-                }
-                // this will be useful to display download percentage
-                // might be -1: server did not report the length
-                int fileLength = connection.getContentLength();
-                // download the file
-                input = connection.getInputStream();
-
-                File file = new File(directoryToZip.getPath() + File.separator + "" + filePath.split("/")[0]);
-                file.mkdirs();
-                File outputFile = new File(file, filePath.split("/")[1]);
-                output = new FileOutputStream(outputFile);
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    // allow canceling with back button
-                    if (isCancelled()) {
-                        input.close();
-                        break;
-                    }
-                    total += count;
-                    // publishing the progress....
-                    if (fileLength > 0) // only if total length is known
-                        publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return true;
-            } finally {
-                try {
-                    if (output != null) output.close();
-                    if (input != null) input.close();
-                } catch (IOException ignored) {
-                }
-
-                if (connection != null) connection.disconnect();
-            }
-            return false;
-        }
-    }
 
 
     @Override
@@ -757,6 +717,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             //CHANGE TO UPPER
             constraint = constraint.toString().toUpperCase();
             //STORE OUR FILTERED PLAYERS
+            //7217642972
 
 
             for (int i = 0; i < contactList.size(); i++) {
@@ -768,8 +729,10 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 }
             }
         }
-        myContactsRecyclerViewAdapter.updateAdater(contactFilterList, length);
-        submitButton.setVisibility(View.VISIBLE);
+        if(contactFilterList!=null) {
+            myContactsRecyclerViewAdapter.updateAdater(contactFilterList, length);
+            submitButton.setVisibility(View.VISIBLE);
+        }
 
 
     }
@@ -793,8 +756,10 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
-                submitButton.setVisibility(View.GONE);
-                filterList(query);
+                if(contactList!=null && contactList.size()>0) {
+                    submitButton.setVisibility(View.GONE);
+                    filterList(query);
+                }
                 return false;
             }
 

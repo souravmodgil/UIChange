@@ -11,7 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.mobileoid2.celltone.R;
-import  com.mobileoid2.celltone.view.fragments.FragmentMusicUpload;
+import com.mobileoid2.celltone.view.fragments.FragmentMusicUpload;
 import com.splunk.mint.Mint;
 
 import java.util.List;
@@ -24,6 +24,8 @@ public class UploadActivity extends AppCompatActivity {
             Manifest.permission.MODIFY_AUDIO_SETTINGS};
 
     public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+    public static   int isPopupVisible =0 ;
+    FragmentMusicUpload fragmentMusicUpload;
 
 
     @Override
@@ -41,11 +43,12 @@ public class UploadActivity extends AppCompatActivity {
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getString(R.string.upload));
-        Fragment fragment = FragmentMusicUpload.newInstance();
+        fragmentMusicUpload = FragmentMusicUpload.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.content_frame, fragment);
+        fragmentTransaction.replace(R.id.content_frame, fragmentMusicUpload);
         fragmentTransaction.commit();
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -57,6 +60,7 @@ public class UploadActivity extends AppCompatActivity {
         }
 
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -71,18 +75,24 @@ public class UploadActivity extends AppCompatActivity {
     private void onBack()
 
     {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 1)
+        if (getSupportFragmentManager().getBackStackEntryCount() >= 1)
             super.onBackPressed();
-        else
+        else {
+            if(isPopupVisible==1)
+            {
+                isPopupVisible=0;
+                fragmentMusicUpload.hidePopup();
+
+            }
+                else
             finish();
+        }
     }
 
     @Override
     public void onBackPressed() {
         onBack();
     }
-
-
 
 
 }

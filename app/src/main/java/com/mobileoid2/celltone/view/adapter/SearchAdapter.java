@@ -10,26 +10,19 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.ApiInterface;
-import com.mobileoid2.celltone.network.NetworkCallBack;
-import com.mobileoid2.celltone.network.SendRequest;
-import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
-import com.mobileoid2.celltone.network.model.contacts.SendContactsModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
-import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.view.listener.IncomingOutgoingListener;
 import com.mobileoid2.celltone.view.listener.OnSongsClickLisner;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class CategoriesSongsRecyclerViewAdapter extends RecyclerView.Adapter<CategoriesSongsRecyclerViewAdapter.ViewHolder>
+public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder>
 {
 
     private final List<Song> mValues;
@@ -44,7 +37,7 @@ public class CategoriesSongsRecyclerViewAdapter extends RecyclerView.Adapter<Cat
 
 
 
-    public CategoriesSongsRecyclerViewAdapter(Context context, List<Song> items, int isAudio, OnSongsClickLisner listener,
+    public SearchAdapter(Context context, List<Song> items, int isAudio, OnSongsClickLisner listener,
                                               IncomingOutgoingListener incomingOutgoingListener, int isEdit) {
         mcontext = context;
         mValues = items;
@@ -57,21 +50,27 @@ public class CategoriesSongsRecyclerViewAdapter extends RecyclerView.Adapter<Cat
 
 
     @Override
-    public CategoriesSongsRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SearchAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_category, parent, false);
-        return new CategoriesSongsRecyclerViewAdapter.ViewHolder(view);
+        return new SearchAdapter.ViewHolder(view);
     }
     public void updateAdapter(List<Song> songList)
     {
         mValues.addAll(mValues.size()-1,songList);
+        notifyDataSetChanged();
     }
 
     @Override
-    public void onBindViewHolder(final CategoriesSongsRecyclerViewAdapter.ViewHolder holder, final int position) {
+    public void onBindViewHolder(final SearchAdapter.ViewHolder holder, final int position) {
         holder.mItem = mValues.get(position);
         holder.artistName.setText(holder.mItem.getArtistName());
         //holder.mIdView.setText(mValues.get(position).id);
         holder.mContentView.setText(holder.mItem.getTitle());
+        if (holder.mItem.getContentType().equals("audio"))
+            holder.mContentView.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.audio_icon,0);
+        else
+            holder.mContentView.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.video_icon,0);
+
         Glide.with(mcontext).load(ApiConstant.MEDIA_URL + holder.mItem.getClipArtUrl()).into(holder.video_thumb);
         holder.llMain.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -200,5 +200,6 @@
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-analytics-impl-16.0.0" level="project" />
     <orderEntry type="library" name="Gradle: com.github.bumptech.glide:disklrucache:4.5.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.github.bumptech.glide:gifdecoder-4.5.0" level="project" />
+    <orderEntry type="module" module-name="ffmpeg4android_lib" />
   </component>
 </module>

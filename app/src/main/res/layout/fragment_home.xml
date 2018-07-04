@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.HomeFragment">
+    tools:context=".view.fragments.HomeFragment">
 
 
     <android.support.v4.view.ViewPager
@@ -56,13 +56,12 @@
                             android:id="@+id/mt_nav"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:background="?selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:scaleType="center"
                             app:srcCompat="@drawable/ic_menu_options"
                             android:visibility="visible" />
 
-                        <TextView
+                        <com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView
                             android:id="@+id/mt_placeholder"
                             android:layout_width="wrap_content"
                             android:layout_height="48dp"
@@ -83,20 +82,19 @@
                             android:layout_height="48dp"
                             android:layout_toLeftOf="@+id/ll_right"
                             android:layout_toStartOf="@+id/ll_right"
+                            android:layout_toRightOf="@+id/mt_nav"
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
-                            android:visibility="gone">
+                           >
+
 
                             <ImageView
-                                android:id="@+id/mt_arrow"
+                                android:id="@+id/mt_clear"
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
-                                android:background="?attr/selectableItemBackground"
-                                android:clickable="true"
                                 android:padding="12dp"
-                                android:src="@drawable/ic_arrow_left_black_48dp"
-                                android:visibility="visible" />
-
+                                android:visibility="gone"
+                                android:src="@drawable/ic_close_black_48dp" />
                             <EditText
                                 android:id="@+id/mt_editText"
                                 android:layout_width="0dp"
@@ -106,20 +104,12 @@
                                 android:layout_weight="1"
                                 android:background="@android:color/transparent"
                                 android:hint="@string/action_search"
-                                android:imeOptions="flagNoExtractUi|actionSearch"
                                 android:inputType="text"
                                 android:maxLines="1"
                                 android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:textCursorDrawable="@drawable/color_cursor"
+                                android:textCursorDrawable="@color/colorPrimary"
                                 android:visibility="visible" />
 
-                            <ImageView
-                                android:id="@+id/mt_clear"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:background="?selectableItemBackgroundBorderless"
-                                android:padding="12dp"
-                                android:src="@drawable/ic_close_black_48dp" />
 
                         </LinearLayout>
 
@@ -139,15 +129,6 @@
                                 android:src="@drawable/search_icon"
                                 />
 
-                            <ImageView
-                                android:id="@+id/mt_menu"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_alignParentRight="true"
-                                android:layout_toRightOf="@+id/mt_search"
-                                android:padding="12dp"
-                                android:src="@drawable/ic_dots_vertical_black_48dp" />
 
                         </LinearLayout>
 

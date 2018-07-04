@@ -70,7 +70,7 @@ public class PlanActivity extends AppCompatActivity implements ChangeToolBarTitl
     private void onBack()
 
     {
-        if( getSupportFragmentManager().getBackStackEntryCount()>1)
+        if( getSupportFragmentManager().getBackStackEntryCount()>=1)
             super.onBackPressed();
         else
             finish();

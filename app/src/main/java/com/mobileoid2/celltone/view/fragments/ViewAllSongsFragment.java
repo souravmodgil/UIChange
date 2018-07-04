@@ -1,6 +1,7 @@
 package com.mobileoid2.celltone.view.fragments;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioManager;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -48,6 +50,7 @@ import com.mobileoid2.celltone.network.model.feedback.FeedBackModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.pojo.CategeoryRequest;
 import com.mobileoid2.celltone.pojo.QUERYREQUEST;
+import com.mobileoid2.celltone.pojo.getmedia.Body;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.SeparatorDecoration;
@@ -83,13 +86,14 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
     private RecyclerView listSongs;
     private VideoView videoView;
-    private  CategoriesSongsRecyclerViewAdapter  categoriesSongsRecyclerViewAdapter;
+    private CategoriesSongsRecyclerViewAdapter categoriesSongsRecyclerViewAdapter;
     private ImageView preview, previous, playButton, playNext, iconAddTone;
     private TextView txtSongDuration, txtCurrentTime, txtTitle, txtArtistName;
     private ImageButton imageButtonMute;
     private SeekBar seekBar;
     private LinearLayout llMediaButton;
-    private int noCount =1;
+    private AppCompatButton setButton;
+    private int noCount = 1;
     private boolean loading = true;
     private int isVideoPlaying = 0;
     private Boolean isMute = false;
@@ -123,10 +127,10 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     private String sampleUrl = "";
     private AppDatabase appDatabase;
     private int currentSongPostion;
-    private  ChangeToolBarTitleListiner changeToolBarTitleListiner;
-    int skip =0;
-    int limit =10;
-    private int noOfPages =0;
+    private ChangeToolBarTitleListiner changeToolBarTitleListiner;
+    int skip = 0;
+    int limit = 10;
+    private int noOfPages = 0;
     int pastVisiblesItems, visibleItemCount, totalItemCount;
 
     public static ViewAllSongsFragment newInstance(Context context, List<Song> songList, int isAudio,
@@ -144,7 +148,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         fragment.mobileNo = mobileNo;
         fragment.isIncoming = isIncoming;
         fragment.name = name;
-        fragment.changeToolBarTitleListiner=changeToolBarTitleListiner;
+        fragment.changeToolBarTitleListiner = changeToolBarTitleListiner;
         fragment.contactEntity = contactEntity;
         return fragment;
 
@@ -166,6 +170,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         playButton = view.findViewById(R.id.play_button);
         playNext = view.findViewById(R.id.play_next);
         iconAddTone = view.findViewById(R.id.icon_add_tone);
+        setButton = view.findViewById(R.id.set_button);
         llMediaButton = view.findViewById(R.id.ll_media_button);
         txtSongDuration = view.findViewById(R.id.txt_song_duration);
         txtCurrentTime = view.findViewById(R.id.txt_current_time);
@@ -186,7 +191,16 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
             previous.setEnabled(false);
 
         }
+        if (isEdit == 1) {
+            iconAddTone.setVisibility(View.GONE);
+            setButton.setVisibility(View.VISIBLE);
+        } else if (isEdit == 0) {
+            iconAddTone.setVisibility(View.VISIBLE);
+            setButton.setVisibility(View.GONE);
+        }
+
         initalizeView();
+
 
         iconAddTone.setOnClickListener(this);
         previous.setOnClickListener(this);
@@ -200,6 +214,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                 // TODO Auto-generated method stub
                 if (isAudio == 1)
                     mediaPlayerProgressBar.setVisibility(View.GONE);
+                llMediaButton.setVisibility(View.VISIBLE);
                 videoView.start();
                 mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
                     @Override
@@ -215,10 +230,11 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         //  listSongs.addOnScrollListener(this);
         playButton.setOnClickListener(this);
         imageButtonMute.setOnClickListener(this);
+        setButton.setOnClickListener(this::onClick);
         return view;
     }
-    private void initalizeView()
-    {
+
+    private void initalizeView() {
         SeparatorDecoration separatorDecoration = new SeparatorDecoration(getActivity(), Color.parseColor("#e8e8e8"), 1.5F);
         mLayoutManager = new LinearLayoutManager(getActivity());
         listSongs.setLayoutManager(mLayoutManager);
@@ -243,7 +259,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                     totalItemCount = mLayoutManager.getItemCount();
                     pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
-                    if (loading & noCount>skip)  {
+                    if (loading & noCount > skip) {
                         if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
                             loading = false;
                             skip = skip + limit;
@@ -256,8 +272,8 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         });
 
     }
-    private void getSongList()
-    {
+
+    private void getSongList() {
 
         CategeoryRequest categeoryRequest = new CategeoryRequest();
         categeoryRequest.setLimit(limit);
@@ -265,7 +281,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         categeoryRequest.setCategoryId(categoryId);
         categeoryRequest.setRequiredActive(true);
         categeoryRequest.setOrderby("createdAt");
-        if(isAudio==1)
+        if (isAudio == 1)
             categeoryRequest.setMediaType("audio");
         else
             categeoryRequest.setMediaType("video");
@@ -367,19 +383,18 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                 pojoSetMediaRequest), this);
 
 
-
     }
 
 
     @Override
     public void setMedia(String id, String url, int songPostion) {
         mediaId = id;
-        this.sampleUrl = sampleUrl;
+        this.sampleUrl = url;
         currentSongPostion = songPostion;
         sendContact(id);
     }
-    private void  parseSong(String response)
-    {
+
+    private void parseSong(String response) {
         CompositeDisposable disposable = new CompositeDisposable();
         disposable.add(getSongList(response)
                 .subscribeOn(Schedulers.io())
@@ -387,12 +402,13 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                 .subscribeWith(UploadMediaObserver()));
 
     }
+
     private DisposableObserver<CategoryModel> UploadMediaObserver() {
         return new DisposableObserver<CategoryModel>() {
 
             @Override
             public void onNext(CategoryModel modle) {
-                if(modle.getBody()!=null) {
+                if (modle.getBody() != null) {
 
                     RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
                     noCount = modle.getBody().getCount();
@@ -443,7 +459,9 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                     parseSaveContactResponse(response.getObject());
                     break;
                 case ApiConstant.VIDEOAPI:
+                    loading = true;
                     parseSong(response.getObject());
+
                     break;
 
 
@@ -456,145 +474,11 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
 
     private void parseSaveContactResponse(String response) {
-        new AsyncTask<Void, Void, Integer>() {
-            @Override
-            protected Integer doInBackground(Void... voids) {
-                int status = 0;
-                Gson gsonObj = new Gson();
-                SaveContactsResponse saveContactsResponse = gsonObj.fromJson(response, SaveContactsResponse.class);
-                status = saveContactsResponse.getStatus();
-                if (status == 1000) {
+        Utils utils = new Utils();
+        utils.parseSaveContactResponse(getActivity(), response, isIncoming, isAudio, mediaId, mobileNo, sampleUrl, appDatabase, contactEntity,
+                songList, currentSongPostion, progressBar);
 
 
-                    if (isIncoming == 0) {
-
-                        RingtoneEntity ringtoneEntity = new RingtoneEntity();
-                        if (isAudio == 1)
-                            ringtoneEntity.setContentType("audio");
-                        else
-                            ringtoneEntity.setContentType("video");
-                        ringtoneEntity.setMediaId(mediaId);
-                        ringtoneEntity.setActionType("self");
-                        ringtoneEntity.setNumber(mobileNo);
-                        ringtoneEntity.setSampleFileUrl(sampleUrl);
-                        long id = appDatabase.daoRingtone().insertAll(ringtoneEntity);
-                        if (id == -1) {
-                            appDatabase.daoRingtone().update(ringtoneEntity);
-                        }
-
-
-                        if (isAudio == 0)
-                            contactEntity.setOutgoingIsVideo(1);
-                        else
-                            contactEntity.setOutgoingIsVideo(0);
-                        contactEntity.setOutgoingSongName(songList.get(currentSongPostion).getTitle());
-                        contactEntity.setIsOutgoing(1);
-                        contactEntity.setOutgoingArtistName(songList.get(currentSongPostion).getArtistName());
-
-
-                    } else {
-                        if (isAudio == 0)
-                            contactEntity.setOutgoingIsVideo(1);
-                        else
-                            contactEntity.setOutgoingIsVideo(0);
-                        contactEntity.setIncomingSongName(songList.get(currentSongPostion).getTitle());
-                        contactEntity.setIsIncoming(1);
-                        contactEntity.setInComingArtistName(songList.get(currentSongPostion).getArtistName());
-
-                    }
-                }
-
-
-                appDatabase.daoContacts().update(contactEntity);
-
-
-                return status;
-            }
-
-            @Override
-            protected void onPostExecute(Integer status) {
-                super.onPostExecute(status);
-                if (status == 1000)
-                    new DownloadTask(getActivity().getApplicationContext()).execute(sampleUrl);
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), "Song set  successfully", Toast.LENGTH_LONG).show();
-
-
-            }
-        }.execute();
-    }
-
-    private class DownloadTask extends AsyncTask<String, Integer, String> {
-
-        private Context context;
-        private PowerManager.WakeLock mWakeLock;
-
-        public DownloadTask(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected String doInBackground(String... sUrl) {
-
-            File directoryToZip = new File(Utils.getFilePath(context));
-            downloadFiles(directoryToZip, sUrl[0]);
-            return null;
-        }
-
-
-        private boolean downloadFiles(File directoryToZip, String filePath) {
-            InputStream input = null;
-            OutputStream output = null;
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL(ApiConstant.MEDIA_URL + filePath);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-
-                // expect HTTP 200 OK, so we don't mistakenly save error report
-                // instead of the file
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return true;
-                }
-                // this will be useful to display download percentage
-                // might be -1: server did not report the length
-                int fileLength = connection.getContentLength();
-                // download the file
-                input = connection.getInputStream();
-
-                File file = new File(directoryToZip.getPath() + File.separator + "" + filePath.split("/")[0]);
-                file.mkdirs();
-                File outputFile = new File(file, filePath.split("/")[1]);
-                output = new FileOutputStream(outputFile);
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    // allow canceling with back button
-                    if (isCancelled()) {
-                        input.close();
-                        break;
-                    }
-                    total += count;
-                    // publishing the progress....
-                    if (fileLength > 0) // only if total length is known
-                        publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return true;
-            } finally {
-                try {
-                    if (output != null) output.close();
-                    if (input != null) input.close();
-                } catch (IOException ignored) {
-                }
-
-                if (connection != null) connection.disconnect();
-            }
-            return false;
-        }
     }
 
 
@@ -705,11 +589,11 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
     private void setRingTone(int callType, Song song) {
 
-       // Intent intent = new Intent(getActivity(), ContactActivity.class);
-        if(callType==1)
-        changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Outgoing)",song.getTitle());
+        // Intent intent = new Intent(getActivity(), ContactActivity.class);
+        if (callType == 1)
+            changeToolBarTitleListiner.setTitle("Set Ringtone" + "(Outgoing)", song.getTitle());
         else
-            changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Incoming)",song.getTitle());
+            changeToolBarTitleListiner.setTitle("Set Ringtone" + "(Incoming)", song.getTitle());
         Fragment fragment = ContactsFragment.newInstance(song, callType, isAudio, 0);
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
@@ -724,8 +608,12 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
             case R.id.icon_add_tone:
                 showPopup(view);
                 break;
+            case R.id.set_button:
+                //  Song song = songList.get(postion);
+                sendContact(songList.get(postion).getId());
+                break;
             case R.id.play_next:
-                if (songPostion <= songList.size() - 1 && songList.size() > 0) {
+                if (songPostion < songList.size() - 1 && songList.size() > 0) {
                     isMediaCompleted = 0;
                     playNext.setEnabled(true);
                     previous.setEnabled(true);

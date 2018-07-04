@@ -1,6 +1,7 @@
 package com.mobileoid2.celltone.view.activity.Login;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,13 +14,17 @@ import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Util.CelltoneApplication;
 import com.mobileoid2.celltone.Util.OtpView;
+import com.mobileoid2.celltone.network.APIClient;
+import com.mobileoid2.celltone.network.ApiConstant;
+import com.mobileoid2.celltone.network.ApiInterface;
+import com.mobileoid2.celltone.network.NetworkCallBack;
+import com.mobileoid2.celltone.network.SendRequest;
+import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
 import com.mobileoid2.celltone.view.activity.PermissionsActivity;
 import com.mobileoid2.celltone.celltoneDB.CellToneRoomDatabase;
 import com.mobileoid2.celltone.pojo.PojoOTPRequest;
@@ -35,15 +40,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginVerifyActivity extends AppCompatActivity {
+public class LoginVerifyActivity extends AppCompatActivity implements NetworkCallBack {
 
 
     public static final String TAG = LoginVerifyActivity.class.getSimpleName();
+    private ApiInterface apiInterface;
     /*private EditTextEuro55Regular editTextOtp1, editTextOtp2, editTextOtp3, editTextOtp4;*/
-
+    private ProgressDialog progressDialog;
     OtpView otpView;
     String mobile;
 
@@ -52,6 +66,7 @@ public class LoginVerifyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_verify);
         otpView = (OtpView) findViewById(R.id.otp_view);
+        apiInterface = APIClient.getClient().create(ApiInterface.class);
         Intent intent = getIntent();
         mobile =(intent.getStringExtra("mobile"));
         String otp =(intent.getStringExtra("otp"));
@@ -86,6 +101,8 @@ public class LoginVerifyActivity extends AppCompatActivity {
 
     }
 
+
+
     private void startOtPVerifiyRequest() {
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
@@ -104,155 +121,24 @@ public class LoginVerifyActivity extends AppCompatActivity {
         pojoOTPVerifyRequest.setMobile(mobile);
         pojoOTPVerifyRequest.setImei(imei);
         pojoOTPVerifyRequest.setOtp(Integer.parseInt(otpView.getOTP()));
+        progressDialog = new ProgressDialog(this, R.style.AppTheme_Dark_Dialog);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Verify OTP...");
+        progressDialog.show();
+        SendRequest.sendRequest(ApiConstant.OTP_VERIFY_API,apiInterface.validateOtp(pojoOTPVerifyRequest),this);
 
-        JSONObject params = null;
-        try {
-            Gson gson = new Gson();
-            String jsoon = gson.toJson(pojoOTPVerifyRequest);
-            params = new JSONObject(jsoon);
-        } catch (Exception e) {
-        }
-        if (params == null) return;
-
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Config_URL.URL_VALIDATE_OTP, params, response -> {
-            try {
-                PojoOTPVerifyResponse pojoOTPVerifyResponse = Arrays.asList(new Gson().fromJson(response.toString(), PojoOTPVerifyResponse.class)).get(0);
-                if (pojoOTPVerifyResponse.getStatus()==1000) {
-                    SharedPrefrenceHandler.getInstance().setUSER_TOKEN(pojoOTPVerifyResponse.getBody().getToken());
-                    SharedPrefrenceHandler.getInstance().setCOUTRYCODE(pojoOTPVerifyResponse.getBody().getUser().getCountryCode());
-                    SharedPrefrenceHandler.getInstance().setLoginState(true);
-                    startPermissionActivity();
-                } else {
-                    Toast.makeText(this,pojoOTPVerifyResponse.getMessage(),Toast.LENGTH_SHORT).show();
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }, error -> {
-            VolleyLog.d(TAG, "Error: " + error.getMessage());
-            // hide the progress dialog
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-        };
 
 // Adding request to request queue
-        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
         return ;
     }
 
     private void startPermissionActivity() {
-        getALLAUDIO();
-        getALLVIDEO();
         startActivity(new Intent(getApplicationContext(), PermissionsActivity.class));
         finish();
     }
 
 
-    private void getALLAUDIO() {
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, Config_URL.URL_GET_AUDIO, null, response -> {
-            try {
-                System.out.println("HomeActivity.refreshMediaSetByOther" + response.toString());
 
-
-                PojoGETALLMEDIA_Request pojoContactsUploadResonse = Arrays.asList(new Gson().fromJson(response.toString(), PojoGETALLMEDIA_Request.class)).get(0);
-                if (pojoContactsUploadResonse.getStatus() == 1000) {
-
-                    new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... voids) {
-                            /*for (int i = 0; i < 10; i++) {
-                                pojoContactsUploadResonse.getBody().addAll(pojoContactsUploadResonse.getBody());
-                            }*/
-                            CellToneRoomDatabase.getDatabase(getApplicationContext()).get_pojoALLMediaDAO().insertList(pojoContactsUploadResonse.getBody());
-                            return null;
-                        }
-                    }.execute();
-                    SharedPrefrenceHandler.getInstance().setGET_ALL_AUDIO(true);
-                } else {
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }, error -> {
-            VolleyLog.d(TAG, "Error: " + error.getMessage());
-            // hide the progress dialog
-        }) {
-
-        /*@Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            HashMap<String, String> headers = new HashMap<String, String>();
-            headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-            return headers;
-        }*/
-
-            @Override
-            protected Map<String, String> getParams() {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                //headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-                return headers;
-            }
-        };
-        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
-    }
-
-    private void getALLVIDEO() {
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, Config_URL.URL_GET_VIDEO, null, response -> {
-            try {
-                System.out.println("HomeActivity.refreshMediaSetByOther" + response.toString());
-
-
-                PojoGETALLMEDIA_Request pojoContactsUploadResonse = Arrays.asList(new Gson().fromJson(response.toString(), PojoGETALLMEDIA_Request.class)).get(0);
-                if (pojoContactsUploadResonse.getStatus() == 1000) {
-                    new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... voids) {
-                            CellToneRoomDatabase.getDatabase(getApplicationContext()).get_pojoALLMediaDAO().insertList(pojoContactsUploadResonse.getBody());
-                            return null;
-                        }
-                    }.execute();
-                    SharedPrefrenceHandler.getInstance().setGET_ALL_VIDEO(true);
-                } else {
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }, error -> {
-            VolleyLog.d(TAG, "Error: " + error.getMessage());
-            // hide the progress dialog
-        }) {
-
-        /*@Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            HashMap<String, String> headers = new HashMap<String, String>();
-            headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-            return headers;
-        }*/
-
-            @Override
-            protected Map<String, String> getParams() {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                //headers.put("token", SharedPrefrenceHandler.getInstance().getUSER_TOKEN());
-                return headers;
-            }
-        };
-        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
-    }
 
 
     @Override
@@ -273,6 +159,87 @@ public class LoginVerifyActivity extends AppCompatActivity {
         }
     }
 
+    private void parseVerifyOTP(String response)
 
+    {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(verifyResponse(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(parseOTP()));
+
+    }
+
+    private DisposableObserver<PojoOTPVerifyResponse> parseOTP() {
+        return new DisposableObserver<PojoOTPVerifyResponse>() {
+
+            @Override
+            public void onNext(PojoOTPVerifyResponse pojoOTPVerifyResponse) {
+
+
+                if (pojoOTPVerifyResponse.getStatus()==1000) {
+                    SharedPrefrenceHandler.getInstance().setUSER_TOKEN(pojoOTPVerifyResponse.getBody().getToken());
+                    SharedPrefrenceHandler.getInstance().setCOUTRYCODE(pojoOTPVerifyResponse.getBody().getUser().getCountryCode());
+                    SharedPrefrenceHandler.getInstance().setLoginState(true);
+                    startPermissionActivity();
+                    progressDialog.dismiss();
+                } else {
+                    Toast.makeText(LoginVerifyActivity.this,pojoOTPVerifyResponse.getMessage(),Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss();
+                }
+
+
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+
+
+    private Observable<PojoOTPVerifyResponse> verifyResponse(String response) {
+        Gson gsonObj = new Gson();
+        final PojoOTPVerifyResponse planBody = gsonObj.fromJson(response, PojoOTPVerifyResponse.class);
+
+        return Observable.create(new ObservableOnSubscribe<PojoOTPVerifyResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<PojoOTPVerifyResponse> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(planBody);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
+
+    @Override
+    public void getResponse(JsonResponse response, int type) {
+        if (response.getObject() != null) {
+            switch (type) {
+                case ApiConstant.OTP_VERIFY_API:
+                    parseVerifyOTP(response.getObject());
+                    break;
+
+
+            }
+        } else {
+            progressDialog.dismiss();
+            Toast.makeText(this, response.getErrorString(), Toast.LENGTH_LONG).show();
+        }
+
+
+    }
 }
 

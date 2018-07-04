@@ -9,6 +9,9 @@ import android.os.Environment;
 public class Constant {
     public static boolean isIncoming = true;
     public static String PHONENUMBER = "";
+    public  static  final String MEDIA_SET = "media_set";
+
+
     public static final String RECORDING_AUDIO_PATH = Environment.getExternalStorageDirectory() + "/Recordings/audio";
     public static final String RECORDING_VIDEO_PATH = Environment.getExternalStorageDirectory() + "/Recordings/video";
     public static final String RECORDING_BITMAP_PATH = Environment.getExternalStorageDirectory() + "/Recordings/bitmaps";

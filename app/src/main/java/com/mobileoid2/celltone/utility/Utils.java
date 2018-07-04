@@ -8,21 +8,57 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.mobileoid2.celltone.Service.ServiceCallScreenChanged;
+import com.mobileoid2.celltone.Util.Constant;
+import com.mobileoid2.celltone.database.AppDatabase;
+import com.mobileoid2.celltone.database.ContactEntity;
+import com.mobileoid2.celltone.database.RingtoneEntity;
+import com.mobileoid2.celltone.network.ApiConstant;
+import com.mobileoid2.celltone.network.ApiInterface;
+import com.mobileoid2.celltone.network.NetworkCallBack;
+import com.mobileoid2.celltone.network.SendRequest;
+import com.mobileoid2.celltone.network.model.contacts.SaveContactsResponse;
+import com.mobileoid2.celltone.network.model.setOwnMedia.SetOwnMediaModel;
+import com.mobileoid2.celltone.network.model.treadingMedia.Song;
+import com.mobileoid2.celltone.pojo.getmedia.Body;
+import com.mobileoid2.celltone.pojo.getmedia.PojoGETMediaResponse;
+import com.mobileoid2.celltone.view.activity.UploadActivity;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 
 import static android.content.ContentValues.TAG;
 
@@ -129,8 +165,315 @@ public class Utils {
 
    }
 
+   public static  void getMediForMe(ApiInterface apiInterface, NetworkCallBack networkCallBack)
+   {
+       SendRequest.sendRequest(ApiConstant.MEDIA_SET_API,apiInterface.getMediForMe(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()),networkCallBack);
+   }
+
 
     public static String getFilePath(Context context) {
         return context.getFilesDir() + File.separator + "MEDIA";
     }
+    public  void parseRequest(String response,Context context)
+    {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(getMediaForMe(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(getPlanObserver(context,response)));
+
+    }
+
+    private    Observable<PojoGETMediaResponse> getMediaForMe(String response) {
+        Gson gsonObj = new Gson();
+        final PojoGETMediaResponse planBody = gsonObj.fromJson(response, PojoGETMediaResponse.class);
+
+        return Observable.create(new ObservableOnSubscribe<PojoGETMediaResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<PojoGETMediaResponse> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(planBody);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+    private  DisposableObserver<PojoGETMediaResponse> getPlanObserver(Context context,String response) {
+        return new DisposableObserver<PojoGETMediaResponse>() {
+
+            @Override
+            public void onNext(PojoGETMediaResponse pojoContactsUploadResonse) {
+             //   PojoGETMediaResponse pojoContactsUploadResonse = Arrays.asList(new Gson().fromJson(response.toString(), PojoGETMediaResponse.class)).get(0);
+
+                if (pojoContactsUploadResonse.getStatus() == 1000) {
+                    SharedPrefrenceHandler.getInstance().setGET_MEDIA_RESPONSE(response.toString());
+                    new DownloadTask(context).execute(pojoContactsUploadResonse.getBody());
+                }
+
+
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+    public  void download(Context context,String filepath)
+    {
+        new DownloadSingleTask(context).execute(filepath);
+
+    }
+
+    public void parseSaveContactResponse(Activity context, String response, int isIncoming, int isAudio, String mediaId,
+                                         String mobileNo, String sampleUrl, AppDatabase appDatabase,
+                                         ContactEntity contactEntity, List<Song> songList, int currentSongPostion, ProgressBar progressBar) {
+
+        new AsyncTask<Void, Void, Integer>() {
+            @Override
+            protected Integer doInBackground(Void... voids) {
+                int status = 0;
+                Gson gsonObj = new Gson();
+                SaveContactsResponse saveContactsResponse = gsonObj.fromJson(response, SaveContactsResponse.class);
+                status = saveContactsResponse.getStatus();
+                if (status == 1000) {
+
+
+                    if (isIncoming == 0) {
+
+                        RingtoneEntity ringtoneEntity = new RingtoneEntity();
+                        if (isAudio == 1)
+                            ringtoneEntity.setContentType("audio");
+                        else
+                            ringtoneEntity.setContentType("video");
+                        ringtoneEntity.setMediaId(mediaId);
+                        ringtoneEntity.setActionType("self");
+                        ringtoneEntity.setNumber(mobileNo);
+                        ringtoneEntity.setSampleFileUrl(sampleUrl);
+                        long id = appDatabase.daoRingtone().insert(ringtoneEntity);
+                        if (id == -1) {
+                            appDatabase.daoRingtone().update(ringtoneEntity);
+                        }
+
+
+                        if (isAudio == 0)
+                            contactEntity.setOutgoingIsVideo(1);
+                        else
+                            contactEntity.setOutgoingIsVideo(0);
+                        contactEntity.setOutgoingSongName(songList.get(currentSongPostion).getTitle());
+                        contactEntity.setIsOutgoing(1);
+                        contactEntity.setOutgoingArtistName(songList.get(currentSongPostion).getArtistName());
+
+
+                    } else {
+                        if (isAudio == 0)
+                            contactEntity.setOutgoingIsVideo(1);
+                        else
+                            contactEntity.setOutgoingIsVideo(0);
+                        contactEntity.setIncomingSongName(songList.get(currentSongPostion).getTitle());
+                        contactEntity.setIsIncoming(1);
+                        contactEntity.setInComingArtistName(songList.get(currentSongPostion).getArtistName());
+
+                    }
+                }
+
+
+                appDatabase.daoContacts().update(contactEntity);
+
+
+                return status;
+            }
+
+            @Override
+            protected void onPostExecute(Integer status) {
+                super.onPostExecute(status);
+                if (status == 1000) {
+                    Utils utils = new Utils();
+                    download(context,sampleUrl);
+                    Toast.makeText(context, "Song set  successfully", Toast.LENGTH_LONG).show();
+                    context.onBackPressed();
+
+                }
+                progressBar.setVisibility(View.GONE);
+
+
+            }
+        }.execute();
+    }
+
+
+    private class DownloadSingleTask extends AsyncTask<String, Integer, String> {
+
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+
+        public DownloadSingleTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected String doInBackground(String... sUrl) {
+
+            File directoryToZip = new File(Utils.getFilePath(context));
+            downloadFiles(directoryToZip, sUrl[0]);
+            return null;
+        }
+
+
+        private boolean downloadFiles(File directoryToZip, String filePath) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(ApiConstant.MEDIA_URL + filePath);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                // expect HTTP 200 OK, so we don't mistakenly save error report
+                // instead of the file
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return true;
+                }
+                // this will be useful to display download percentage
+                // might be -1: server did not report the length
+                int fileLength = connection.getContentLength();
+                // download the file
+                input = connection.getInputStream();
+
+                File file = new File(directoryToZip.getPath() + File.separator + "" + filePath.split("/")[0]);
+                file.mkdirs();
+                File outputFile = new File(file, filePath.split("/")[1]);
+                output = new FileOutputStream(outputFile);
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling with back button
+                    if (isCancelled()) {
+                        input.close();
+                        break;
+                    }
+                    total += count;
+                    // publishing the progress....
+                    if (fileLength > 0) // only if total length is known
+                        publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return true;
+            } finally {
+                try {
+                    if (output != null) output.close();
+                    if (input != null) input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (connection != null) connection.disconnect();
+            }
+            return false;
+        }
+    }
+
+
+
+    private  class DownloadTask extends AsyncTask<List<Body>, Integer, String> {
+
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+
+        public DownloadTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected  String doInBackground(List<com.mobileoid2.celltone.pojo.getmedia.Body>... sUrl) {
+
+
+            File directoryToZip = new File(Utils.getFilePath(context));
+            List<com.mobileoid2.celltone.pojo.getmedia.Body> bodyList = sUrl[0];
+
+
+            for (int i = 0; i < bodyList.size(); i++) {
+
+                File file = null;
+
+                if (bodyList.get(i).getOutgoing() != null) {
+                    file = new File(directoryToZip.getPath() + "/" + bodyList.get(i).getOutgoing().getSampleFileUrl());
+                    System.out.println("DownloadTask.doInBackground-----" + file.exists() + "\t" + file.getPath());
+                    if (!file.exists())
+                        downloadFiles(directoryToZip, bodyList, i);
+                }
+
+
+            }
+
+            return null;
+        }
+
+
+        private boolean downloadFiles(File directoryToZip, List<com.mobileoid2.celltone.pojo.getmedia.Body> bodyList, int i) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(ApiConstant.MEDIA_URL + bodyList.get(i).getOutgoing().getSampleFileUrl());
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                // expect HTTP 200 OK, so we don't mistakenly save error report
+                // instead of the file
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return true;
+                }
+                // this will be useful to display download percentage
+                // might be -1: server did not report the length
+                int fileLength = connection.getContentLength();
+                // download the file
+                input = connection.getInputStream();
+
+                File file = new File(directoryToZip.getPath() + File.separator + "" + bodyList.get(i).getOutgoing().getSampleFileUrl().split("/")[0]);
+                file.mkdirs();
+                File outputFile = new File(file, bodyList.get(i).getOutgoing().getSampleFileUrl().split("/")[1]);
+                output = new FileOutputStream(outputFile);
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling with back button
+                    if (isCancelled()) {
+                        input.close();
+                        break;
+                    }
+                    total += count;
+                    // publishing the progress....
+                    if (fileLength > 0) // only if total length is known
+                        publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return true;
+            } finally {
+                try {
+                    if (output != null) output.close();
+                    if (input != null) input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (connection != null) connection.disconnect();
+            }
+            return false;
+        }
+    }
+
+
 }

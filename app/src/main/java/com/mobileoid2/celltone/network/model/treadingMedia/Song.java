@@ -8,6 +8,7 @@ import java.util.List;
 
 public class Song  implements Serializable{
     private int isAudio =0;
+    private String type ="";
 
     @SerializedName("genre")
     @Expose
@@ -181,5 +182,13 @@ public class Song  implements Serializable{
 
     public void setIsAudio(int isAudio) {
         this.isAudio = isAudio;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

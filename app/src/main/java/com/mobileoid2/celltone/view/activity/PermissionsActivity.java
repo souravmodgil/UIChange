@@ -37,6 +37,7 @@ public class PermissionsActivity extends Activity {
             Manifest.permission.INTERNET, Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.SYSTEM_ALERT_WINDOW,
             Manifest.permission.READ_CONTACTS,
+            Manifest.permission.ACCESS_NOTIFICATION_POLICY
           };
 
 

@@ -1,5 +1,6 @@
 package com.mobileoid2.celltone.view.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -14,10 +15,14 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.PopupMenu;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -34,7 +39,9 @@ import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Util.CelltoneApplication;
 import com.mobileoid2.celltone.celltoneDB.CellToneRoomDatabase;
+import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.database.ContactEntity;
+import com.mobileoid2.celltone.database.RingtoneEntity;
 import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiInterface;
 import com.mobileoid2.celltone.network.ApiConstant;
@@ -44,6 +51,8 @@ import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
 import com.mobileoid2.celltone.network.model.banner.BannerBody;
 import com.mobileoid2.celltone.network.model.banner.BannerModel;
 import com.mobileoid2.celltone.network.model.banner.Medium;
+import com.mobileoid2.celltone.network.model.contacts.ContactsMedia;
+import com.mobileoid2.celltone.network.model.contacts.Incommingother;
 import com.mobileoid2.celltone.network.model.treadingMedia.Category;
 import com.mobileoid2.celltone.network.model.treadingMedia.MediaModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
@@ -51,13 +60,17 @@ import com.mobileoid2.celltone.pojo.audio.PojoGETALLMEDIA_Request;
 import com.mobileoid2.celltone.pojo.mediapojo.CategoriesSongs;
 import com.mobileoid2.celltone.pojo.mediapojo.MediaPojo;
 import com.mobileoid2.celltone.utility.Config_URL;
+import com.mobileoid2.celltone.utility.ContactFetcher;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.view.activity.BannerListActivity;
+import com.mobileoid2.celltone.view.activity.SearchActivity;
 import com.mobileoid2.celltone.view.activity.ViewAllSongActivity;
+import com.mobileoid2.celltone.view.adapter.MyContactsRecyclerViewAdapter;
 import com.mobileoid2.celltone.view.listener.NavigationLisitner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,13 +86,14 @@ import java.util.Map;
 public class HomeFragment extends Fragment implements NetworkCallBack, View.OnClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
+
     private ApiInterface apiInterface;
     private int noOfAPiHint = 0;
-    private int totalApiToBeHint = 0;
-    private String audioResponse = "";
-    private String videoResponse = "";
-    private ImageView mtNav, mtMenu;
+    private AppDatabase appDatabase;
+    private ImageView mtNav,mtSearch;
+    private EditText mtEditText;
+    private ImageView mtClear;
+    TextView mtPlaceholder;
     private ProgressBar loadingSpinner;
     private NavigationLisitner navigationLisitner;
     private int isEdit = 0;
@@ -89,6 +103,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     private ContactEntity contactEntity;
     private SliderLayout mDemoSlider;
     private List<BannerBody> bannerBodyList;
+    private int totalApiToBeHint;
 
     public static final String TAG = HomeFragment.class.getSimpleName();
 
@@ -108,7 +123,9 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
      * @return A new instance of fragment HomeFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(NavigationLisitner navigationLisitner, int isEdit, String mobileNo, String name, int isIncoming, ContactEntity contactEntity) {
+    public static HomeFragment newInstance(NavigationLisitner navigationLisitner, int isEdit, String mobileNo,
+                                           String name,
+                                           int isIncoming, ContactEntity contactEntity) {
         HomeFragment fragment = new HomeFragment();
         fragment.navigationLisitner = navigationLisitner;
         fragment.isEdit = isEdit;
@@ -127,19 +144,29 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
             mParam2 = getArguments().getString(ARG_PARAM2);*/
         }
 
+
         System.out.println("HomeFragment.onCreate");
     }
+    private void getContact() {
+        // SendRequest.sendRequest(Config_URL.);
+        SendRequest.sendRequest(ApiConstant.GET_ALL_CONTACT, apiInterface.getAllContatcs(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()), this);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = getView() != null ? getView() : inflater.inflate(R.layout.fragment_home, container, false);
         loadingSpinner = view.findViewById(R.id.loading_spinner);
-        apiInterface = ((ApiInterface) APIClient.getClient().create(ApiInterface.class));
-        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
+        apiInterface =  APIClient.getClient().create(ApiInterface.class);
+        viewPager =  view.findViewById(R.id.viewpager);
+        mtPlaceholder =view.findViewById(R.id.mt_placeholder);
         setupViewPager(viewPager);
+        appDatabase = AppDatabase.getAppDatabase(getActivity());
         mtNav = view.findViewById(R.id.mt_nav);
-        mtMenu = view.findViewById(R.id.mt_menu);
+        mtSearch =view.findViewById(R.id.mt_search);
+        mtEditText =view.findViewById(R.id.mt_editText);
+        mtClear =view.findViewById(R.id.mt_clear);
         tabLayout = (TabLayout) view.findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FFFFFF"));
@@ -149,14 +176,97 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
         tabLayout.setupWithViewPager(viewPager);
         setCustomFont();
+        mDemoSlider =  view.findViewById(R.id.slider);
+     //   mtNav.setOnClickListener(this);
+        mtNav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigationLisitner.setNavigation();
+            }
+        });
+        mtClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideCancelIcon();
+                mtEditText.setText("");
+                hideKeyBoard();
+            }
+        });
+        mtEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               showCancelIcon();
+            }
+        });
+        mtSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mtEditText.length()>0) {
+                    Intent intent = new Intent(getActivity(), SearchActivity.class);
+                    intent.putExtra("isEdit", isEdit);
+                    intent.putExtra("mobile_no", mobileNo);
+                    intent.putExtra("contact_name", name);
+                    intent.putExtra("isIncoming", isIncoming);
+                    intent.putExtra("terms", mtEditText.getText().toString());
+                    intent.putExtra("contact_entity", contactEntity);
+                    startActivity(intent);
+                }
 
-        mDemoSlider = (SliderLayout) view.findViewById(R.id.slider);
-        mtNav.setOnClickListener(this);
-        mtMenu.setOnClickListener(this);
+            }
+        });
+        mtEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(s.length()>0) {
+                  showCancelIcon();
+                }
+                else {
+                   hideCancelIcon();
+                }
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
 
         return view;
     }
+    private void hideKeyBoard()
+    {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = getActivity().getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(getActivity());
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    private void showCancelIcon()
+    {
+        mtClear.setVisibility(View.VISIBLE);
+        mtNav.setVisibility(View.GONE);
+
+
+
+    }
+    private void hideCancelIcon()
+    {
+        mtClear.setVisibility(View.GONE);
+        mtNav.setVisibility(View.VISIBLE);
+        mtPlaceholder.setVisibility(View.VISIBLE);
+    }
+
 
     public void setCustomFont() {
 
@@ -230,8 +340,116 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
     }
 
-    private void parseAudio(MediaModel model) {
+    private List<ContactEntity> getContactList(ContactsMedia contactsMedia, Map<String, String> contactMap)
 
+    {
+        List<ContactEntity> contactList = new ArrayList<>();
+        List<RingtoneEntity> ringtoneEntities = new ArrayList<>();
+
+        if (contactsMedia != null) {
+            int length = contactsMedia.getBody().size();
+            ContactEntity contactEntity;
+            for (int i = 0; i < length; i++) {
+
+
+                contactEntity = new ContactEntity();
+                String mobileno = contactsMedia.getBody().get(i).getMobile();
+                Incommingother incommingother ;
+                incommingother =contactsMedia.getBody().get(i).getOutgoingself();
+                if(incommingother!=null)
+                {
+                    RingtoneEntity ringtoneEntity = new RingtoneEntity();
+                    if (incommingother.getContentType().equals("video"))
+                        ringtoneEntity.setContentType("video");
+                    else
+                        ringtoneEntity.setContentType("audio");
+
+
+                    ringtoneEntity.setMediaId(incommingother.getId());
+                    ringtoneEntity.setActionType("self");
+                    ringtoneEntity.setNumber(mobileno);
+                    ringtoneEntity.setSampleFileUrl(incommingother.getSampleFileUrl());
+                    ringtoneEntities.add(ringtoneEntity);
+
+
+
+                }
+                //   "[^a-zA-Z]+", " "
+                String name = contactMap.get(mobileno);
+                contactEntity.setNumber(mobileno);
+                if (name != null)
+                    contactEntity.setName(name);
+                else
+                    contactEntity.setName(mobileno);
+
+
+
+                if (contactsMedia.getBody().get(i).getIncommingother() instanceof Incommingother &&
+                        contactsMedia.getBody().get(i).getIncommingother() != null)
+
+                {
+                    contactEntity.setIsIncoming(1);
+
+                    if (contactsMedia.getBody().get(i).getIncommingother().getContentType().equals("audio"))
+                        contactEntity.setIsincomingVideo(0);
+                    else
+                        contactEntity.setIsincomingVideo(1);
+                    contactEntity.setIncomingSongName(contactsMedia.getBody().get(i).getIncommingother().getTitle());
+
+
+                } else
+                    contactEntity.setIsIncoming(0);
+                if (contactsMedia.getBody().get(i).getOutgoingself() instanceof Incommingother &&
+                        contactsMedia.getBody().get(i).getIncommingother() != null)
+
+                {
+                    contactEntity.setIsOutgoing(1);
+                    if (contactsMedia.getBody().get(i).getOutgoingself().getContentType().equals("audio"))
+                        contactEntity.setOutgoingIsVideo(0);
+                    else
+                        contactEntity.setOutgoingIsVideo(1);
+                    contactEntity.setOutgoingSongName(contactsMedia.getBody().get(i).getOutgoingself().getTitle());
+                } else
+                    contactEntity.setIsOutgoing(0);
+                contactList.add(contactEntity);
+
+
+            }
+            appDatabase.daoContacts().insertAll(contactList);
+            appDatabase.daoRingtone().insertAll(ringtoneEntities);
+
+
+
+        }
+
+        return contactList;
+    }
+
+    private void parseContacts(String response) {
+        Map<String, String> contactMap = new ContactFetcher(getActivity()).fetchAllContact();
+        new AsyncTask<Void, Void, List<ContactEntity>>() {
+            @Override
+            protected List<ContactEntity> doInBackground(Void... voids) {
+                List<ContactEntity> list = new ArrayList<>();
+                ContactsMedia contactsMedia;
+
+
+                if (!response.isEmpty()) {
+                    Gson gsonObj = new Gson();
+                    contactsMedia = gsonObj.fromJson(response, ContactsMedia.class);
+                    list = getContactList(contactsMedia, contactMap);
+                    //Collections.sort(list, ContactsComparator);
+                }
+                return list;
+            }
+
+            @Override
+            protected void onPostExecute(List<ContactEntity> contacts) {
+                super.onPostExecute(contacts);
+
+
+            }
+        }.execute();
     }
 
     @Override
@@ -251,6 +469,10 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                 case ApiConstant.BANNER_API:
                     SharedPrefrenceHandler.getInstance().setBannerResponse(response.getObject());
                     break;
+                case ApiConstant.GET_ALL_CONTACT:
+                    parseContacts(response.getObject());
+                    break;
+
 
 
             }
@@ -460,7 +682,8 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                         @Override
                         public void onSliderClick(BaseSliderView slider) {
                             ArrayList<Song> songList = new ArrayList<>();
-                            for (Medium medium : bannerBody.getMedia()) {
+
+                            for (final Medium medium : bannerBody.getMedia()) {
                                 Song song = new Song();
                                 song.setClipArtUrl(medium.getClipArtUrl());
                                 song.setTitle(medium.getTitle());
@@ -477,6 +700,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                             }
 
                             Intent intent = new Intent(getActivity(), BannerListActivity.class);
+                            intent.putExtra("title",bannerBody.getTitle());
                             intent.putExtra("songsList", songList);
                             startActivity(intent);
 

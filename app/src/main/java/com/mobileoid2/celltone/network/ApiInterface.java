@@ -8,6 +8,9 @@ import com.mobileoid2.celltone.pojo.CommentRequest;
 import com.mobileoid2.celltone.pojo.ComposeQueryRequest;
 import com.mobileoid2.celltone.pojo.FCMMODELREQUEST;
 import com.mobileoid2.celltone.pojo.MediaListReqeuestPojo;
+import com.mobileoid2.celltone.pojo.PojoLogin;
+import com.mobileoid2.celltone.pojo.PojoOTPRequest;
+import com.mobileoid2.celltone.pojo.PojoOTPVerifyRequest;
 import com.mobileoid2.celltone.pojo.QUERYREQUEST;
 
 import org.json.JSONObject;
@@ -35,6 +38,20 @@ import retrofit2.http.QueryMap;
 import retrofit2.http.Url;
 
 public interface ApiInterface {
+
+
+    @Headers("Content-Type: application/json")
+    @POST("user/generate/otp")
+    public Call<String> getOtp(@Body PojoOTPRequest pojoOTPRequest);
+
+    @Headers("Content-Type: application/json")
+    @POST("user/register")
+    public Call<String> register(@Body PojoLogin pojoOTPRequest);
+    @GET("contacts/my-media")
+    public Call<String> getMediForMe(@Header("token") String token);
+    @Headers("Content-Type: application/json")
+    @POST("user/validate/otp")
+    public Call<String> validateOtp(@Body PojoOTPVerifyRequest pojoOTPVerifyRequest);
     @GET("media/trending/audio")
     public Call<String> getAllAudio(@Header("token") String token);
     @GET("media/trending/video")
@@ -43,6 +60,7 @@ public interface ApiInterface {
             "Content-Type: application/json",
 
     })
+
     @GET("contacts/all")
     public Call<String> getAllContatcs(@Header("token") String token);
     @GET("user/my-profile")

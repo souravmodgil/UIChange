@@ -14,7 +14,9 @@ public interface DaoRingtone {
     @Query("SELECT * FROM ringtone where phone_no LIKE :phoneNumber")
     RingtoneEntity getContatcByNumber(String phoneNumber);
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    long insertAll(RingtoneEntity ringtoneEntity);
+    void insertAll(List<RingtoneEntity> ringtoneEntity);
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    long insert(RingtoneEntity ringtoneEntity);
     @Query("DELETE FROM ringtone")
     void delete();
     @Query("DELETE FROM ringtone where phone_no = :phoneNo")

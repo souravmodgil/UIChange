@@ -94,17 +94,8 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
     }
 
     public void backPress() {
-        int fragments = getSupportFragmentManager().getBackStackEntryCount();
-        if (fragments == 1) {
-            finish();
-        } else {
-            if (getFragmentManager().getBackStackEntryCount() > 1) {
-                getFragmentManager().popBackStack();
-            } else {
-                super.onBackPressed();
-            }
-        }
 
+            finish();
     }
 
     @Override

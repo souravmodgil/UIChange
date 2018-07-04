@@ -17,9 +17,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.bumptech.glide.Glide;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -31,6 +30,15 @@ import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Util.CelltoneApplication;
 import com.mobileoid2.celltone.Util.Constant;
+import com.mobileoid2.celltone.network.APIClient;
+import com.mobileoid2.celltone.network.ApiConstant;
+import com.mobileoid2.celltone.network.ApiInterface;
+import com.mobileoid2.celltone.network.NetworkCallBack;
+import com.mobileoid2.celltone.network.SendRequest;
+import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
+import com.mobileoid2.celltone.network.model.profile.ProfileModel;
+import com.mobileoid2.celltone.network.model.profile.ProfilePlanDetail;
+import com.mobileoid2.celltone.network.model.profile.UserProfile;
 import com.mobileoid2.celltone.pojo.CoutryCode;
 import com.mobileoid2.celltone.pojo.CoutryPojo;
 import com.mobileoid2.celltone.pojo.PojoLogin;
@@ -39,6 +47,7 @@ import com.mobileoid2.celltone.pojo.PojoOTPResponse;
 import com.mobileoid2.celltone.pojo.loginresponse.PojoLoginResponse;
 import com.mobileoid2.celltone.utility.Config_URL;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
+import com.mobileoid2.celltone.utility.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,11 +73,12 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginOtpActivity extends AppCompatActivity {
+public class LoginOtpActivity extends AppCompatActivity implements NetworkCallBack {
 
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
     private int isRegister = 0;
+    private ApiInterface apiInterface;
     private String mobile = "";
     private String coutryCode = "";
     private String countryCodeValue;
@@ -102,6 +112,7 @@ public class LoginOtpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_otp);
         ButterKnife.bind(this);
+        apiInterface = APIClient.getClient().create(ApiInterface.class);
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions(Arrays.asList(EMAIL));
@@ -147,7 +158,7 @@ public class LoginOtpActivity extends AppCompatActivity {
         }
 
 
-    //    _loginButton.setEnabled(false);
+        //    _loginButton.setEnabled(false);
 
         progressDialog = new ProgressDialog(LoginOtpActivity.this, R.style.AppTheme_Dark_Dialog);
         progressDialog.setIndeterminate(true);
@@ -157,16 +168,7 @@ public class LoginOtpActivity extends AppCompatActivity {
         String name = _nameText.getText().toString();
         String number = _numberText.getText().toString();
 
-      /*  // TODO: Implement your own authentication logic here.
 
-        new android.os.Handler().postDelayed(new Runnable() {
-            public void run() {
-                // On complete call either onLoginSuccess or onLoginFailed
-                onLoginSuccess();
-                // onLoginFailed();
-                progressDialog.dismiss();
-            }
-        }, 1000);*/
         if (isRegister == 1)
             startLoginRequest(progressDialog, name, number);
         else
@@ -264,59 +266,14 @@ public class LoginOtpActivity extends AppCompatActivity {
 
 
     private void startLoginRequest(ProgressDialog progressDialog, String name, String number) {
+
+//        if(number.substring(0, 1).equals("0"))
+//            number = number.substring(1);
         PojoLogin pojoLoginGet = new PojoLogin();
         pojoLoginGet.setName(name);
-        pojoLoginGet.setMobile(coutryCode+number);
+        pojoLoginGet.setMobile(coutryCode + removeZero(number));
         pojoLoginGet.setCode(coutryCode);
-
-
-        JSONObject params = null;
-        try {
-            Gson gson = new Gson();
-            String jsoon = gson.toJson(pojoLoginGet);
-            params = new JSONObject(jsoon);
-        } catch (Exception e) {
-        }
-        if (params == null) return;
-
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Config_URL.URL_REGISTER, params, response -> {
-            try {
-                System.out.println("LoginOtpActivity.onResponse" + response);
-                PojoLoginResponse pojoLoginResponse = Arrays.asList(new Gson().fromJson(response.toString(), PojoLoginResponse.class)).get(0);
-
-
-                if (pojoLoginResponse.getStatus() == 1000) {
-                    SharedPrefrenceHandler.getInstance().setLOGIN_RESPONSE(response.toString());
-                    requestTogetOTP();
-                    //   onLoginSuccess(number);
-                }
-                 else {
-                    onLoginFailed(pojoLoginResponse.getMessage());
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                _loginButton.setEnabled(true);
-            }
-
-
-            progressDialog.dismiss();
-        }, error -> {
-            VolleyLog.d(TAG, "Error: " + error.getMessage());
-            // hide the progress dialog
-            progressDialog.dismiss();
-            _loginButton.setEnabled(true);
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-        };
-
-// Adding request to request queue
-        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
+        SendRequest.sendRequest(ApiConstant.REGISTER_API, apiInterface.register(pojoLoginGet), this);
     }
 
 
@@ -326,7 +283,7 @@ public class LoginOtpActivity extends AppCompatActivity {
         moveTaskToBack(true);
     }
 
-    public void onLoginSuccess(String number,String otp) {
+    public void onLoginSuccess(String number, String otp) {
         _loginButton.setEnabled(true);
 
         Intent intent = new Intent(getApplicationContext(), LoginVerifyActivity.class);
@@ -336,53 +293,138 @@ public class LoginOtpActivity extends AppCompatActivity {
         LoginOtpActivity.this.finish();
     }
 
-    private void requestTogetOTP() {
-        PojoOTPRequest pojoOTPRequest = new PojoOTPRequest();
-        pojoOTPRequest.setMobile(coutryCode + _numberText.getText().toString());
+    private void parseLoginOTP(String response)
 
-        mobile = pojoOTPRequest.getMobile();
-        JSONObject params = null;
-        try {
-            Gson gson = new Gson();
-            String jsoon = gson.toJson(pojoOTPRequest);
-            params = new JSONObject(jsoon);
-        } catch (Exception e) {
-        }
-        if (params == null) return;
+    {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(getLoginRespnse(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(parseProfile()));
 
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Config_URL.URL_OTP, params, response -> {
-            try {
-                System.out.println("LoginOtpActivity.onResponse" + response);
-                PojoOTPResponse pojoLoginResponse = Arrays.asList(new Gson().fromJson(response.toString(), PojoOTPResponse.class)).get(0);
+    }
+
+    private void parseResgisterResposne(String response) {
+        //
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(registerResponse(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(parseResgister(response)));
+
+    }
+
+    private Observable<PojoLoginResponse> registerResponse(String response) {
+        Gson gsonObj = new Gson();
+        final PojoLoginResponse planBody = gsonObj.fromJson(response, PojoLoginResponse.class);
+
+        return Observable.create(new ObservableOnSubscribe<PojoLoginResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<PojoLoginResponse> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(planBody);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
+    private DisposableObserver<PojoLoginResponse> parseResgister(String response) {
+        return new DisposableObserver<PojoLoginResponse>() {
+
+            @Override
+            public void onNext(PojoLoginResponse pojoLoginResponse) {
 
 
                 if (pojoLoginResponse.getStatus() == 1000) {
-                    onLoginSuccess(mobile,pojoLoginResponse.getBody());
-                    // otpView.setOTP(pojoLoginResponse.getBody());
+                    SharedPrefrenceHandler.getInstance().setLOGIN_RESPONSE(response);
+                    requestTogetOTP();
+                    //   onLoginSuccess(number);
                 } else {
-                    progressDialog.dismiss();
-                    Toast.makeText(LoginOtpActivity.this, pojoLoginResponse.getMessage(), Toast.LENGTH_LONG).show();
+                    onLoginFailed(pojoLoginResponse.getMessage());
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+
             }
 
-
-        }, error -> {
-            VolleyLog.d(TAG, "Error: " + error.getMessage());
-            // hide the progress dialog
-        }) {
             @Override
-            protected Map<String, String> getParams() {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         };
+    }
 
-// Adding request to request queue
-        CelltoneApplication.getInstance().addToRequestQueue(jsonObjReq, Config_URL.tag_json_obj);
+
+    private DisposableObserver<PojoOTPResponse> parseProfile() {
+        return new DisposableObserver<PojoOTPResponse>() {
+
+            @Override
+            public void onNext(PojoOTPResponse pojoOTPResponse) {
+                if (pojoOTPResponse.getStatus() == 1000) {
+                    onLoginSuccess(mobile, pojoOTPResponse.getBody());
+                } else {
+                    progressDialog.dismiss();
+                    Toast.makeText(LoginOtpActivity.this, pojoOTPResponse.getMessage(), Toast.LENGTH_LONG).show();
+                }
+
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+
+    private Observable<PojoOTPResponse> getLoginRespnse(String response) {
+        Gson gsonObj = new Gson();
+        final PojoOTPResponse planBody = gsonObj.fromJson(response, PojoOTPResponse.class);
+
+        return Observable.create(new ObservableOnSubscribe<PojoOTPResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<PojoOTPResponse> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(planBody);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
+    private String removeZero(String number)
+    {
+        if(number.substring(0,1).equals("0"))
+            number = number.substring(1);
+        return number;
+
+    }
+
+
+    private void requestTogetOTP() {
+
+        PojoOTPRequest pojoOTPRequest = new PojoOTPRequest();
+        mobile = removeZero(_numberText.getText().toString());
+        pojoOTPRequest.setMobile(coutryCode + mobile);
+        mobile = pojoOTPRequest.getMobile();
+        SendRequest.sendRequest(ApiConstant.LOGIN_OTP_API, apiInterface.getOtp(pojoOTPRequest), this);
+
+
     }
 
 
@@ -421,16 +463,31 @@ public class LoginOtpActivity extends AppCompatActivity {
     }
 
 
-    private void goMainScreen() {
-        /*Intent intent = new Intent(this, LoginVerifyActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);*/
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void getResponse(JsonResponse response, int type) {
+        if (response.getObject() != null) {
+            switch (type) {
+                case ApiConstant.LOGIN_OTP_API:
+                    parseLoginOTP(response.getObject());
+                    break;
+                case ApiConstant.REGISTER_API:
+                    parseResgisterResposne(response.getObject());
+                    break;
+
+
+            }
+        } else {
+            progressDialog.dismiss();
+            Toast.makeText(this, response.getErrorString(), Toast.LENGTH_LONG).show();
+        }
+
+
     }
 
     class NameComparator implements Comparator<CoutryCode> {

@@ -67,7 +67,7 @@ public class QueryActivity extends AppCompatActivity implements QueryLisiner {
     private void onBack()
 
     {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 1)
+        if (getSupportFragmentManager().getBackStackEntryCount() >= 1)
             super.onBackPressed();
         else
             finish();

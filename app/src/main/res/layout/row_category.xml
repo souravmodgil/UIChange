@@ -10,11 +10,11 @@
     >
 
     <LinearLayout
+        android:id="@+id/ll_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/ll_main"
-        android:layout_marginLeft="10dp"
         android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
         <!--
@@ -30,35 +30,35 @@
             android:layout_width="70dp"
             android:layout_height="60dp"
             android:background="@drawable/media_bg"
-            android:scaleType="fitXY"
-            />
+            android:scaleType="fitXY" />
 
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="8"
-            android:layout_marginLeft="10dp"
             android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
+            android:layout_weight="8"
             android:orientation="vertical">
-            <TextView
+
+            <com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView
                 android:id="@+id/content"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:drawablePadding="5dp"
                 android:textColor="@android:color/black" />
 
-            <TextView
+            <com.mobileoid2.celltone.CustomWidget.TextView.ProximumLightItalicTextView
                 android:id="@+id/artist_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginTop="5dp"
-                android:textColor="#adadad"/>
+                android:layout_weight="1"
+                android:textColor="#adadad" />
 
         </LinearLayout>
-
 
 
         <ImageButton
@@ -70,29 +70,27 @@
             android:clickable="true"
             android:contentDescription=""
             android:focusable="true"
-            android:visibility="gone"
             android:foreground="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_action_more" />
+            android:src="@drawable/ic_action_more"
+            android:visibility="gone" />
 
         <com.mobileoid2.celltone.CustomWidget.TextView.ProximumExtraBoldTextView
             android:id="@+id/txt_set"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center|right"
+            android:layout_marginRight="10dp"
             android:backgroundTint="@android:color/transparent"
             android:clickable="true"
-           android:text="@string/label_set"
             android:gravity="center"
-            android:layout_marginRight="10dp"
-            android:visibility="gone"
+            android:src="@drawable/ic_action_more"
+            android:text="@string/label_set"
             android:textColor="@color/colorPrimary"
-            android:src="@drawable/ic_action_more"  />
+            android:visibility="gone" />
     </LinearLayout>
 
 
-        >
-
-
+    >
 
 
 </RelativeLayout>

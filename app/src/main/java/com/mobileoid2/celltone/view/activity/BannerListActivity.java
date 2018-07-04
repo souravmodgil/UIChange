@@ -24,7 +24,7 @@ import com.splunk.mint.Mint;
 
 import java.util.List;
 
-public class BannerListActivity extends AppCompatActivity {
+public class BannerListActivity extends AppCompatActivity implements ChangeToolBarTitleListiner {
 
     private String type;
     private int isAudio;
@@ -45,14 +45,13 @@ public class BannerListActivity extends AppCompatActivity {
 
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(getIntent().getStringExtra("category"));
-        Fragment fragment = BannerSongsListFragment.newInstance(this, songList);
+        getSupportActionBar().setTitle(getIntent().getStringExtra("title"));
+        Fragment fragment = BannerSongsListFragment.newInstance(this, songList,this);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
         fragmentTransaction.addToBackStack(fragment.getClass().getName());
         fragmentTransaction.commit();
-
 
 
     }
@@ -94,6 +93,16 @@ public class BannerListActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    public void setTitle(String text) {
+
+    }
+
+    @Override
+    public void setTitle(String text, String songName) {
+        getSupportActionBar().setTitle(text);
+        getSupportActionBar().setSubtitle(songName);
+    }
 }
 
 

@@ -121,7 +121,8 @@ public class ProfileActivity extends AppCompatActivity implements ChangeToolBarT
     private void onBack()
 
     {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 1)
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+        if (getSupportFragmentManager().getBackStackEntryCount() >= 1)
             super.onBackPressed();
         else
             finish();
@@ -129,6 +130,7 @@ public class ProfileActivity extends AppCompatActivity implements ChangeToolBarT
 
     @Override
     public void onBackPressed() {
+
         onBack();
     }
 

@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -199,24 +200,26 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
             public void onNext(ProfileModel profileModel) {
 
                 progressBar.setVisibility(View.GONE);
-                 profileBody = profileModel.getBody();
-                UserProfile userProfile = profileModel.getBody().getUser();
-                com.mobileoid2.celltone.network.model.profile.CurrentPlan currentPlan = userProfile.getCurrentPlan();
-                ProfilePlanDetail planDetail = profileModel.getBody().getPlanDetail();
-                txtProfileName.setText(userProfile.getName());
-                txtProfileContact.setText(userProfile.getMobile());
-                if (planDetail != null) {
-                    txtProfilePlanName.setText(planDetail.getName());
+                if(profileModel.getStatus()==1000) {
+                    profileBody = profileModel.getBody();
+                    UserProfile userProfile = profileModel.getBody().getUser();
+                    com.mobileoid2.celltone.network.model.profile.CurrentPlan currentPlan = userProfile.getCurrentPlan();
+                    ProfilePlanDetail planDetail = profileModel.getBody().getPlanDetail();
+                    txtProfileName.setText(userProfile.getName());
+                    txtProfileContact.setText(userProfile.getMobile());
+                    if (planDetail != null) {
+                        txtProfilePlanName.setText(planDetail.getName());
+                    }
+                    if (currentPlan != null)
+                        txtProfileValidateDate.setText("(" + Utils.parseDate(currentPlan.getStartDate()) + "-" + Utils.parseDate(currentPlan.getEndDate()) + ")");
+                    if (userProfile.getAvatar() != null)
+                        Glide.with(getActivity()).load(ApiConstant.MEDIA_URL + userProfile.getAvatar()).
+                                into(profileImage);
+                    txtProfileUserUpload.setText(profileBody.getOwnMediaCount() + "/" + planDetail.getOwnMediaCount());
+                    if (userProfile.getUsedMedia() != null)
+                        txtProfileUsage.setText("" + userProfile.getUsedMedia().size() + "/" + planDetail.getMediaCount());
+                    llMain.setVisibility(View.VISIBLE);
                 }
-                if (currentPlan != null)
-                    txtProfileValidateDate.setText("(" + Utils.parseDate(currentPlan.getStartDate())+ "-" + Utils.parseDate(currentPlan.getEndDate() )+ ")");
-                if (userProfile.getAvatar() != null)
-                    Glide.with(getActivity()).load(ApiConstant.MEDIA_URL + userProfile.getAvatar()).
-                            into(profileImage);
-                txtProfileUserUpload.setText(profileBody.getOwnMediaCount()+"/"+planDetail.getOwnMediaCount());
-                if(userProfile.getUsedMedia()!=null)
-                txtProfileUsage.setText(""+userProfile.getUsedMedia().size()+"/"+planDetail.getMediaCount());
-                llMain.setVisibility(View.VISIBLE);
 
             }
 
@@ -266,18 +269,35 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
         if (data != null) {
             try {
                 bm = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), data.getData());
-                String[] projection = { MediaStore.Images.Media.DATA };
 
-                Cursor cursor = getActivity().getContentResolver().query(data.getData(), projection, null, null, null);
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(projection[0]);
-                String picturePath = cursor.getString(columnIndex); // returns null
+                String filePath = "";
+                String wholeID = DocumentsContract.getDocumentId(data.getData());
 
+                // Split at colon, use second item in the array
+                String id = wholeID.split(":")[1];
+
+                String[] column = { MediaStore.Images.Media.DATA };
+
+                // where id is equal to
+                String sel = MediaStore.Images.Media._ID + "=?";
+
+                Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        column, sel, new String[]{ id }, null);
+
+                int columnIndex = cursor.getColumnIndex(column[0]);
+
+                if (cursor.moveToFirst()) {
+                    filePath = cursor.getString(columnIndex);
+                }
                 cursor.close();
-                if(!picturePath.isEmpty()) {
-                    File file = new File(picturePath);
+                if(filePath!=null && !filePath.isEmpty()) {
+                    File file = new File(filePath);
                     setDataForRequest(file);
                     }
+
+
+
+
 
 
             } catch (IOException e) {

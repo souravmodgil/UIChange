@@ -61,8 +61,8 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!Utils.isAccessibilitySettingsOn(getApplicationContext())) {
-            Toast.makeText(getApplicationContext(), "Switch on Accessibility for getApplicationContext() application", Toast.LENGTH_SHORT).show();
+        if (!Utils.isAccessibilitySettingsOn(this)) {
+            Toast.makeText(this, "Switch on Accessibility for this application", Toast.LENGTH_SHORT).show();
         }
 
         if (Constant.PHONENUMBER == null && Constant.PHONENUMBER.isEmpty()) {
@@ -71,6 +71,14 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
         }
 
         Constant.PHONENUMBER = Constant.PHONENUMBER.replaceAll("[^+0-9]", "");
+        if (!Constant.PHONENUMBER.substring(0, 1).equals("+")) {
+
+            if (Constant.PHONENUMBER.substring(0, 1).equals("0"))
+                Constant.PHONENUMBER = Constant.PHONENUMBER.substring(1);
+            Constant.PHONENUMBER = SharedPrefrenceHandler.getInstance().getCOUTRYCODE() + Constant.PHONENUMBER;
+
+        }
+
 
         if (!Patterns.PHONE.matcher(Constant.PHONENUMBER).matches()) {
             stopVideoAndService();
@@ -93,14 +101,12 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             Body body1 = pojoContactsUploadResonse.getBody().get(pojoContactsUploadResonse.getBody().indexOf(body));
             File path = null;
             if (body1.getOutgoing() != null && !Constant.isIncoming) {
-                File file = new File(Utils.getFilePath(getApplicationContext()) + "/" + body1.getOutgoing().getSampleFileUrl());
+                File file = new File(Utils.getFilePath(this) + "/" + body1.getOutgoing().getSampleFileUrl());
                 if (file.exists()) {
-                    //path=Utils.getFilePath(getApplicationContext()) + "/" + body1.getOutgoing().getSampleFileUrl();
+                    //path=Utils.getFilePath(this) + "/" + body1.getOutgoing().getSampleFileUrl();
                     path = file;
                 }
             }
-
-
 
 
             if (path == null) {
@@ -108,7 +114,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                 return;
             }
             windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-            overlayedLayout = new LinearLayout(getApplicationContext());
+            overlayedLayout = new LinearLayout(this);
             overlayedLayout.setOnClickListener(this);
             overlayedLayout.setOnTouchListener(this);
             overlayedLayout.setAlpha(0.0f);
@@ -119,7 +125,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             overlayedLayout.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
 
             if (path.getPath().endsWith("mp4")) {
-                videoView = new CustomVideoView(getApplicationContext());
+                videoView = new CustomVideoView(this);
                 videoView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
                 videoView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
                 //videoView.getLayoutParams().height = 300;
@@ -137,22 +143,13 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                 });
                 overlayedLayout.addView(videoView);
 
-               /* ImageView imageView=new ImageView(getApplicationContext());
-                imageView.setImageDrawable(getResources().getDrawable(R.drawable.adduser_icon));
-                imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
-                imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    imageView.setForegroundGravity(Gravity.CENTER);
-                }
-                overlayedLayout.addView(imageView);*/
-
 
             } else {
 
-                ImageView imageView = new ImageView(getApplicationContext());
+                ImageView imageView = new ImageView(this);
 
 
-                Glide.with(getApplicationContext()).load(ApiConstant.MEDIA_URL + body1.getOutgoing().getClipArtUrl()).
+                Glide.with(this).load(ApiConstant.MEDIA_URL + body1.getOutgoing().getClipArtUrl()).
                         into(imageView);
 
                 imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
@@ -193,7 +190,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             params.y = 0;
             windowManager.addView(overlayedLayout, params);
 
-            topLeftView = new View(getApplicationContext());
+            topLeftView = new View(this);
             LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
             topLeftParams.gravity = Gravity.CENTER;
             topLeftParams.x = 0;
@@ -204,11 +201,11 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
         } else {
             if (!Constant.isIncoming) {
                 File path = null;
-                AppDatabase appDatabase = AppDatabase.getAppDatabase(getApplicationContext());
+                AppDatabase appDatabase = AppDatabase.getAppDatabase(this);
                 RingtoneEntity ringtoneEntity = appDatabase.daoRingtone().getContatcByNumber(Constant.PHONENUMBER);
-                if(ringtoneEntity== null )
+                if (ringtoneEntity == null)
                     return;
-                File file = new File(Utils.getFilePath(getApplicationContext()) + "/" + ringtoneEntity.getSampleFileUrl());
+                File file = new File(Utils.getFilePath(this) + "/" + ringtoneEntity.getSampleFileUrl());
                 if (file.exists())
                     path = file;
 
@@ -217,7 +214,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                     return;
                 }
                 windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-                overlayedLayout = new LinearLayout(getApplicationContext());
+                overlayedLayout = new LinearLayout(this);
                 overlayedLayout.setOnClickListener(this);
                 overlayedLayout.setOnTouchListener(this);
                 overlayedLayout.setAlpha(0.0f);
@@ -228,16 +225,16 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                 overlayedLayout.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
 
                 if (path.getPath().endsWith("mp4")) {
-                    videoView = new CustomVideoView(getApplicationContext());
+                    videoView = new CustomVideoView(this);
                     videoView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
                     videoView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
                     //videoView.getLayoutParams().height = 300;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         videoView.setForegroundGravity(Gravity.CENTER);
                     }
-                    //  Uri video = Uri.fromFile(path);
-                    Uri vidUri = Uri.parse(ApiConstant.MEDIA_URL + ringtoneEntity.getSampleFileUrl());
-                    videoView.setVideoURI(vidUri);
+                    Uri video = Uri.fromFile(path);
+                    // Uri vidUri = Uri.parse(ApiConstant.MEDIA_URL + ringtoneEntity.getSampleFileUrl());
+                    videoView.setVideoURI(video);
                     videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
@@ -247,7 +244,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                     });
                     overlayedLayout.addView(videoView);
 
-               /* ImageView imageView=new ImageView(getApplicationContext());
+               /* ImageView imageView=new ImageView(this);
                 imageView.setImageDrawable(getResources().getDrawable(R.drawable.adduser_icon));
                 imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
                 imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -259,13 +256,13 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
 
                 } else {
 
-                    ImageView imageView = new ImageView(getApplicationContext());
+                    ImageView imageView = new ImageView(this);
 //                    if (Constant.isIncoming) {
-//                        Glide.with(getApplicationContext()).load(Config_URL.MEDIA_URL + ringtoneEntity.getClipArtUrl()).
+//                        Glide.with(this).load(Config_URL.MEDIA_URL + ringtoneEntity.getClipArtUrl()).
 //                                into(imageView);
 //                    } else {
 //
-//                        Glide.with(getApplicationContext()).load(Config_URL.MEDIA_URL + ringtoneEntity.get()).
+//                        Glide.with(this).load(Config_URL.MEDIA_URL + ringtoneEntity.get()).
 //                                into(imageView);
 //                    }
                     imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
@@ -306,7 +303,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                 params.y = 0;
                 windowManager.addView(overlayedLayout, params);
 
-                topLeftView = new View(getApplicationContext());
+                topLeftView = new View(this);
                 LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
                 topLeftParams.gravity = Gravity.CENTER;
                 topLeftParams.x = 0;
@@ -414,7 +411,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             ;
 
         }
-        stopService(new Intent(getApplicationContext(), OverlayShowingService.class));
+        stopService(new Intent(this, OverlayShowingService.class));
     }
 
 }

@@ -1,4 +1,4 @@
-package  com.mobileoid2.celltone.view.fragments;
+package com.mobileoid2.celltone.view.fragments;
 
 
 import android.app.Activity;
@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.util.Log;
@@ -40,14 +42,26 @@ import com.mobileoid2.celltone.network.SendRequest;
 import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
 import com.mobileoid2.celltone.network.model.setOwnMedia.SetOwnMediaModel;
 import com.mobileoid2.celltone.pojo.Music;
+import com.mobileoid2.celltone.pojo.getmedia.Body;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
+import com.mobileoid2.celltone.utility.Utils;
+import com.mobileoid2.celltone.view.activity.UploadActivity;
 import com.mobileoid2.celltone.view.activity.VideoCapture;
+import com.netcompss.ffmpeg4android.GeneralUtils;
+import com.netcompss.loader.LoadJNI;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -75,6 +89,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private Activity activity;
     private int isAudio;
     private View view;
+    private File mediaFile;
     private Map<String, RequestBody> partMap = new HashMap<>();
     private MultipartBody.Part fileData = null;
     private ApiInterface apiInterface;
@@ -97,7 +112,10 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private boolean isRecordingLayoutVisible = false;
     private String videoPath;
     private static boolean isFileMade = true;
+    private File mediaFolder;
     private boolean isVideoRecorded = false;
+    //  File mediaFolder = Environment.getExternalStoragePublicDirectory("VideoCompression");
+
 
     public static FragmentMusicUpload newInstance() {
         FragmentMusicUpload fragment = new FragmentMusicUpload();
@@ -106,6 +124,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
 
 
     static {
+
         if (!new File(Constant.RECORDING_AUDIO_PATH).exists()) {
             isFileMade = new File(Constant.RECORDING_AUDIO_PATH).mkdirs();
         }
@@ -191,16 +210,17 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        isRecordingLayoutVisible = false;
         if (requestCode == VIDEO_RECORDING_CODE && resultCode == RESULT_OK) {
             if (data != null) {
-//                if (Integer.parseInt(data.getStringExtra("length")) < 10) {
-//                    Toast.makeText(activity, getResources().getString(R.string.text_make_a_rec), Toast.LENGTH_SHORT).show();
-//                } else {
-                    //proceedFurtherWithVideoFile();
-                    isAudio = 0;
-                    statusCenter = 2;
-                    currentOutFile = data.getStringExtra(PATH_WITH_NAME);
-                    requestRecording(0);
+                currentOutFile = data.getStringExtra("filepath");
+                if (!currentOutFile.isEmpty()) {
+                    UploadActivity.isPopupVisible = 1;
+                    layoutRecording.setVisibility(View.VISIBLE);
+                }
+                isAudio = 0;
+                statusCenter = 2;
+                requestRecording(0);
                 //    PATH_WITH_NAME
 
 
@@ -244,6 +264,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             File recording = new File(currentOutFile);
             if (recording.exists()) recording.delete();
         }
+        UploadActivity.isPopupVisible = 0;
         layoutRecording.setVisibility(View.GONE);
         isRecordingLayoutVisible = false;
         // action had taken place
@@ -280,6 +301,14 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 llVideo.setVisibility(View.GONE);
 
             }
+            txtCancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    UploadActivity.isPopupVisible = 0;
+                    layoutRecording.setVisibility(View.GONE);
+
+                }
+            });
             txtSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -366,9 +395,9 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 }
             });
 
-                setInitialRecordingScreen();
+            setInitialRecordingScreen();
 
-            if(isAudio==0) {
+            if (isAudio == 0) {
                 llButtons.setVisibility(View.GONE);
                 llFileName.setVisibility(View.VISIBLE);
                 imageButtonCenter.setImageDrawable(getResources().getDrawable(R.mipmap.add2contact_btn));
@@ -393,12 +422,97 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
         imageButtonLeft.setVisibility(View.GONE);
         imageButtonLeft.setImageDrawable(getResources().getDrawable(R.mipmap.replay_btn));
         imageButtonRight.setImageDrawable(getResources().getDrawable(R.mipmap.delete_btn));
-        if(isAudio==1)
-        isRecording = false;
+        if (isAudio == 1)
+            isRecording = false;
+    }
+
+    private class Compress extends AsyncTask<String, Integer, String> {
+
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+        private String filePath;
+        private  String mFolder ="";
+
+        public Compress(Context context, String filePath) {
+            this.context = context;
+            this.filePath = filePath;
+        }
+
+        @Override
+        protected String doInBackground(String... sUrl) {
+
+
+            String input = sUrl[0];
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
+            String currentTimeStamp = dateFormat.format(new Date());
+
+
+            String output = "";
+            LoadJNI vk = new LoadJNI();
+            String commandStr = "";
+            try {
+                if (isAudio == 0) {
+
+                    mFolder =new File(Constant.RECORDING_VIDEO_PATH).getAbsolutePath() + "/";
+                    output = mFolder+ currentTimeStamp + ".mp4";
+
+                    commandStr = "ffmpeg -y   -i " + input + " -strict -2 -s 480x270 " + output;
+                } else {
+                    mFolder =new File(Constant.RECORDING_AUDIO_PATH).getAbsolutePath() + "/";
+                    output = mFolder+ currentTimeStamp + ".mp3";
+                    commandStr = "ffmpeg -y  -i " + input + " -ac 1 -ab 64k -strict -2" + output;
+                }
+                if (!commandStr.isEmpty())
+                    vk.run(GeneralUtils.utilConvertToComplex(commandStr), mFolder, getActivity());
+                File file = new File(filePath);
+
+// Get length of file in bytes
+                long fileSizeInBytes = file.length();
+// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+                long fileSizeInKB = fileSizeInBytes / 1024;
+// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+                long fileSizeInMB = fileSizeInKB / 1024;
+
+                System.out.println("Actual FileSize"+fileSizeInMB);
+
+                 fileSizeInBytes = new File(output).length();
+// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+                 fileSizeInKB = fileSizeInBytes / 1024;
+// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+                 fileSizeInMB = fileSizeInKB / 1024;
+
+                System.out.println("Actual FileSize after Compression"+fileSizeInMB);
+
+
+                if (file.exists())
+                    file.delete();
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+               // progressBar.setVisibility(View.GONE);
+                UploadActivity.isPopupVisible = 0;
+                layoutRecording.setVisibility(View.GONE);
+
+            }
+
+
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String fileName) {
+            super.onPostExecute(fileName);
+
+        }
     }
 
 
     public void setDataForRequest(String fileName, String filePath) {
+
+//        Compress task = new Compress(getActivity(), filePath);
+//        task.execute(filePath);
 
 
         partMap.put("title", RequestBody.create(parse("text/plain"), fileName));
@@ -418,8 +532,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
 
             fileData = MultipartBody.Part.createFormData("media", file.getName(), requestFile);
             SendRequest.sendRequest(ApiConstant.VIDEOAPI, apiInterface.uploadMedia(SharedPrefrenceHandler.getInstance().getUSER_TOKEN(), fileData, partMap), this);
-        }
-        else
+        } else
             progressBar.setVisibility(View.GONE);
 
     }
@@ -431,9 +544,10 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
         statusCenter = 0;
         totalSeconds = 0;
         isVideoRecorded = false;
+        UploadActivity.isPopupVisible = 1;
         layoutRecording.setVisibility(View.VISIBLE);
         isRecordingLayoutVisible = true;
-        if(isAudio==1) {
+        if (isAudio == 1) {
             textViewAudioRecordingName.setText("");
             textViewAudioRecordingTime.setText("00:00");
             textViewAudioRecordingTime.setTextSize(25);
@@ -441,6 +555,11 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             nameFile = "";
 
         }
+
+    }
+
+    public void hidePopup() {
+        layoutRecording.setVisibility(View.GONE);
 
     }
 
@@ -483,7 +602,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
         myAudioRecorder = new MediaRecorder();
         myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        myAudioRecorder.setMaxDuration(30*1000);
+        myAudioRecorder.setMaxDuration(30 * 1000);
         myAudioRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
 
 
@@ -646,6 +765,8 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             @Override
             public void onNext(SetOwnMediaModel model) {
                 Toast.makeText(getActivity(), model.getMessage(), Toast.LENGTH_LONG).show();
+                UploadActivity.isPopupVisible = 0;
+                layoutRecording.setVisibility(View.GONE);
                 progressBar.setVisibility(View.GONE);
 
 
@@ -667,8 +788,8 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     public void onDetach() {
         super.onDetach();
         try {
-       //     if (AudioPlayer.getmMediaController() != null)
-             //   AudioPlayer.stop();
+            //     if (AudioPlayer.getmMediaController() != null)
+            //   AudioPlayer.stop();
         } catch (Exception ex) {
 
         }
@@ -679,6 +800,8 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private Observable<SetOwnMediaModel> getMediaResponse(String response) {
         Gson gsonObj = new Gson();
         final SetOwnMediaModel planBody = gsonObj.fromJson(response, SetOwnMediaModel.class);
+        if (mediaFile.exists())
+            mediaFile.delete();
 
         return Observable.create(new ObservableOnSubscribe<SetOwnMediaModel>() {
             @Override

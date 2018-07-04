@@ -24,6 +24,7 @@ public class ContactActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(getString(R.string.contact_list));
         Intent intent = getIntent();
         Fragment fragment = ContactsFragment.newInstance((Song) intent.getSerializableExtra("song"), intent.getIntExtra("isOutgoing", 0),
                 intent.getIntExtra("isAudio", 0), intent.getIntExtra("isEdit", 0));

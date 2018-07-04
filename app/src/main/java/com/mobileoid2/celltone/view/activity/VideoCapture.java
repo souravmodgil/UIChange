@@ -24,6 +24,7 @@ import java.io.IOException;
 
 public class VideoCapture extends Activity implements Camera.PreviewCallback {
     private static final long REPEAT_INTERVAL = 1000;
+    private int isVideoStart =0;
 
     private CameraPreview mCameraPreview;
     private FrameLayout topLayout;
@@ -75,6 +76,7 @@ public class VideoCapture extends Activity implements Camera.PreviewCallback {
                     stopRecording();
                 } else {
                     try {
+                        isVideoStart=1;
                         releaseMediaRecorder();
                         startRecording();
                         handler.post(updateTimer);
@@ -280,9 +282,13 @@ public class VideoCapture extends Activity implements Camera.PreviewCallback {
 
         Intent data = new Intent();
         data.putExtra("length", "" + totalSeconds);
-        setResult(RESULT_OK, data);
+        data.putExtra("filepath",  pathWithName);
+        data.putExtra("isAudioRecord",isVideoStart);
 
-        super.onBackPressed();
+        setResult(RESULT_OK, data);
+        finish();
+
+      //  super.onBackPressed();
 
     }
 }

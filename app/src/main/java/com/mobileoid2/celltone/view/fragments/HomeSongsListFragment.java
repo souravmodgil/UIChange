@@ -82,7 +82,6 @@ public class HomeSongsListFragment extends Fragment implements OnListFragmentInt
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_homesongslist_list, container, false);
         list = view.findViewById(R.id.list);
-
         // Set the adapter
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
         list.setAdapter(new MyHomeSongsListRecyclerViewAdapter(isAudio, homeMusicItemList, this, getContext(), getActivity()));

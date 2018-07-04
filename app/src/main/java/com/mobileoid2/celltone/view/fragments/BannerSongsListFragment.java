@@ -34,6 +34,7 @@ import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.ApiInterface;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.view.SeparatorDecoration;
+import com.mobileoid2.celltone.view.activity.ChangeToolBarTitleListiner;
 import com.mobileoid2.celltone.view.activity.ContactActivity;
 import com.mobileoid2.celltone.view.adapter.CategoriesSongsRecyclerViewAdapter;
 import com.mobileoid2.celltone.view.listener.IncomingOutgoingListener;
@@ -83,12 +84,15 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
     private String sampleUrl = "";
     private AppDatabase appDatabase;
     private int currentSongPostion;
+    private ChangeToolBarTitleListiner changeToolBarTitleListiner;
 
-    public static BannerSongsListFragment newInstance(Context context, List<Song> songList
+    public static BannerSongsListFragment newInstance(Context context, List<Song> songList,
+                                                      ChangeToolBarTitleListiner changeToolBarTitleListiner
                                                    ) {
         BannerSongsListFragment fragment = new BannerSongsListFragment();
         fragment.context = context;
         fragment.songList = songList;
+        fragment.changeToolBarTitleListiner=changeToolBarTitleListiner;
 
 
         return fragment;
@@ -368,8 +372,13 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
     }
 
     private void setRingTone(int callType, Song song) {
+        if(callType==1)
+            changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Outgoing)",song.getTitle());
+        else
+            changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Incoming)",song.getTitle());
 
-        Intent intent = new Intent(getActivity(), ContactActivity.class);
+
+        // Intent intent = new Intent(getActivity(), ContactActivity.class);
         Fragment fragment = ContactsFragment.newInstance(song, callType, isAudio, 0);
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);

@@ -16,7 +16,7 @@
         />
 
 
-    <com.mobileoid2.celltone.CustomWidget.TextView.ProximumExtraBoldTextView
+    <com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView
         android:id="@+id/txtTitle"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
