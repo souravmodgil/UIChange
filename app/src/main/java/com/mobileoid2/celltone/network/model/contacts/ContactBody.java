@@ -2,17 +2,23 @@ package com.mobileoid2.celltone.network.model.contacts;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.mobileoid2.celltone.pojo.getmedia.Outgoing;
+import com.mobileoid2.celltone.pojo.getmedia.UserId;
 
 public class ContactBody {
+
+
+
+
     @SerializedName("incommingself")
     @Expose
     private Object incommingself;
     @SerializedName("incommingother")
     @Expose
-    private Incommingother incommingother;
+    private Outgoing incommingother;
     @SerializedName("outgoingself")
     @Expose
-    private Incommingother outgoingself;
+    private Outgoing outgoingself;
     @SerializedName("outgoingother")
     @Expose
     private Object outgoingother;
@@ -37,19 +43,19 @@ public class ContactBody {
         this.incommingself = incommingself;
     }
 
-    public Incommingother getIncommingother() {
+    public Outgoing getIncommingother() {
         return incommingother;
     }
 
-    public void setIncommingother(Incommingother incommingother) {
+    public void setIncommingother(Outgoing incommingother) {
         this.incommingother = incommingother;
     }
 
-    public Incommingother getOutgoingself() {
+    public Outgoing getOutgoingself() {
         return outgoingself;
     }
 
-    public void setOutgoingself(Incommingother outgoingself) {
+    public void setOutgoingself(Outgoing outgoingself) {
         this.outgoingself = outgoingself;
     }
 
@@ -92,4 +98,14 @@ public class ContactBody {
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    @Override
+
+    public boolean equals(Object obj) {
+
+        return this.mobile.equals(((ContactBody) obj).mobile);
+
+
+    }
+
 }

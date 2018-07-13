@@ -25,7 +25,7 @@ import com.splunk.mint.Mint;
 
 import java.util.List;
 
-public class ViewAllSongActivity extends AppCompatActivity implements ChangeToolBarTitleListiner  {
+public class ViewAllSongActivity extends AppCompatActivity implements ChangeToolBarTitleListiner {
 
     private String type;
     private int isAudio;
@@ -42,6 +42,9 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+      //  B3:C2:C6:F6:39:C3:8E:24:D6:75:D3:2B:24:93:25:ED:7D:AF:D8:27
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all_song);
         Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
@@ -54,7 +57,7 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
         mobileNo = getIntent().getStringExtra("mobile_no");
         name = getIntent().getStringExtra("contact_name");
         isIncoming = getIntent().getIntExtra("isIncoming", 0);
-        contactEntity =(ContactEntity) getIntent().getSerializableExtra("contact_entity");
+        contactEntity = (ContactEntity) getIntent().getSerializableExtra("contact_entity");
         songList = (List<Song>) getIntent().getSerializableExtra("songsList");
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,18 +66,18 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getIntent().getStringExtra("category"));
         Fragment fragment = ViewAllSongsFragment.newInstance(this, songList, isAudio, type, categoryId, postion,
-                isEdit,mobileNo,name,isIncoming,contactEntity,this);
+                isEdit, mobileNo, name, isIncoming, contactEntity, this);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
         fragmentTransaction.addToBackStack(fragment.getClass().getName());
         fragmentTransaction.commit();
 
-        if(isEdit==1) {
+        if (isEdit == 1) {
             String msg = "";
-            if(isIncoming==1)
-                msg = getString(R.string.update_incoming_media_text)+name;
+            if (isIncoming == 1)
+                msg = getString(R.string.update_incoming_media_text) + name;
             else
-                msg =getString(R.string.update_outgoing_media_text)+name;
+                msg = getString(R.string.update_outgoing_media_text) + name;
 
             Snackbar snackbar = Snackbar.make(llMain, msg, Snackbar.LENGTH_INDEFINITE);
             View snackBarView = snackbar.getView();
@@ -94,8 +97,12 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
     }
 
     public void backPress() {
-
+        if (getSupportFragmentManager().getBackStackEntryCount() > 1)
+            super.onBackPressed();
+        else
             finish();
+
+
     }
 
     @Override
@@ -127,7 +134,7 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
     }
 
     @Override
-    public void setTitle(String text ,String songName) {
+    public void setTitle(String text, String songName) {
         getSupportActionBar().setTitle(text);
         getSupportActionBar().setSubtitle(songName);
 

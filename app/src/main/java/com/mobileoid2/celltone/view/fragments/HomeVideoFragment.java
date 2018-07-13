@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.CardView;
+import android.text.InputType;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
@@ -143,6 +144,7 @@ public class HomeVideoFragment extends Fragment {
                     //assign name of the font here (Must be case sensitive)
                     ((TextView) tabViewChild).setTypeface(Typeface.createFromAsset(getActivity().getAssets(),
                             "fonts/ProximaNova-Regular.otf"));
+                    ((TextView) tabViewChild).setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
                 }
             }
         }

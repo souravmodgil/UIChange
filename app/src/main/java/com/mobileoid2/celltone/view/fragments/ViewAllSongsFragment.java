@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -50,6 +51,7 @@ import com.mobileoid2.celltone.network.model.feedback.FeedBackModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.pojo.CategeoryRequest;
 import com.mobileoid2.celltone.pojo.QUERYREQUEST;
+import com.mobileoid2.celltone.pojo.SelectContact;
 import com.mobileoid2.celltone.pojo.getmedia.Body;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
@@ -129,6 +131,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     private int currentSongPostion;
     private ChangeToolBarTitleListiner changeToolBarTitleListiner;
     int skip = 0;
+    int pos =0;
     int limit = 10;
     private int noOfPages = 0;
     int pastVisiblesItems, visibleItemCount, totalItemCount;
@@ -212,9 +215,10 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
             @Override
             public void onPrepared(MediaPlayer mp) {
                 // TODO Auto-generated method stub
-                if (isAudio == 1)
-                    mediaPlayerProgressBar.setVisibility(View.GONE);
+
                 llMediaButton.setVisibility(View.VISIBLE);
+                mediaPlayerProgressBar.setVisibility(View.GONE);
+
                 videoView.start();
                 mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
                     @Override
@@ -223,6 +227,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                         // TODO Auto-generated method stub
                         mediaPlayerProgressBar.setVisibility(View.GONE);
                         videoView.start();
+                        playButton.setImageResource(R.drawable.pause_icon);
                     }
                 });
             }
@@ -474,6 +479,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
 
     private void parseSaveContactResponse(String response) {
+
         Utils utils = new Utils();
         utils.parseSaveContactResponse(getActivity(), response, isIncoming, isAudio, mediaId, mobileNo, sampleUrl, appDatabase, contactEntity,
                 songList, currentSongPostion, progressBar);
@@ -668,20 +674,24 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                 }
                 break;
             case R.id.play_button:
-                if (isPause == 0) {
-                    isPause = 1;
+                if (isPause == 1) {
+                    isPause = 0;
                     playButton.setImageResource(R.drawable.pause_icon);
-                    if (isMediaCompleted == 0)
-                        videoView.resume();
+                    if (isMediaCompleted == 0) {
+                        videoView.seekTo(pos);
+                        videoView.start();
+                    }
                     else {
                         isMediaCompleted = 0;
+                       videoView.seekTo(0);
                         videoView.start();
                     }
 
 
                 } else {
-                    isPause = 0;
+                    isPause = 1;
                     playButton.setImageResource(R.drawable.play_icon);
+                    pos=videoView.getCurrentPosition();
                     videoView.pause();
                 }
                 break;
@@ -691,9 +701,9 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
                     currentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
                     isMute = true;
                     mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-                    imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute_off));
-                } else {
                     imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute));
+                } else {
+                    imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute_off));
                     AudioManager mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
                     isMute = false;
                     mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, currentVolume, 0);
@@ -706,8 +716,9 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     @Override
     public void onCompletion(MediaPlayer mp) {
         playButton.setImageResource(R.drawable.play_icon);
-        videoView.stopPlayback();
-        isPause = 0;
+        pos =0;
+        videoView.pause();
+        isPause = 1;
         isMediaCompleted = 1;
 
     }

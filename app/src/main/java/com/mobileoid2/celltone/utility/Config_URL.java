@@ -2,8 +2,8 @@ package com.mobileoid2.celltone.utility;
 
 public class Config_URL {
 
-   // private static String base_URL = "http://13.126.37.207/celltone-node/api/v01/";
-    public static String base_URL = "http://192.168.1.41:3000/api/v01/";
+    private static String base_URL = "http://13.126.37.207/celltone-node/api/v01/";
+   // public static String base_URL = "http://192.168.1.41:3000/api/v01/";
     public static String tag_json_obj = "json_obj_req";
 
     /*Login*/

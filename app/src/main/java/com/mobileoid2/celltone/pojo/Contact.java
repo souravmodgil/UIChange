@@ -12,12 +12,13 @@ public class Contact {
 	public ArrayList<ContactEmail> emails;
 	public ArrayList<ContactPhone> numbers;
 
-	public Contact(String id, String name) {
-		this.id = id;
+	public Contact(String number, String name) {
+		this.number = number;
 		this.name = name;
 		this.emails = new ArrayList<ContactEmail>();
 		this.numbers = new ArrayList<ContactPhone>();
 	}
+
 
 
 

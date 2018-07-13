@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -47,14 +48,14 @@ import java.util.Locale;
 public class BannerSongsListFragment extends Fragment implements OnSongsClickLisner, IncomingOutgoingListener, SeekBar.OnSeekBarChangeListener,
         View.OnClickListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
 
-
+//04gM+EAfhnq4ALbhOX8jG5oRuow=
     private RecyclerView listSongs;
     private VideoView videoView;
     private ImageView preview, previous, playButton, playNext, iconAddTone;
     private TextView txtSongDuration, txtCurrentTime, txtTitle, txtArtistName;
     private ImageButton imageButtonMute;
     private SeekBar seekBar;
-    private int postion =0;
+    private int postion = 0;
     private LinearLayout llMediaButton;
     private int isVideoPlaying = 0;
     private Boolean isMute = false;
@@ -81,6 +82,7 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
 
     private ApiInterface apiInterface;
     private String mediaId = "";
+    private    int pos =0;
     private String sampleUrl = "";
     private AppDatabase appDatabase;
     private int currentSongPostion;
@@ -88,11 +90,11 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
 
     public static BannerSongsListFragment newInstance(Context context, List<Song> songList,
                                                       ChangeToolBarTitleListiner changeToolBarTitleListiner
-                                                   ) {
+    ) {
         BannerSongsListFragment fragment = new BannerSongsListFragment();
         fragment.context = context;
         fragment.songList = songList;
-        fragment.changeToolBarTitleListiner=changeToolBarTitleListiner;
+        fragment.changeToolBarTitleListiner = changeToolBarTitleListiner;
 
 
         return fragment;
@@ -160,8 +162,10 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
             @Override
             public void onPrepared(MediaPlayer mp) {
                 // TODO Auto-generated method stub
-                if (isAudio == 1)
-                    mediaPlayerProgressBar.setVisibility(View.GONE);
+
+                llMediaButton.setVisibility(View.VISIBLE);
+                mediaPlayerProgressBar.setVisibility(View.GONE);
+
                 videoView.start();
                 mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
                     @Override
@@ -170,6 +174,7 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
                         // TODO Auto-generated method stub
                         mediaPlayerProgressBar.setVisibility(View.GONE);
                         videoView.start();
+                        playButton.setImageResource(R.drawable.pause_icon);
                     }
                 });
             }
@@ -253,17 +258,44 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
     }
 
 
-
     @Override
     public void setMedia(String id, String url, int songPostion) {
         mediaId = id;
         this.sampleUrl = sampleUrl;
         currentSongPostion = songPostion;
-       // sendContact(id);
+        // sendContact(id);
     }
 
 
+    public void muteAudio() {
+        AudioManager mAlramMAnager = (AudioManager) getActivity().getSystemService(getActivity().AUDIO_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
+            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
+            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_MUTE, 0);
+        } else {
+            mAlramMAnager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+            mAlramMAnager.setStreamMute(AudioManager.STREAM_SYSTEM, true);
+        }
+        isMute = false;
+        imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute));
+    }
+
+    public void unMuteAudio() {
+        AudioManager mAlramMAnager = (AudioManager) getActivity().getSystemService(getActivity().AUDIO_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_UNMUTE, 0);
+        } else {
+
+            mAlramMAnager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+            mAlramMAnager.setStreamMute(AudioManager.STREAM_SYSTEM, false);
+        }
+        imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute_off));
+        isMute = true;
+
+    }
 
 
     class UpdateSeekBarThread implements Runnable {
@@ -372,10 +404,10 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
     }
 
     private void setRingTone(int callType, Song song) {
-        if(callType==1)
-            changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Outgoing)",song.getTitle());
+        if (callType == 1)
+            changeToolBarTitleListiner.setTitle("Set Ringtone" + "(Outgoing)", song.getTitle());
         else
-            changeToolBarTitleListiner.setTitle("Set Ringtone"+"(Incoming)",song.getTitle());
+            changeToolBarTitleListiner.setTitle("Set Ringtone" + "(Incoming)", song.getTitle());
 
 
         // Intent intent = new Intent(getActivity(), ContactActivity.class);
@@ -394,6 +426,7 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
                 showPopup(view);
                 break;
             case R.id.play_next:
+                mediaPlayerProgressBar.setVisibility(View.VISIBLE);
                 if (songPostion <= songList.size() - 1 && songList.size() > 0) {
                     isMediaCompleted = 0;
                     playNext.setEnabled(true);
@@ -423,6 +456,7 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
                 break;
             case R.id.previous:
                 if (songPostion > 0 && songList.size() > 0) {
+                    mediaPlayerProgressBar.setVisibility(View.VISIBLE);
                     isMediaCompleted = 0;
                     previous.setEnabled(true);
                     songPostion = songPostion - 1;
@@ -449,36 +483,34 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
                 }
                 break;
             case R.id.play_button:
-                if (isPause == 0) {
-                    isPause = 1;
+                if (isPause == 1) {
+                    isPause = 0;
                     playButton.setImageResource(R.drawable.pause_icon);
-                    if (isMediaCompleted == 0)
-                        videoView.resume();
+                    if (isMediaCompleted == 0) {
+                        videoView.seekTo(pos);
+                        videoView.start();
+                    }
                     else {
                         isMediaCompleted = 0;
+                        videoView.seekTo(0);
                         videoView.start();
                     }
 
 
                 } else {
-                    isPause = 0;
+                    isPause = 1;
                     playButton.setImageResource(R.drawable.play_icon);
+                    pos=videoView.getCurrentPosition();
                     videoView.pause();
                 }
                 break;
             case R.id.image_button_mute:
-                if (!isMute) {
-                    AudioManager mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-                    currentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                    isMute = true;
-                    mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-                    imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute_off));
-                } else {
-                    imageButtonMute.setImageDrawable(getResources().getDrawable(R.mipmap.mute));
-                    AudioManager mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-                    isMute = false;
-                    mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, currentVolume, 0);
-                }
+                if (!isMute)
+                    unMuteAudio();
+                else
+                    muteAudio();
+
+
                 break;
         }
 
@@ -487,10 +519,10 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
     @Override
     public void onCompletion(MediaPlayer mp) {
         playButton.setImageResource(R.drawable.play_icon);
-        videoView.stopPlayback();
-        isPause = 0;
+        pos =0;
+        videoView.pause();
+        isPause = 1;
         isMediaCompleted = 1;
-
     }
 
     @Override
@@ -508,6 +540,7 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
         artistName = songList.get(poistion).getArtistName();
         playButton.setImageResource(R.drawable.pause_icon);
         isPause = 0;
+        llMediaButton.setVisibility(View.GONE);
 
         if (isAudio == 0) {
             if (videoView.isPlaying() || videoView != null)

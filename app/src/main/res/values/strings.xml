@@ -117,8 +117,9 @@
     </string-array>
 
     <!--facebook-->
-    <string name="facebook_app_id">2202666193355172</string>
-    <string name="fb_login_protocol_scheme">fb2202666193355172</string>
+
+    <string name="facebook_app_id">2102276686663803</string>
+    <string name="fb_login_protocol_scheme">fb2102276686663803</string>
     <string name="verify_otp">Verify OTP</string>
     <string name="send_otp">Send OTP</string>
     <string name="login">Login</string>

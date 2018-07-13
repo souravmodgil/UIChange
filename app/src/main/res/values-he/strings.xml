@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Celltone</string>
+    <string name="app_name">KolBeat</string>
     <string name="audio_tab"> מוזיקה</string>
     <string name="video_tab"> וידאו</string>
     <string name="upload_own">העלאה</string>

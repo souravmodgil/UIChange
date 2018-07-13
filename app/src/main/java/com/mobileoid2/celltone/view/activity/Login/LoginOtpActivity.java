@@ -24,6 +24,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.gson.Gson;
@@ -106,11 +107,13 @@ public class LoginOtpActivity extends AppCompatActivity implements NetworkCallBa
     private static final String EMAIL = "email";
     private LoginButton loginButton;
     private CallbackManager callbackManager;
+    private  LoginManager fbLoginManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_otp);
+        fbLoginManager =LoginManager.getInstance();
         ButterKnife.bind(this);
         apiInterface = APIClient.getClient().create(ApiInterface.class);
         callbackManager = CallbackManager.Factory.create();
@@ -119,6 +122,25 @@ public class LoginOtpActivity extends AppCompatActivity implements NetworkCallBa
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         countryCodeValue = tm.getNetworkCountryIso();
         parseCoutry();
+        CallbackManager callbackManager = CallbackManager.Factory.create();
+        fbLoginManager.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                // here write code When Login successfully
+              //  String mobile = loginResult.getAccessToken();
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException e) {
+                // here write code when get error
+            }
+        });
+
 
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
@@ -145,6 +167,8 @@ public class LoginOtpActivity extends AppCompatActivity implements NetworkCallBa
 
     @OnClick(R.id.facebook)
     public void facebook(View view) {
+        fbLoginManager.logInWithReadPermissions(LoginOtpActivity.this, Arrays.asList("public_profile", "user_friends","user_mobile_phone"));
+
 
     }
 

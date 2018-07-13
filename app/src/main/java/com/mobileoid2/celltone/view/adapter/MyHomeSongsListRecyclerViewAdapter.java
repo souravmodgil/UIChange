@@ -6,11 +6,13 @@ import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.zxing.common.StringUtils;
 import com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.view.listener.OnListFragmentInteractionListener;
@@ -49,6 +51,7 @@ public class MyHomeSongsListRecyclerViewAdapter extends RecyclerView.Adapter<MyH
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).getTitle());
+       // holder.mIdView.setInputType(StringUtils.capitalize(mValues.get(position).toLowerCase().trim());
         //holder.mContentView.setText(mValues.get(position).content);
         holder.mContentView.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.text.InputType;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
@@ -44,7 +46,7 @@ import io.reactivex.schedulers.Schedulers;
 public class AbousUsFragment extends Fragment implements NetworkCallBack {
     private String type;
     private ProgressBar progressBar;
-    private WebView webview;
+    private TextView txtAboutUs;
     private ApiInterface apiInterface;
     public static AbousUsFragment newInstance(String type) {
         AbousUsFragment fragment = new AbousUsFragment();
@@ -63,7 +65,7 @@ public class AbousUsFragment extends Fragment implements NetworkCallBack {
         // Inflate the layout for this fragment
         View view = getView() != null ? getView() : inflater.inflate(R.layout.fragment_about, container, false);
         progressBar = view.findViewById(R.id.progress_bar);
-        webview =view.findViewById(R.id.webview);
+        txtAboutUs =view.findViewById(R.id.txt_aboutus);
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
         SendRequest.sendRequest(ApiConstant.ABOUT_US_API,apiInterface.getAboutUs(type),this);
 
@@ -93,10 +95,7 @@ public class AbousUsFragment extends Fragment implements NetworkCallBack {
             public void onNext(AboutUsModel planModel) {
                 AboutUsModel model = planModel;
                 if(model.getBody()!=null && model.getBody().getDescription()!=null) {
-                    webview.getSettings().setJavaScriptEnabled(true);
-                    webview.loadDataWithBaseURL("", model.getBody().getDescription(), "text/html", "UTF-8", "");
-                    webview.setPadding(0, 0, 0, 0);
-                  //  webview.setInitialScale(getScale());
+                    txtAboutUs.setText(Html.fromHtml(model.getBody().getDescription()));
                     progressBar.setVisibility(View.GONE);
                 }
 

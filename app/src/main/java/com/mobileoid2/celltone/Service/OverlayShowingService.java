@@ -65,10 +65,13 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             Toast.makeText(this, "Switch on Accessibility for this application", Toast.LENGTH_SHORT).show();
         }
 
-        if (Constant.PHONENUMBER == null && Constant.PHONENUMBER.isEmpty()) {
+        if (Constant.PHONENUMBER == null && Constant.PHONENUMBER.isEmpty() && !
+                SharedPrefrenceHandler.getInstance().getLoginState()
+                ) {
             stopVideoAndService();
             return;
         }
+
 
         Constant.PHONENUMBER = Constant.PHONENUMBER.replaceAll("[^+0-9]", "");
         if (!Constant.PHONENUMBER.substring(0, 1).equals("+")) {
@@ -138,7 +141,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         mp.setLooping(true);
-                        videoView.start();
+                        mp.start();
                     }
                 });
                 overlayedLayout.addView(videoView);

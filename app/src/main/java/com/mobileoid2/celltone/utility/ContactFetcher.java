@@ -60,7 +60,7 @@ public class ContactFetcher {
     public ArrayList<Contact> fetchAll() {
         String[] projectionFields = new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME,};
         ArrayList<Contact> listContacts = new ArrayList<>();
-        CursorLoader cursorLoader = new CursorLoader(context, ContactsContract.Contacts.CONTENT_URI, projectionFields, // the columns to retrieve
+        CursorLoader cursorLoader = new CursorLoader(context, ContactsContract.Contacts.CONTENT_URI, null, // the columns to retrieve
                 null, // the selection criteria (none)
                 null, // the selection args (none)
                 null // the sort order (default)
@@ -114,20 +114,18 @@ public class ContactFetcher {
                 }
                 final int type = phone.getInt(contactTypeColumnIndex);
                 String customLabel = "Custom";
-              //  number = number.replaceAll("[^+0-9]", "");
-                if(number.substring(0,1).equals("0"))
-                {
-                    // text.substring(1)
-                    String phoneNumber =  number.substring(1);
-                    number = SharedPrefrenceHandler.getInstance().getCOUTRYCODE()+
-                            phoneNumber.replaceAll("[^+0-9]", "");
+                //  number = number.replaceAll("[^+0-9]", "");
+                //   mapContact.put( number.replaceAll("[^+0-9]", ""), contact.name);
+                if (number.substring(0, 1).equals("+"))
+                    mapContact.put(number.replaceAll("[^+0-9]", ""), contact.name);
 
+                else {
+                    if (number.substring(0, 1).equals("0"))
+                        number = number.substring(1);
+                    mapContact.put(SharedPrefrenceHandler.getInstance().getCOUTRYCODE() + number.replaceAll("[^+0-9]", ""), contact.name);
 
                 }
-                else if(!number.substring(0,1).equals("0") && !number.substring(0,1).equals("+"))
-                    number = SharedPrefrenceHandler.getInstance().getCOUTRYCODE()+
-                            number.replaceAll("[^+0-9]", "");
-                mapContact.put(number, contact.name);
+
                 phone.moveToNext();
             }
         }
@@ -140,7 +138,7 @@ public class ContactFetcher {
         // Get numbers
         final String[] numberProjection = new String[]{Phone.NUMBER, Phone.TYPE, Phone.CONTACT_ID,};
 
-        Cursor phone = new CursorLoader(context, Phone.CONTENT_URI, numberProjection, null, null, null).loadInBackground();
+        Cursor phone = new CursorLoader(context, Phone.CONTENT_URI, null, null, null, null).loadInBackground();
 
         if (phone.moveToFirst()) {
             final int contactNumberColumnIndex = phone.getColumnIndex(Phone.NUMBER);
@@ -148,7 +146,7 @@ public class ContactFetcher {
             final int contactIdColumnIndex = phone.getColumnIndex(Phone.CONTACT_ID);
 
             while (!phone.isAfterLast()) {
-                 String number = phone.getString(contactNumberColumnIndex);
+                String number = phone.getString(contactNumberColumnIndex);
                 final String contactId = phone.getString(contactIdColumnIndex);
                 Contact contact = contactsMap.get(contactId);
                 if (contact == null) {
@@ -157,19 +155,11 @@ public class ContactFetcher {
                 final int type = phone.getInt(contactTypeColumnIndex);
                 String customLabel = "Custom";
                 CharSequence phoneType = Phone.getTypeLabel(context.getResources(), type, customLabel);
-                if(number.substring(0,1).equals("+"))
+                if (number.substring(0, 1).equals("+"))
                     contact.addNumber(number.replaceAll("[^+0-9]", ""), phoneType.toString());
-                else   if(number.substring(0,1).equals("0"))
-                {
-                    // text.substring(1)
-                    String phoneNumber =  number.substring(1);
-                    contact.addNumber( SharedPrefrenceHandler.getInstance().getCOUTRYCODE()+
-                            phoneNumber.replaceAll("[^+0-9]", ""), phoneType.toString());
-
-                }
                 else {
-                    String contryCode1 = SharedPrefrenceHandler.getInstance().getCOUTRYCODE();
-                    number = number.replaceAll("[^+0-9]", "");
+                    if (number.substring(0, 1).equals("0"))
+                        number = number.substring(1);
 
                     contact.addNumber(SharedPrefrenceHandler.getInstance().getCOUTRYCODE() +
                             number.replaceAll("[^+0-9]", ""), phoneType.toString());
@@ -183,32 +173,4 @@ public class ContactFetcher {
         phone.close();
     }
 
-    public void matchContactEmails(Map<String, Contact> contactsMap) {
-        // Get email
-        final String[] emailProjection = new String[]{Email.DATA, Email.TYPE, Email.CONTACT_ID,};
-
-        Cursor email = new CursorLoader(context, Email.CONTENT_URI, emailProjection, null, null, null).loadInBackground();
-
-        if (email.moveToFirst()) {
-            final int contactEmailColumnIndex = email.getColumnIndex(Email.DATA);
-            final int contactTypeColumnIndex = email.getColumnIndex(Email.TYPE);
-            final int contactIdColumnsIndex = email.getColumnIndex(Email.CONTACT_ID);
-
-            while (!email.isAfterLast()) {
-                final String address = email.getString(contactEmailColumnIndex);
-                final String contactId = email.getString(contactIdColumnsIndex);
-                final int type = email.getInt(contactTypeColumnIndex);
-                String customLabel = "Custom";
-                Contact contact = contactsMap.get(contactId);
-                if (contact == null) {
-                    continue;
-                }
-                CharSequence emailType = Email.getTypeLabel(context.getResources(), type, customLabel);
-                contact.addEmail(address, emailType.toString());
-                email.moveToNext();
-            }
-        }
-
-        email.close();
-    }
 }

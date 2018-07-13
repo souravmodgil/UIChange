@@ -31,10 +31,14 @@ import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.ApiInterface;
 import com.mobileoid2.celltone.network.NetworkCallBack;
 import com.mobileoid2.celltone.network.SendRequest;
+import com.mobileoid2.celltone.network.model.contacts.ContactBody;
+import com.mobileoid2.celltone.network.model.contacts.ContactsMedia;
 import com.mobileoid2.celltone.network.model.contacts.SaveContactsResponse;
 import com.mobileoid2.celltone.network.model.setOwnMedia.SetOwnMediaModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
+import com.mobileoid2.celltone.pojo.SelectContact;
 import com.mobileoid2.celltone.pojo.getmedia.Body;
+import com.mobileoid2.celltone.pojo.getmedia.Outgoing;
 import com.mobileoid2.celltone.pojo.getmedia.PojoGETMediaResponse;
 import com.mobileoid2.celltone.view.activity.UploadActivity;
 
@@ -48,9 +52,11 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -233,6 +239,15 @@ public class Utils {
 
     }
 
+    public  void downloadOutgoingFiles(Context context,List<ContactBody> contactBodyList)
+    {
+        new DownloadOutgoingSelfTask(context).execute(contactBodyList);
+
+    }
+
+
+
+
     public void parseSaveContactResponse(Activity context, String response, int isIncoming, int isAudio, String mediaId,
                                          String mobileNo, String sampleUrl, AppDatabase appDatabase,
                                          ContactEntity contactEntity, List<Song> songList, int currentSongPostion, ProgressBar progressBar) {
@@ -309,6 +324,220 @@ public class Utils {
         }.execute();
     }
 
+    private boolean downloadFiles(File directoryToZip, String filePath) {
+        InputStream input = null;
+        OutputStream output = null;
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(ApiConstant.MEDIA_URL + filePath);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.connect();
+
+            // expect HTTP 200 OK, so we don't mistakenly save error report
+            // instead of the file
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                return true;
+            }
+            // this will be useful to display download percentage
+            // might be -1: server did not report the length
+            int fileLength = connection.getContentLength();
+            // download the file
+            input = connection.getInputStream();
+
+            File file = new File(directoryToZip.getPath() + File.separator + "" + filePath.split("/")[0]);
+            file.mkdirs();
+            File outputFile = new File(file, filePath.split("/")[1]);
+            output = new FileOutputStream(outputFile);
+            byte data[] = new byte[4096];
+            long total = 0;
+            int count;
+            while ((count = input.read(data)) != -1) {
+                // allow canceling with back button
+               /* if (isCancelled) {
+                    input.close();
+                    break;
+                }*/
+                total += count;
+                // publishing the progress....
+
+                output.write(data, 0, count);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        } finally {
+            try {
+                if (output != null) output.close();
+                if (input != null) input.close();
+            } catch (IOException ignored) {
+            }
+
+            if (connection != null) connection.disconnect();
+        }
+        return false;
+    }
+    public void parseSaveContactResponse(Activity context,String response,List<SelectContact> selectedContacts, List<ContactEntity> contactList,
+                                         int isOutgoing,int isAudio,Song songs,AppDatabase appDatabase,ProgressBar progressBar ) {
+
+
+        new AsyncTask<Void, Void, Integer>() {
+            @Override
+            protected Integer doInBackground(Void... voids) {
+                int status = 0;
+                Gson gsonObj = new Gson();
+                SaveContactsResponse saveContactsResponse = gsonObj.fromJson(response, SaveContactsResponse.class);
+                status = saveContactsResponse.getStatus();
+                if (status == 1000) {
+                    ArrayList<ContactEntity> contactEntities = new ArrayList<>();
+                    for (int i = 0; i < selectedContacts.size(); i++) {
+                        ContactEntity contactEntity = contactList.get(selectedContacts.get(i).getId());
+                        if (isOutgoing == 1) {
+
+                            RingtoneEntity ringtoneEntity = new RingtoneEntity();
+                            if (isAudio == 1)
+                                ringtoneEntity.setContentType("audio");
+                            else
+                                ringtoneEntity.setContentType("video");
+                            ringtoneEntity.setMediaId(songs.getId());
+                            ringtoneEntity.setActionType("self");
+                            ringtoneEntity.setNumber(selectedContacts.get(i).getPhoneNumber());
+                            ringtoneEntity.setSampleFileUrl(songs.getSampleFileUrl());
+                            long id = appDatabase.daoRingtone().insert(ringtoneEntity);
+                            if (id == -1) {
+                                appDatabase.daoRingtone().update(ringtoneEntity);
+                            }
+
+
+                            if (isAudio == 0)
+                                contactEntity.setOutgoingIsVideo(1);
+                            else
+                                contactEntity.setOutgoingIsVideo(0);
+                            contactEntity.setOutgoingSongName(songs.getTitle());
+                            contactEntity.setIsOutgoing(1);
+                            contactEntity.setOutgoingArtistName(songs.getArtistName());
+
+
+                        } else {
+                            if (isAudio == 0)
+                                contactEntity.setOutgoingIsVideo(1);
+                            else
+                                contactEntity.setOutgoingIsVideo(0);
+                            contactEntity.setIncomingSongName(songs.getTitle());
+                            contactEntity.setIsIncoming(1);
+                            contactEntity.setInComingArtistName(songs.getArtistName());
+                        }
+                        appDatabase.daoContacts().update(contactEntity);
+                    }
+
+
+                    // appDatabase.daoContacts().update(contactEntities);
+
+
+                }
+                return status;
+            }
+
+            @Override
+            protected void onPostExecute(Integer status) {
+                super.onPostExecute(status);
+                if (status == 1000) {
+                    download(context, songs.getSampleFileUrl());
+                    Toast.makeText(context, "Song set  successfully", Toast.LENGTH_LONG).show();
+                    context.onBackPressed();
+
+                }
+                //  new DownloadTask(getActivity().getApplicationContext()).execute(songs.getSampleFileUrl());
+                progressBar.setVisibility(View.GONE);
+
+
+            }
+        }.execute();
+    }
+
+
+    public List<ContactEntity> getContactList(ContactsMedia contactsMedia, Map<String, String> contactMap,AppDatabase appDatabase)
+
+    {
+        List<ContactEntity> contactList = new ArrayList<>();
+        List<RingtoneEntity> ringtoneEntities = new ArrayList<>();
+
+        if (contactsMedia != null) {
+            int length = contactsMedia.getBody().size();
+            ContactEntity contactEntity;
+            for (int i = 0; i < length; i++) {
+
+
+                contactEntity = new ContactEntity();
+                String mobileno = contactsMedia.getBody().get(i).getMobile();
+                Outgoing incommingother;
+                incommingother = contactsMedia.getBody().get(i).getOutgoingself();
+                if (incommingother != null) {
+                    RingtoneEntity ringtoneEntity = new RingtoneEntity();
+                    if (incommingother.getContentType().equals("video"))
+                        ringtoneEntity.setContentType("video");
+                    else
+                        ringtoneEntity.setContentType("audio");
+
+
+                    ringtoneEntity.setMediaId(incommingother.getId());
+                    ringtoneEntity.setActionType("self");
+                    ringtoneEntity.setNumber(mobileno);
+                    ringtoneEntity.setSampleFileUrl(incommingother.getSampleFileUrl());
+                    ringtoneEntities.add(ringtoneEntity);
+                    // contactEntity.setIsIncoming(0);
+                    contactEntity.setIsOutgoing(1);
+                    if (contactsMedia.getBody().get(i).getOutgoingself().getContentType().equals("audio"))
+                        contactEntity.setOutgoingIsVideo(0);
+                    else
+                        contactEntity.setOutgoingIsVideo(1);
+                    contactEntity.setOutgoingSongName(contactsMedia.getBody().get(i).getOutgoingself().getTitle());
+
+
+                }
+                else
+                    contactEntity.setIsOutgoing(0);
+
+                //   "[^a-zA-Z]+", " "
+                String name = contactMap.get(mobileno);
+                contactEntity.setNumber(mobileno);
+                if (name != null)
+                    contactEntity.setName(name);
+                else
+                    contactEntity.setName(mobileno);
+
+
+                if (contactsMedia.getBody().get(i).getIncommingother() instanceof Outgoing &&
+                        contactsMedia.getBody().get(i).getIncommingother() != null)
+
+                {
+                    contactEntity.setIsIncoming(1);
+
+                    if (contactsMedia.getBody().get(i).getIncommingother().getContentType().equals("audio"))
+                        contactEntity.setIsincomingVideo(0);
+                    else
+                        contactEntity.setIsincomingVideo(1);
+                    contactEntity.setIncomingSongName(contactsMedia.getBody().get(i).getIncommingother().getTitle());
+
+
+                } else
+                    contactEntity.setIsIncoming(0);
+
+                contactList.add(contactEntity);
+
+
+
+            }
+            appDatabase.daoContacts().insertAll(contactList);
+            appDatabase.daoRingtone().insertAll(ringtoneEntities);
+
+
+        }
+
+        return contactList;
+    }
+
+
+
 
     private class DownloadSingleTask extends AsyncTask<String, Integer, String> {
 
@@ -324,64 +553,54 @@ public class Utils {
 
             File directoryToZip = new File(Utils.getFilePath(context));
             downloadFiles(directoryToZip, sUrl[0]);
+          //  publishProgress((int) (1 * 100 / 100));
+
             return null;
         }
 
 
-        private boolean downloadFiles(File directoryToZip, String filePath) {
-            InputStream input = null;
-            OutputStream output = null;
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL(ApiConstant.MEDIA_URL + filePath);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-
-                // expect HTTP 200 OK, so we don't mistakenly save error report
-                // instead of the file
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return true;
-                }
-                // this will be useful to display download percentage
-                // might be -1: server did not report the length
-                int fileLength = connection.getContentLength();
-                // download the file
-                input = connection.getInputStream();
-
-                File file = new File(directoryToZip.getPath() + File.separator + "" + filePath.split("/")[0]);
-                file.mkdirs();
-                File outputFile = new File(file, filePath.split("/")[1]);
-                output = new FileOutputStream(outputFile);
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    // allow canceling with back button
-                    if (isCancelled()) {
-                        input.close();
-                        break;
-                    }
-                    total += count;
-                    // publishing the progress....
-                    if (fileLength > 0) // only if total length is known
-                        publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return true;
-            } finally {
-                try {
-                    if (output != null) output.close();
-                    if (input != null) input.close();
-                } catch (IOException ignored) {
-                }
-
-                if (connection != null) connection.disconnect();
-            }
-            return false;
-        }
     }
+
+    private  class DownloadOutgoingSelfTask extends AsyncTask<List<ContactBody>, Integer, String> {
+
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+
+        public DownloadOutgoingSelfTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected  String doInBackground(List<ContactBody>... sUrl) {
+
+
+            File directoryToZip = new File(Utils.getFilePath(context));
+            List<ContactBody> bodyList = sUrl[0];
+
+
+            for (int i = 0; i < bodyList.size(); i++) {
+
+                File file = null;
+                Outgoing outgoing =  bodyList.get(i).getOutgoingself() ;
+
+                if (outgoing != null) {
+
+                    file = new File(directoryToZip.getPath() + "/" + outgoing.getSampleFileUrl());
+                    System.out.println("DownloadTask.doInBackground-----" + file.exists() + "\t" + file.getPath());
+                    if (!file.exists())
+                        downloadFiles(directoryToZip, outgoing.getSampleFileUrl());
+                }
+
+
+            }
+
+            return null;
+        }
+
+
+
+    }
+
 
 
 
@@ -405,12 +624,14 @@ public class Utils {
             for (int i = 0; i < bodyList.size(); i++) {
 
                 File file = null;
+                Outgoing outgoing =  bodyList.get(i).getOutgoing() ;
 
-                if (bodyList.get(i).getOutgoing() != null) {
+                if (outgoing != null) {
+
                     file = new File(directoryToZip.getPath() + "/" + bodyList.get(i).getOutgoing().getSampleFileUrl());
                     System.out.println("DownloadTask.doInBackground-----" + file.exists() + "\t" + file.getPath());
                     if (!file.exists())
-                        downloadFiles(directoryToZip, bodyList, i);
+                        downloadFiles(directoryToZip, outgoing.getSampleFileUrl());
                 }
 
 
@@ -420,59 +641,7 @@ public class Utils {
         }
 
 
-        private boolean downloadFiles(File directoryToZip, List<com.mobileoid2.celltone.pojo.getmedia.Body> bodyList, int i) {
-            InputStream input = null;
-            OutputStream output = null;
-            HttpURLConnection connection = null;
-            try {
-                URL url = new URL(ApiConstant.MEDIA_URL + bodyList.get(i).getOutgoing().getSampleFileUrl());
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
 
-                // expect HTTP 200 OK, so we don't mistakenly save error report
-                // instead of the file
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return true;
-                }
-                // this will be useful to display download percentage
-                // might be -1: server did not report the length
-                int fileLength = connection.getContentLength();
-                // download the file
-                input = connection.getInputStream();
-
-                File file = new File(directoryToZip.getPath() + File.separator + "" + bodyList.get(i).getOutgoing().getSampleFileUrl().split("/")[0]);
-                file.mkdirs();
-                File outputFile = new File(file, bodyList.get(i).getOutgoing().getSampleFileUrl().split("/")[1]);
-                output = new FileOutputStream(outputFile);
-                byte data[] = new byte[4096];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    // allow canceling with back button
-                    if (isCancelled()) {
-                        input.close();
-                        break;
-                    }
-                    total += count;
-                    // publishing the progress....
-                    if (fileLength > 0) // only if total length is known
-                        publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return true;
-            } finally {
-                try {
-                    if (output != null) output.close();
-                    if (input != null) input.close();
-                } catch (IOException ignored) {
-                }
-
-                if (connection != null) connection.disconnect();
-            }
-            return false;
-        }
     }
 
 

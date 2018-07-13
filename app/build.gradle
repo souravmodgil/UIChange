@@ -8,7 +8,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
-        versionName "1.17"
+        versionName "1.20"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
 
@@ -16,16 +16,7 @@ android {
 
     buildTypes {
 
-        /* def appName = "Celltone_V"
-        applicationVariants.all { variant ->
-            variant.outputs.all { output ->
-                output.outputFileName =
-                        new File("/", output.outputFile.name.replace("app-debug.apk", appName + defaultConfig.versionName + ".apk"))
-                output.outputFileName =
-                        new File("/", output.outputFile.name.replace("app-release.apk", appName + defaultConfig.versionName + ".apk"))
-            }
-        }
-*/
+
 
         android.applicationVariants.all { variant ->
             variant.outputs.all {
@@ -61,7 +52,7 @@ android {
 }
 
 dependencies {
-    implementation project(':ffmpeg4android_lib')
+
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.android.support:support-v4:26.1.0'
     implementation 'com.google.code.gson:gson:2.6.2'

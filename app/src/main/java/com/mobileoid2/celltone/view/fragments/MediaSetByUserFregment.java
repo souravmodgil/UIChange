@@ -1,5 +1,6 @@
 package  com.mobileoid2.celltone.view.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,6 +29,7 @@ import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
 import com.mobileoid2.celltone.network.model.upload_media_list.UploadMediaListModle;
 import com.mobileoid2.celltone.pojo.MediaListReqeuestPojo;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
+import com.mobileoid2.celltone.view.activity.UploadActivity;
 import com.mobileoid2.celltone.view.adapter.SetMediaByUserAdapter;
 
 import java.util.List;
@@ -70,6 +72,12 @@ public class MediaSetByUserFregment extends Fragment implements NetworkCallBack 
         changeToolBarTitleListiner.setTitle(getString(R.string.profile_usage));
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
         getMediaList();
+        btUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), UploadActivity.class));
+            }
+        });
 
         return view;
     }

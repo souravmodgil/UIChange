@@ -9,10 +9,10 @@ public class ApiConstant {
 
 
     public static String INVALIDAPIFORMAT = "Invalid Api format";
-    public static String BASEURL = "http://192.168.1.41:3000/api/v01/";
-    public static String MEDIA_URL = "http://192.168.1.41:3000/media/";
-    //  public static String BASEURL = "http://13.126.37.207/celltone-node/api/v01/";
-    // public static String MEDIA_URL = "http://13.126.37.207/celltone-media/media/";
+    //    public static String BASEURL = "http://192.168.1.41:3000/api/v01/";
+//    public static String MEDIA_URL = "http://192.168.1.41:3000/media/";
+    public static String BASEURL = "http://13.126.37.207/celltone-node/api/v01/";
+    public static String MEDIA_URL = "http://13.126.37.207/celltone-media/media/";
     public final static int VIDEOAPI = 1;
     public final static int AUDIOAPI = 2;
     public final static int BANNER_API = 14;

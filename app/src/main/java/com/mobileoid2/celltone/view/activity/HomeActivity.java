@@ -1,6 +1,7 @@
 package com.mobileoid2.celltone.view.activity;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -195,25 +196,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         Contact contact = listContacts.remove(i);
                         continue;
                     }
-                    if (listContacts.get(i).numbers.size() >= 1) {
-                        listContacts.get(i).numbers.get(0).number = listContacts.get(i).numbers.get(0).number.replaceAll("\\s+", "");
-                        if (listContacts.get(i).numbers.get(0).number.length() < 9) {
-                            listContacts.remove(i);
-                            continue;
-                        }
-
-                        if (Patterns.PHONE.matcher(listContacts.get(i).numbers.get(0).number).matches()) {
-                            //listContacts.get(i).numbers.get(0).number = listContacts.get(i).numbers.get(0).number.substring(0, 10);
-                        } else {
-                            listContacts.remove(i);
-                            continue;
-                        }
 
 
-                    } else {
-                        listContacts.remove(i);
-                        continue;
-                    }
+                    listContacts.get(i).numbers.get(0).number = listContacts.get(i).numbers.get(0).number.replaceAll("\\s+", "");
                     String mobileNumber = listContacts.get(i).numbers.get(0).number;
                     if (mobileNumber.substring(0, 1).equals("+"))
                         pojoContactsUpload.getContacts().add(mobileNumber);
@@ -418,11 +403,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_logout:
                 try {
                     //
+                    //  getApplicationContext().deleteDatabase(DATABASE_NAME);
+                    SharedPrefrenceHandler.getInstance().clearData();
+                    deleteProductDirectory();
 
-                    File dir = getCacheDir();
-                    if (dir != null && dir.isDirectory()) {
-                        deleteDir(dir);
-                    }
                     startActivity(new Intent(this, LoginOtpActivity.class));
                     finish();
                 } catch (Exception e) {
@@ -438,19 +422,34 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         return false;
     }
 
-    public static boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
+    private void deleteProductDirectory() {
+        try {
+            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+            File directory = cw.getDir("DIR_PRODUCT_VIDEO", Context.MODE_PRIVATE);
+            if (directory.isDirectory()) {
+                String[] children = directory.list();
+                for (int i = 0; i < children.length; i++) {
+                    new File(directory, children[i]).delete();
                 }
             }
-        }
-        return dir.delete();
-    }
+            directory = cw.getDir("DIR_PRODUCT_PDF", Context.MODE_PRIVATE);
+            if (directory.isDirectory()) {
+                String[] children = directory.list();
+                for (int i = 0; i < children.length; i++) {
+                    new File(directory, children[i]).delete();
+                }
+            }
+            directory = cw.getDir("DIR_PRODUCT_IMAGE", Context.MODE_PRIVATE);
+            if (directory.isDirectory()) {
+                String[] children = directory.list();
+                for (int i = 0; i < children.length; i++) {
+                    new File(directory, children[i]).delete();
+                }
+            }
+        } catch (Exception e) {
 
+        }
+    }
 
     private void displaySelectedScreen(Fragment fragment, String tag) {
 
@@ -490,7 +489,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     break;
                 case ApiConstant.MEDIA_SET_API:
                     Utils utils = new Utils();
-                    utils.parseRequest(response.getObject(),this);
+                    utils.parseRequest(response.getObject(), this);
 
 
                     break;

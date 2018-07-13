@@ -3,12 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <WebView
+    <com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/webview">
+        android:layout_margin="10dp"
+        android:id="@+id/txt_aboutus">
 
-    </WebView>
+    </com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView>
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"

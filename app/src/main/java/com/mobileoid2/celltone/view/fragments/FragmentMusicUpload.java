@@ -47,8 +47,7 @@ import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.activity.UploadActivity;
 import com.mobileoid2.celltone.view.activity.VideoCapture;
-import com.netcompss.ffmpeg4android.GeneralUtils;
-import com.netcompss.loader.LoadJNI;
+
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -426,87 +425,87 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             isRecording = false;
     }
 
-    private class Compress extends AsyncTask<String, Integer, String> {
-
-        private Context context;
-        private PowerManager.WakeLock mWakeLock;
-        private String filePath;
-        private  String mFolder ="";
-
-        public Compress(Context context, String filePath) {
-            this.context = context;
-            this.filePath = filePath;
-        }
-
-        @Override
-        protected String doInBackground(String... sUrl) {
-
-
-            String input = sUrl[0];
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
-            String currentTimeStamp = dateFormat.format(new Date());
-
-
-            String output = "";
-            LoadJNI vk = new LoadJNI();
-            String commandStr = "";
-            try {
-                if (isAudio == 0) {
-
-                    mFolder =new File(Constant.RECORDING_VIDEO_PATH).getAbsolutePath() + "/";
-                    output = mFolder+ currentTimeStamp + ".mp4";
-
-                    commandStr = "ffmpeg -y   -i " + input + " -strict -2 -s 480x270 " + output;
-                } else {
-                    mFolder =new File(Constant.RECORDING_AUDIO_PATH).getAbsolutePath() + "/";
-                    output = mFolder+ currentTimeStamp + ".mp3";
-                    commandStr = "ffmpeg -y  -i " + input + " -ac 1 -ab 64k -strict -2" + output;
-                }
-                if (!commandStr.isEmpty())
-                    vk.run(GeneralUtils.utilConvertToComplex(commandStr), mFolder, getActivity());
-                File file = new File(filePath);
-
-// Get length of file in bytes
-                long fileSizeInBytes = file.length();
-// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-                long fileSizeInKB = fileSizeInBytes / 1024;
-// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-                long fileSizeInMB = fileSizeInKB / 1024;
-
-                System.out.println("Actual FileSize"+fileSizeInMB);
-
-                 fileSizeInBytes = new File(output).length();
-// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-                 fileSizeInKB = fileSizeInBytes / 1024;
-// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-                 fileSizeInMB = fileSizeInKB / 1024;
-
-                System.out.println("Actual FileSize after Compression"+fileSizeInMB);
-
-
-                if (file.exists())
-                    file.delete();
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-               // progressBar.setVisibility(View.GONE);
-                UploadActivity.isPopupVisible = 0;
-                layoutRecording.setVisibility(View.GONE);
-
-            }
-
-
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(String fileName) {
-            super.onPostExecute(fileName);
-
-        }
-    }
+//    private class Compress extends AsyncTask<String, Integer, String> {
+//
+//        private Context context;
+//        private PowerManager.WakeLock mWakeLock;
+//        private String filePath;
+//        private  String mFolder ="";
+//
+//        public Compress(Context context, String filePath) {
+//            this.context = context;
+//            this.filePath = filePath;
+//        }
+//
+//        @Override
+//        protected String doInBackground(String... sUrl) {
+//
+//
+//            String input = sUrl[0];
+//
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
+//            String currentTimeStamp = dateFormat.format(new Date());
+//
+//
+//            String output = "";
+//            LoadJNI vk = new LoadJNI();
+//            String commandStr = "";
+//            try {
+//                if (isAudio == 0) {
+//
+//                    mFolder =new File(Constant.RECORDING_VIDEO_PATH).getAbsolutePath() + "/";
+//                    output = mFolder+ currentTimeStamp + ".mp4";
+//
+//                    commandStr = "ffmpeg -y   -i " + input + " -strict -2 -s 480x270 " + output;
+//                } else {
+//                    mFolder =new File(Constant.RECORDING_AUDIO_PATH).getAbsolutePath() + "/";
+//                    output = mFolder+ currentTimeStamp + ".mp3";
+//                    commandStr = "ffmpeg -y  -i " + input + " -ac 1 -ab 64k -strict -2" + output;
+//                }
+//                if (!commandStr.isEmpty())
+//                    vk.run(GeneralUtils.utilConvertToComplex(commandStr), mFolder, getActivity());
+//                File file = new File(filePath);
+//
+//// Get length of file in bytes
+//                long fileSizeInBytes = file.length();
+//// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+//                long fileSizeInKB = fileSizeInBytes / 1024;
+//// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+//                long fileSizeInMB = fileSizeInKB / 1024;
+//
+//                System.out.println("Actual FileSize"+fileSizeInMB);
+//
+//                 fileSizeInBytes = new File(output).length();
+//// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+//                 fileSizeInKB = fileSizeInBytes / 1024;
+//// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+//                 fileSizeInMB = fileSizeInKB / 1024;
+//
+//                System.out.println("Actual FileSize after Compression"+fileSizeInMB);
+//
+//
+//                if (file.exists())
+//                    file.delete();
+//
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//               // progressBar.setVisibility(View.GONE);
+//                UploadActivity.isPopupVisible = 0;
+//                layoutRecording.setVisibility(View.GONE);
+//
+//            }
+//
+//
+//            return "";
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String fileName) {
+//            super.onPostExecute(fileName);
+//
+//        }
+//    }
 
 
     public void setDataForRequest(String fileName, String filePath) {

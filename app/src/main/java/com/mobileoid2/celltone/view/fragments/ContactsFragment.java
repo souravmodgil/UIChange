@@ -57,6 +57,7 @@ import com.mobileoid2.celltone.network.model.contacts.SendContactsModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.pojo.PojoContacts;
 import com.mobileoid2.celltone.pojo.SelectContact;
+import com.mobileoid2.celltone.pojo.getmedia.Outgoing;
 import com.mobileoid2.celltone.utility.ContactFetcher;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
@@ -98,6 +99,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
     private int isOutgoing;
     private int isRequestSend = 0;
     private int isAudio;
+    private boolean isChecked = false;
     private RecyclerView listSongs;
     private CheckBox cbAllCheck;
     private ProgressBar progressBar;
@@ -111,6 +113,8 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
     private List<String> selectedPhoneList = new ArrayList<>();
     private AppDatabase appDatabase;
     private int isEdit = 0;
+    private Utils utils;
+
     String[] PERMISSIONS = {Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS,
     };
 
@@ -140,6 +144,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         View view = inflater.inflate(R.layout.fragment_contacts_list, container, false);
         apiInterface = ((ApiInterface) APIClient.getClient().create(ApiInterface.class));
         listSongs = view.findViewById(R.id.list_songs);
+        utils = new Utils();
         progressBar = view.findViewById(R.id.media_player_progress_bar);
         submitButton = view.findViewById(R.id.submit_button);
         cbAllCheck = view.findViewById(R.id.cb_all_check);
@@ -163,23 +168,24 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             cbAllCheck.setVisibility(View.GONE);
         else
             cbAllCheck.setVisibility(View.VISIBLE);
-            if (ActivityCompat.checkSelfPermission(getContext(),
-                    Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(getContext(),
-                            Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(PERMISSIONS,
-                        1);
+        cbAllCheck.setOnClickListener(this::onClick);
+        if (ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(),
+                        Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(PERMISSIONS,
+                    1);
 
-                progressBar.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+        } else {
+            if (contactList != null && contactList.size() > 0) {
+                myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit);
+                listSongs.setAdapter(myContactsRecyclerViewAdapter);
             } else {
-                if (contactList != null && contactList.size() > 0) {
-                    myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit);
-                    listSongs.setAdapter(myContactsRecyclerViewAdapter);
-                } else {
-                    getContact();
-                }
-
+                getContact();
             }
+
+        }
 
 
         submitButton.setOnClickListener(this);
@@ -187,91 +193,6 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         return view;
     }
 
-    private List<ContactEntity> getContactList(ContactsMedia contactsMedia, Map<String, String> contactMap)
-
-    {
-        List<ContactEntity> contactList = new ArrayList<>();
-        List<RingtoneEntity> ringtoneEntities = new ArrayList<>();
-
-        if (contactsMedia != null) {
-            int length = contactsMedia.getBody().size();
-            ContactEntity contactEntity;
-            for (int i = 0; i < length; i++) {
-
-
-                contactEntity = new ContactEntity();
-                String mobileno = contactsMedia.getBody().get(i).getMobile();
-                Incommingother incommingother ;
-                incommingother =contactsMedia.getBody().get(i).getOutgoingself();
-                if(incommingother!=null)
-                {
-                    RingtoneEntity ringtoneEntity = new RingtoneEntity();
-                    if (incommingother.getContentType().equals("video"))
-                        ringtoneEntity.setContentType("video");
-                         else
-                        ringtoneEntity.setContentType("audio");
-
-
-                    ringtoneEntity.setMediaId(incommingother.getId());
-                    ringtoneEntity.setActionType("self");
-                    ringtoneEntity.setNumber(mobileno);
-                    ringtoneEntity.setSampleFileUrl(incommingother.getSampleFileUrl());
-                    ringtoneEntities.add(ringtoneEntity);
-
-
-
-                }
-                //   "[^a-zA-Z]+", " "
-                String name = contactMap.get(mobileno);
-                contactEntity.setNumber(mobileno);
-                if (name != null)
-                    contactEntity.setName(name);
-                else
-                    contactEntity.setName(mobileno);
-
-
-
-                if (contactsMedia.getBody().get(i).getIncommingother() instanceof Incommingother &&
-                        contactsMedia.getBody().get(i).getIncommingother() != null)
-
-                {
-                    contactEntity.setIsIncoming(1);
-
-                    if (contactsMedia.getBody().get(i).getIncommingother().getContentType().equals("audio"))
-                        contactEntity.setIsincomingVideo(0);
-                    else
-                        contactEntity.setIsincomingVideo(1);
-                    contactEntity.setIncomingSongName(contactsMedia.getBody().get(i).getIncommingother().getTitle());
-
-
-                } else
-                    contactEntity.setIsIncoming(0);
-                if (contactsMedia.getBody().get(i).getOutgoingself() instanceof Incommingother &&
-                        contactsMedia.getBody().get(i).getIncommingother() != null)
-
-                {
-                    contactEntity.setIsOutgoing(1);
-                    if (contactsMedia.getBody().get(i).getOutgoingself().getContentType().equals("audio"))
-                        contactEntity.setOutgoingIsVideo(0);
-                    else
-                        contactEntity.setOutgoingIsVideo(1);
-                    contactEntity.setOutgoingSongName(contactsMedia.getBody().get(i).getOutgoingself().getTitle());
-                } else
-                    contactEntity.setIsOutgoing(0);
-                contactList.add(contactEntity);
-
-
-            }
-            appDatabase.daoContacts().insertAll(contactList);
-            appDatabase.daoRingtone().insertAll(ringtoneEntities);
-
-
-
-        }
-        Collections.sort(contactList, new NameComparator());
-
-        return contactList;
-    }
 
     private void parseContacts(String response) {
         Map<String, String> contactMap = new ContactFetcher(getActivity()).fetchAllContact();
@@ -285,8 +206,9 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 if (!response.isEmpty()) {
                     Gson gsonObj = new Gson();
                     contactsMedia = gsonObj.fromJson(response, ContactsMedia.class);
-                    list = getContactList(contactsMedia, contactMap);
+                    list = utils.getContactList(contactsMedia, contactMap, appDatabase);
                     //Collections.sort(list, ContactsComparator);
+
                 }
                 return list;
             }
@@ -295,6 +217,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             protected void onPostExecute(List<ContactEntity> contacts) {
                 super.onPostExecute(contacts);
                 contactList.addAll(contacts);
+                Collections.sort(contactList);
                 progressBar.setVisibility(View.GONE);
                 myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, ContactsFragment.this, isEdit);
                 listSongs.setAdapter(myContactsRecyclerViewAdapter);
@@ -305,43 +228,6 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (isChecked) {
-            if (contactList != null) {
-
-                for (int i = 0; i < contactList.size(); i++) {
-                    ContactEntity contactEntity = contactList.get(i);
-                    if (contactEntity.getIsSelcted() == 0) {
-                        contactEntity.setIsSelcted(1);
-                        contactList.set(i, contactEntity);
-                        SelectContact selectContact = new SelectContact(i, contactEntity.getNumber());
-                        if (selectedContacts.size() <= contactList.size())
-                            selectedContacts.add(selectContact);
-                        selectedPhoneList.add(contactEntity.getNumber());
-                    }
-
-                }
-                submitButton.setVisibility(View.VISIBLE);
-                txtTotalSelected.setVisibility(View.VISIBLE);
-                txtTotalSelected.setText(selectedContacts.size() + " Selected");
-                myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
-            }
-        } else {
-            if (isAllCheckedClicked == 1) {
-                for (int i = 0; i < contactList.size(); i++) {
-
-                    ContactEntity contactEntity = contactList.get(i);
-                    contactEntity.setIsSelcted(0);
-                    contactList.set(i, contactEntity);
-                    selectedContacts.clear();
-                    selectedPhoneList.clear();
-                    submitButton.setVisibility(View.GONE);
-                }
-            } else
-                isAllCheckedClicked = 1;
-            myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
-
-
-        }
 
     }
 
@@ -364,8 +250,59 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 //  progressBar.setVisibility(View.VISIBLE);
                 //  sendContact();
                 break;
+            case R.id.cb_all_check:
+                if (isChecked)
+
+                    isChecked = false;
+                else
+                    isChecked = true;
+                isCheckedAll();
+                break;
 
         }
+
+    }
+
+    private void isCheckedAll() {
+
+        if (isChecked) {
+
+            if (contactList != null) {
+
+                for (int i = 0; i < contactList.size(); i++) {
+                    ContactEntity contactEntity = contactList.get(i);
+                    if (contactEntity.getIsSelcted() == 0) {
+                        contactEntity.setIsSelcted(1);
+                        contactList.set(i, contactEntity);
+                        SelectContact selectContact = new SelectContact(i, contactEntity.getNumber());
+                        if (selectedContacts.size() <= contactList.size())
+                            selectedContacts.add(selectContact);
+                        selectedPhoneList.add(contactEntity.getNumber());
+                    }
+
+                }
+                submitButton.setVisibility(View.VISIBLE);
+                txtTotalSelected.setVisibility(View.VISIBLE);
+                txtTotalSelected.setText(selectedContacts.size() + " Selected");
+                myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
+            }
+        } else {
+
+            for (int i = 0; i < contactList.size(); i++) {
+
+                ContactEntity contactEntity = contactList.get(i);
+                contactEntity.setIsSelcted(0);
+                contactList.set(i, contactEntity);
+                submitButton.setVisibility(View.GONE);
+            }
+            selectedContacts.clear();
+            selectedPhoneList.clear();
+            txtTotalSelected.setVisibility(View.GONE);
+            myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
+
+
+        }
+
 
     }
 
@@ -447,6 +384,8 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 submitButton.setVisibility(View.VISIBLE);
                 txtTotalSelected.setVisibility(View.VISIBLE);
                 txtTotalSelected.setText(selectedContacts.size() + " Selected");
+
+
             }
 
         } else if (selectedContacts != null) {
@@ -457,14 +396,25 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 SelectContact selectContact = new SelectContact(position, phoneNumber);
                 selectedContacts.remove(selectContact);
                 selectedPhoneList.remove(phoneNumber);
-                isAllCheckedClicked = 0;
                 cbAllCheck.setChecked(false);
+                isChecked =false;
                 txtTotalSelected.setVisibility(View.VISIBLE);
                 txtTotalSelected.setText(selectedContacts.size() + " Selected");
             } else {
                 txtTotalSelected.setVisibility(View.GONE);
                 submitButton.setVisibility(View.GONE);
             }
+        }
+
+        if (selectedContacts.size() == contactList.size()) {
+            cbAllCheck.setChecked(true);
+            isChecked =true;
+            isCheckedAll();
+        }
+        else if(selectedContacts.size()==0) {
+            isChecked =false;
+            cbAllCheck.setChecked(false);
+            isCheckedAll();
         }
 
     }
@@ -583,85 +533,6 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
     }
 
-    private void parseSaveContactResponse(String response) {
-
-        new AsyncTask<Void, Void, Integer>() {
-            @Override
-            protected Integer doInBackground(Void... voids) {
-                int status = 0;
-                Gson gsonObj = new Gson();
-                SaveContactsResponse saveContactsResponse = gsonObj.fromJson(response, SaveContactsResponse.class);
-                status = saveContactsResponse.getStatus();
-                if (status == 1000) {
-                    ArrayList<ContactEntity> contactEntities = new ArrayList<>();
-                    for (int i = 0; i < selectedContacts.size(); i++) {
-                        ContactEntity contactEntity = contactList.get(selectedContacts.get(i).getId());
-                        if (isOutgoing == 1) {
-
-                            RingtoneEntity ringtoneEntity = new RingtoneEntity();
-                            if (isAudio == 1)
-                                ringtoneEntity.setContentType("audio");
-                            else
-                                ringtoneEntity.setContentType("video");
-                            ringtoneEntity.setMediaId(songs.getId());
-                            ringtoneEntity.setActionType("self");
-                            ringtoneEntity.setNumber(selectedContacts.get(i).getPhoneNumber());
-                            ringtoneEntity.setSampleFileUrl(songs.getSampleFileUrl());
-                            long id = appDatabase.daoRingtone().insert(ringtoneEntity);
-                            if (id == -1) {
-                                appDatabase.daoRingtone().update(ringtoneEntity);
-                            }
-
-
-                            if (isAudio == 0)
-                                contactEntity.setOutgoingIsVideo(1);
-                            else
-                                contactEntity.setOutgoingIsVideo(0);
-                            contactEntity.setOutgoingSongName(songs.getTitle());
-                            contactEntity.setIsOutgoing(1);
-                            contactEntity.setOutgoingArtistName(songs.getArtistName());
-
-
-                        } else {
-                            if (isAudio == 0)
-                                contactEntity.setOutgoingIsVideo(1);
-                            else
-                                contactEntity.setOutgoingIsVideo(0);
-                            contactEntity.setIncomingSongName(songs.getTitle());
-                            contactEntity.setIsIncoming(1);
-                            contactEntity.setInComingArtistName(songs.getArtistName());
-                        }
-                        appDatabase.daoContacts().update(contactEntity);
-                    }
-
-
-                   // appDatabase.daoContacts().update(contactEntities);
-
-
-                }
-                return status;
-            }
-
-            @Override
-            protected void onPostExecute(Integer status) {
-                super.onPostExecute(status);
-                if (status == 1000)
-                {
-                    Utils utils = new Utils();
-                    utils.download(getActivity(),songs.getSampleFileUrl());
-                    Toast.makeText(getActivity(), "Song set  successfully", Toast.LENGTH_LONG).show();
-                    getActivity().onBackPressed();
-
-                }
-                  //  new DownloadTask(getActivity().getApplicationContext()).execute(songs.getSampleFileUrl());
-                progressBar.setVisibility(View.GONE);
-
-
-            }
-        }.execute();
-    }
-
-
 
     @Override
     public void getResponse(JsonResponse response, int type) {
@@ -669,7 +540,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 isAdded() && getActivity() != null) {
             switch (type) {
                 case ApiConstant.SET_MEDIA_FOR_CONTACT:
-                    parseSaveContactResponse(response.getObject());
+                    utils.parseSaveContactResponse(getActivity(), response.getObject(), selectedContacts, contactList, isOutgoing, isAudio, songs, appDatabase, progressBar);
 
                     break;
                 case ApiConstant.GET_ALL_CONTACT:
@@ -677,8 +548,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                     break;
             }
 
-        }
-        else
+        } else
             progressBar.setVisibility(View.GONE);
 
     }
@@ -729,7 +599,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 }
             }
         }
-        if(contactFilterList!=null) {
+        if (contactFilterList != null) {
             myContactsRecyclerViewAdapter.updateAdater(contactFilterList, length);
             submitButton.setVisibility(View.VISIBLE);
         }
@@ -756,7 +626,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
-                if(contactList!=null && contactList.size()>0) {
+                if (contactList != null && contactList.size() > 0) {
                     submitButton.setVisibility(View.GONE);
                     filterList(query);
                 }

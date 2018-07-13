@@ -40,6 +40,7 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
     private final List<ContactEntity> mValues;
     public List<ContactEntity> mlistFiltered;
     private Context context;
+    private  int isSelcted =0;
     private TextView txtSet,txtDelete;
     private SelectedContactListner selectedContactListner;
     private int isEdit;
@@ -122,28 +123,55 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
                 showPopUp(holder.mItem);
             }
         });
-
-        holder.cbContact.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.cbContact.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
+            public void onClick(View v) {
+                if(holder.mItem.getIsSelcted()==0)
+                {
                     selectedContactListner.setContacts(holder.mItem.getNumber(), 1, position);
                     holder.mItem.setIsSelcted(1);
                     mValues.get(position).setIsSelcted(1);
-
-
-                } else {
+                    notifyDataSetChanged();
+                }
+                else
+                {
                     selectedContactListner.setContacts(holder.mItem.getNumber(), 0, position);
                     holder.mItem.setIsSelcted(0);
                     mValues.get(position).setIsSelcted(0);
-                }
+                    notifyDataSetChanged();
 
+                }
 
             }
         });
 
+//        holder.cbContact.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if (isChecked) {
+//                    selectedContactListner.setContacts(holder.mItem.getNumber(), 1, position);
+//                    holder.mItem.setIsSelcted(1);
+//                    mValues.get(position).setIsSelcted(1);
+//                    holder.cbContact.setChecked(true);
+//                 //   notifyDataSetChanged();
+//
+//
+//                } else {
+//                    selectedContactListner.setContacts(holder.mItem.getNumber(), 0, position);
+//                    holder.mItem.setIsSelcted(0);
+//                    mValues.get(position).setIsSelcted(0);
+//                    holder.cbContact.setChecked(false);
+////                   if(isSelcted ==0)
+////                    notifyDataSetChanged();
+//                }
+//
+//
+//            }
+//        });
+
 
     }
+
 
     @Override
     public int getItemCount() {

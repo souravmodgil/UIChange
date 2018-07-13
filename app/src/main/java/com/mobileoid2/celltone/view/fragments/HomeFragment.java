@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -57,11 +58,13 @@ import com.mobileoid2.celltone.network.model.treadingMedia.Category;
 import com.mobileoid2.celltone.network.model.treadingMedia.MediaModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.pojo.audio.PojoGETALLMEDIA_Request;
+import com.mobileoid2.celltone.pojo.getmedia.Outgoing;
 import com.mobileoid2.celltone.pojo.mediapojo.CategoriesSongs;
 import com.mobileoid2.celltone.pojo.mediapojo.MediaPojo;
 import com.mobileoid2.celltone.utility.Config_URL;
 import com.mobileoid2.celltone.utility.ContactFetcher;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
+import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.activity.BannerListActivity;
 import com.mobileoid2.celltone.view.activity.SearchActivity;
 import com.mobileoid2.celltone.view.activity.ViewAllSongActivity;
@@ -90,7 +93,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     private ApiInterface apiInterface;
     private int noOfAPiHint = 0;
     private AppDatabase appDatabase;
-    private ImageView mtNav,mtSearch;
+    private ImageView mtNav, mtSearch;
     private EditText mtEditText;
     private ImageView mtClear;
     TextView mtPlaceholder;
@@ -104,6 +107,8 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
     private SliderLayout mDemoSlider;
     private List<BannerBody> bannerBodyList;
     private int totalApiToBeHint;
+    private ContactsMedia contactsOutgoingMedia;
+    private Utils utils;
 
     public static final String TAG = HomeFragment.class.getSimpleName();
 
@@ -147,6 +152,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
         System.out.println("HomeFragment.onCreate");
     }
+
     private void getContact() {
         // SendRequest.sendRequest(Config_URL.);
         SendRequest.sendRequest(ApiConstant.GET_ALL_CONTACT, apiInterface.getAllContatcs(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()), this);
@@ -158,15 +164,16 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
         // Inflate the layout for this fragment
         View view = getView() != null ? getView() : inflater.inflate(R.layout.fragment_home, container, false);
         loadingSpinner = view.findViewById(R.id.loading_spinner);
-        apiInterface =  APIClient.getClient().create(ApiInterface.class);
-        viewPager =  view.findViewById(R.id.viewpager);
-        mtPlaceholder =view.findViewById(R.id.mt_placeholder);
+        apiInterface = APIClient.getClient().create(ApiInterface.class);
+        viewPager = view.findViewById(R.id.viewpager);
+        mtPlaceholder = view.findViewById(R.id.mt_placeholder);
         setupViewPager(viewPager);
+        utils = new Utils();
         appDatabase = AppDatabase.getAppDatabase(getActivity());
         mtNav = view.findViewById(R.id.mt_nav);
-        mtSearch =view.findViewById(R.id.mt_search);
-        mtEditText =view.findViewById(R.id.mt_editText);
-        mtClear =view.findViewById(R.id.mt_clear);
+        mtSearch = view.findViewById(R.id.mt_search);
+        mtEditText = view.findViewById(R.id.mt_editText);
+        mtClear = view.findViewById(R.id.mt_clear);
         tabLayout = (TabLayout) view.findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FFFFFF"));
@@ -176,8 +183,9 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
         tabLayout.setupWithViewPager(viewPager);
         setCustomFont();
-        mDemoSlider =  view.findViewById(R.id.slider);
-     //   mtNav.setOnClickListener(this);
+        getContact();
+        mDemoSlider = view.findViewById(R.id.slider);
+        //   mtNav.setOnClickListener(this);
         mtNav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,13 +203,13 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
         mtEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               showCancelIcon();
+                showCancelIcon();
             }
         });
         mtSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mtEditText.length()>0) {
+                if (mtEditText.length() > 0) {
                     Intent intent = new Intent(getActivity(), SearchActivity.class);
                     intent.putExtra("isEdit", isEdit);
                     intent.putExtra("mobile_no", mobileNo);
@@ -222,11 +230,10 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(s.length()>0) {
-                  showCancelIcon();
-                }
-                else {
-                   hideCancelIcon();
+                if (s.length() > 0) {
+                    showCancelIcon();
+                } else {
+                    hideCancelIcon();
                 }
 
 
@@ -241,8 +248,8 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
         return view;
     }
-    private void hideKeyBoard()
-    {
+
+    private void hideKeyBoard() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
         //Find the currently focused view, so we can grab the correct window token from it.
         View view = getActivity().getCurrentFocus();
@@ -252,16 +259,15 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
-    private void showCancelIcon()
-    {
+
+    private void showCancelIcon() {
         mtClear.setVisibility(View.VISIBLE);
         mtNav.setVisibility(View.GONE);
 
 
-
     }
-    private void hideCancelIcon()
-    {
+
+    private void hideCancelIcon() {
         mtClear.setVisibility(View.GONE);
         mtNav.setVisibility(View.VISIBLE);
         mtPlaceholder.setVisibility(View.VISIBLE);
@@ -283,6 +289,8 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                 if (tabViewChild instanceof TextView) {
                     //Put your font in assests folder
                     //assign name of the font here (Must be case sensitive)
+                    ((TextView) tabViewChild).setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
                     ((TextView) tabViewChild).setTypeface(Typeface.createFromAsset(getActivity().getAssets(),
                             "fonts/ProximaNova-Regular.otf"));
                 }
@@ -340,104 +348,20 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
     }
 
-    private List<ContactEntity> getContactList(ContactsMedia contactsMedia, Map<String, String> contactMap)
-
-    {
-        List<ContactEntity> contactList = new ArrayList<>();
-        List<RingtoneEntity> ringtoneEntities = new ArrayList<>();
-
-        if (contactsMedia != null) {
-            int length = contactsMedia.getBody().size();
-            ContactEntity contactEntity;
-            for (int i = 0; i < length; i++) {
-
-
-                contactEntity = new ContactEntity();
-                String mobileno = contactsMedia.getBody().get(i).getMobile();
-                Incommingother incommingother ;
-                incommingother =contactsMedia.getBody().get(i).getOutgoingself();
-                if(incommingother!=null)
-                {
-                    RingtoneEntity ringtoneEntity = new RingtoneEntity();
-                    if (incommingother.getContentType().equals("video"))
-                        ringtoneEntity.setContentType("video");
-                    else
-                        ringtoneEntity.setContentType("audio");
-
-
-                    ringtoneEntity.setMediaId(incommingother.getId());
-                    ringtoneEntity.setActionType("self");
-                    ringtoneEntity.setNumber(mobileno);
-                    ringtoneEntity.setSampleFileUrl(incommingother.getSampleFileUrl());
-                    ringtoneEntities.add(ringtoneEntity);
-
-
-
-                }
-                //   "[^a-zA-Z]+", " "
-                String name = contactMap.get(mobileno);
-                contactEntity.setNumber(mobileno);
-                if (name != null)
-                    contactEntity.setName(name);
-                else
-                    contactEntity.setName(mobileno);
-
-
-
-                if (contactsMedia.getBody().get(i).getIncommingother() instanceof Incommingother &&
-                        contactsMedia.getBody().get(i).getIncommingother() != null)
-
-                {
-                    contactEntity.setIsIncoming(1);
-
-                    if (contactsMedia.getBody().get(i).getIncommingother().getContentType().equals("audio"))
-                        contactEntity.setIsincomingVideo(0);
-                    else
-                        contactEntity.setIsincomingVideo(1);
-                    contactEntity.setIncomingSongName(contactsMedia.getBody().get(i).getIncommingother().getTitle());
-
-
-                } else
-                    contactEntity.setIsIncoming(0);
-                if (contactsMedia.getBody().get(i).getOutgoingself() instanceof Incommingother &&
-                        contactsMedia.getBody().get(i).getIncommingother() != null)
-
-                {
-                    contactEntity.setIsOutgoing(1);
-                    if (contactsMedia.getBody().get(i).getOutgoingself().getContentType().equals("audio"))
-                        contactEntity.setOutgoingIsVideo(0);
-                    else
-                        contactEntity.setOutgoingIsVideo(1);
-                    contactEntity.setOutgoingSongName(contactsMedia.getBody().get(i).getOutgoingself().getTitle());
-                } else
-                    contactEntity.setIsOutgoing(0);
-                contactList.add(contactEntity);
-
-
-            }
-            appDatabase.daoContacts().insertAll(contactList);
-            appDatabase.daoRingtone().insertAll(ringtoneEntities);
-
-
-
-        }
-
-        return contactList;
-    }
 
     private void parseContacts(String response) {
         Map<String, String> contactMap = new ContactFetcher(getActivity()).fetchAllContact();
+
         new AsyncTask<Void, Void, List<ContactEntity>>() {
             @Override
             protected List<ContactEntity> doInBackground(Void... voids) {
                 List<ContactEntity> list = new ArrayList<>();
-                ContactsMedia contactsMedia;
 
 
                 if (!response.isEmpty()) {
                     Gson gsonObj = new Gson();
-                    contactsMedia = gsonObj.fromJson(response, ContactsMedia.class);
-                    list = getContactList(contactsMedia, contactMap);
+                    contactsOutgoingMedia = gsonObj.fromJson(response, ContactsMedia.class);
+                    list = utils.getContactList(contactsOutgoingMedia, contactMap, appDatabase);
                     //Collections.sort(list, ContactsComparator);
                 }
                 return list;
@@ -446,6 +370,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
             @Override
             protected void onPostExecute(List<ContactEntity> contacts) {
                 super.onPostExecute(contacts);
+                utils.downloadOutgoingFiles(getActivity(), contactsOutgoingMedia.getBody());
 
 
             }
@@ -472,7 +397,6 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                 case ApiConstant.GET_ALL_CONTACT:
                     parseContacts(response.getObject());
                     break;
-
 
 
             }
@@ -700,7 +624,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                             }
 
                             Intent intent = new Intent(getActivity(), BannerListActivity.class);
-                            intent.putExtra("title",bannerBody.getTitle());
+                            intent.putExtra("title", bannerBody.getTitle());
                             intent.putExtra("songsList", songList);
                             startActivity(intent);
 

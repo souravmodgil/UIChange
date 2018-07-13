@@ -9,7 +9,7 @@ import android.support.annotation.NonNull;
 import java.io.Serializable;
 
 @Entity(tableName = "user_contact")
-public class ContactEntity  implements Serializable {
+public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
 
     @Ignore
     private  int isSelcted = 0;
@@ -24,7 +24,7 @@ public class ContactEntity  implements Serializable {
     @ColumnInfo(name = "is_outgoing")
     private int isOutgoing;
     @ColumnInfo(name = "is_incoming")
-    private int isIncoming;
+    private int isIncoming =0;
     @ColumnInfo(name = "incoming_is_Video")
     private int isincomingVideo = 0;
     @ColumnInfo(name = "incoming_song_name" )
@@ -159,7 +159,9 @@ public class ContactEntity  implements Serializable {
     }
 
 
+    @Override
+    public int compareTo(@NonNull ContactEntity contactEntity) {
+        return this.getName().compareTo(contactEntity.getName());
 
-
-
+    }
 }

@@ -18,6 +18,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
@@ -38,7 +39,7 @@ public class PermissionsActivity extends Activity {
             Manifest.permission.SYSTEM_ALERT_WINDOW,
             Manifest.permission.READ_CONTACTS,
             Manifest.permission.ACCESS_NOTIFICATION_POLICY
-          };
+    };
 
 
     @Override
@@ -68,6 +69,21 @@ public class PermissionsActivity extends Activity {
     private void requestOtherPermissionsOrLaunchMainActivity() {
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Boolean isNotificationAccess =false;
+
+        for (String service : NotificationManagerCompat.getEnabledListenerPackages(this)) {
+            if (service.equals(getPackageName()))
+                isNotificationAccess =true;
+
+
+        }
+
+        for (String service : NotificationManagerCompat.getEnabledListenerPackages(this)) {
+            if (service.equals(getPackageName())) {
+                Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                startActivity(intent);
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(PermissionsActivity.this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
@@ -79,7 +95,14 @@ public class PermissionsActivity extends Activity {
         } else if (!isAccessibilitySettingsOn(getApplicationContext())) {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
-        } else {
+
+        }
+       else  if (!isNotificationAccess)
+            startActivity(new Intent(
+                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+
+
+        else{
             startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
             PermissionsActivity.this.finish();
         }

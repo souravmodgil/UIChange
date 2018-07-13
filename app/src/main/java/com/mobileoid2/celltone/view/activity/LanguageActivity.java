@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.view.fragments.LanguageFragment;
@@ -36,4 +37,15 @@ public class LanguageActivity extends AppCompatActivity {
         super.onBackPressed();
         finish();
     }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 }
