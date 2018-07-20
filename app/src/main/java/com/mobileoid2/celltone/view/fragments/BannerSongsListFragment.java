@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -33,7 +34,10 @@ import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.ApiInterface;
+import com.mobileoid2.celltone.network.SendRequest;
+import com.mobileoid2.celltone.network.model.contacts.SendContactsModel;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
+import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.view.SeparatorDecoration;
 import com.mobileoid2.celltone.view.activity.ChangeToolBarTitleListiner;
 import com.mobileoid2.celltone.view.activity.ContactActivity;
@@ -41,6 +45,7 @@ import com.mobileoid2.celltone.view.adapter.CategoriesSongsRecyclerViewAdapter;
 import com.mobileoid2.celltone.view.listener.IncomingOutgoingListener;
 import com.mobileoid2.celltone.view.listener.OnSongsClickLisner;
 
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
@@ -78,25 +83,25 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
     private String artistName;
     private UpdateSeekBarThread updateSeekBarThread;
     private RecyclerView.LayoutManager mLayoutManager;
-
-
+    private AppCompatButton setButton;
     private ApiInterface apiInterface;
     private String mediaId = "";
     private    int pos =0;
     private String sampleUrl = "";
     private AppDatabase appDatabase;
     private int currentSongPostion;
+    private int isIncoming;
     private ChangeToolBarTitleListiner changeToolBarTitleListiner;
+    private int isEdit;
 
     public static BannerSongsListFragment newInstance(Context context, List<Song> songList,
-                                                      ChangeToolBarTitleListiner changeToolBarTitleListiner
+                                                      ChangeToolBarTitleListiner changeToolBarTitleListiner,int isEdit
     ) {
         BannerSongsListFragment fragment = new BannerSongsListFragment();
         fragment.context = context;
         fragment.songList = songList;
         fragment.changeToolBarTitleListiner = changeToolBarTitleListiner;
-
-
+        fragment.isEdit =isEdit;
         return fragment;
 
 
@@ -123,6 +128,8 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
         imageButtonMute = view.findViewById(R.id.image_button_mute);
         txtTitle = view.findViewById(R.id.txt_title);
         seekBar = view.findViewById(R.id.seek_bar);
+        setButton = view.findViewById(R.id.set_button);
+
         mediaPlayerProgressBar = view.findViewById(R.id.media_player_progress_bar);
         progressBar = view.findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
@@ -141,6 +148,17 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
 
         title = songList.get(postion).getTitle();
         artistName = songList.get(postion).getArtistName();
+
+        if (isEdit == 1) {
+            iconAddTone.setVisibility(View.GONE);
+            setButton.setVisibility(View.VISIBLE);
+        } else if (isEdit == 0) {
+            iconAddTone.setVisibility(View.VISIBLE);
+            setButton.setVisibility(View.GONE);
+        }
+
+
+
 
         if (songPostion == 0 && songList.size() > 0) {
             previous.setEnabled(false);
@@ -182,6 +200,8 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
         //  listSongs.addOnScrollListener(this);
         playButton.setOnClickListener(this);
         imageButtonMute.setOnClickListener(this);
+        setButton.setOnClickListener(this::onClick);
+        iconAddTone.setOnClickListener(this);
         return view;
     }
 
@@ -418,10 +438,36 @@ public class BannerSongsListFragment extends Fragment implements OnSongsClickLis
 
 
     }
+    private void sendContact(String id) {
+        progressBar.setVisibility(View.VISIBLE);
+        SendContactsModel pojoSetMediaRequest = new SendContactsModel();
+        if (isIncoming == 0) {
+            pojoSetMediaRequest.setActionType("self");
+            pojoSetMediaRequest.setCallType("outgoing");
+        }
+        if (isIncoming == 1) {
+            pojoSetMediaRequest.setActionType("other");
+            pojoSetMediaRequest.setCallType("incomming");
+        }
+        List<String> selectedPhoneList = new ArrayList<>();
+      //  selectedPhoneList.add(mobileNo);
+        pojoSetMediaRequest.setMobile(selectedPhoneList);
+        pojoSetMediaRequest.setMediaId(id);
+//        SendRequest.sendRequest(ApiConstant.SET_MEDIA_FOR_CONTACT, apiInterface.serMediaForUser(SharedPrefrenceHandler.getInstance().getUSER_TOKEN(),
+//                pojoSetMediaRequest), this);
+
+
+    }
+
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+
+            case R.id.set_button:
+                //  Song song = songList.get(postion);
+                sendContact(songList.get(postion).getId());
+                break;
             case R.id.icon_add_tone:
                 showPopup(view);
                 break;

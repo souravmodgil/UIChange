@@ -11,38 +11,9 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        >
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:background="@color/white"
-            android:orientation="vertical">
-
-            <com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView
-                android:id="@+id/txt_user_upload_count"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:background="@color/white"
-                android:maxLines="1"
-                android:textColor="@color/black" />
-
-            <com.mobileoid2.celltone.CustomWidget.TextView.ProximumRegularTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="10dp"
-                android:gravity="right"
-                android:maxLines="1"
-                android:text="@string/upload"
-                android:id="@+id/bt_upload"
-                android:textColor="@color/colorPrimary"
-                android:textSize="17dp" />
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

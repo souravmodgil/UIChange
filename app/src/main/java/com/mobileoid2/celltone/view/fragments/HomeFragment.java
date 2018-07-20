@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -56,6 +57,7 @@ import com.mobileoid2.celltone.network.model.contacts.ContactsMedia;
 import com.mobileoid2.celltone.network.model.contacts.Incommingother;
 import com.mobileoid2.celltone.network.model.treadingMedia.Category;
 import com.mobileoid2.celltone.network.model.treadingMedia.MediaModel;
+import com.mobileoid2.celltone.network.model.treadingMedia.OwnMedium;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.pojo.audio.PojoGETALLMEDIA_Request;
 import com.mobileoid2.celltone.pojo.getmedia.Outgoing;
@@ -67,6 +69,7 @@ import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.activity.BannerListActivity;
 import com.mobileoid2.celltone.view.activity.SearchActivity;
+import com.mobileoid2.celltone.view.activity.UploadActivity;
 import com.mobileoid2.celltone.view.activity.ViewAllSongActivity;
 import com.mobileoid2.celltone.view.adapter.MyContactsRecyclerViewAdapter;
 import com.mobileoid2.celltone.view.listener.NavigationLisitner;
@@ -92,10 +95,12 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
     private ApiInterface apiInterface;
     private int noOfAPiHint = 0;
+    private int isAudio = 1;
     private AppDatabase appDatabase;
     private ImageView mtNav, mtSearch;
     private EditText mtEditText;
     private ImageView mtClear;
+    private FloatingActionButton fab;
     TextView mtPlaceholder;
     private ProgressBar loadingSpinner;
     private NavigationLisitner navigationLisitner;
@@ -166,6 +171,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
         loadingSpinner = view.findViewById(R.id.loading_spinner);
         apiInterface = APIClient.getClient().create(ApiInterface.class);
         viewPager = view.findViewById(R.id.viewpager);
+        fab =view.findViewById(R.id.fab);
         mtPlaceholder = view.findViewById(R.id.mt_placeholder);
         setupViewPager(viewPager);
         utils = new Utils();
@@ -219,6 +225,27 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                     intent.putExtra("contact_entity", contactEntity);
                     startActivity(intent);
                 }
+
+            }
+        });
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(),UploadActivity.class);
+                intent.putExtra("isAudio",isAudio);
+                startActivity(intent);
+            }
+        });
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            public void onPageScrollStateChanged(int state) {}
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+
+            public void onPageSelected(int position) {
+                // Check if this is the page you want.
+                if(position ==0)
+                    isAudio =1;
+                else
+                    isAudio =0;
 
             }
         });
@@ -532,6 +559,31 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                     categoriesLsit.add(category);
                 }
             }
+            length = mediaModel.getBody().getOwnMedia().size();
+            List<Song> songList = new ArrayList<>();
+
+            for (int i = 0; i < length; i++) {
+                if (mediaModel.getBody().getOwnMedia()!= null &&
+                        mediaModel.getBody().getOwnMedia().size() > 0) {
+                    Song song = new Song();
+                    OwnMedium ownMedium = mediaModel.getBody().getOwnMedia().get(i);
+                    song.setTitle( ownMedium.getTitle());
+                    song.setArtistName(SharedPrefrenceHandler.getInstance().getName());
+                    song.setOriginalFileUrl(ownMedium.getOriginalFileUrl());
+                    song.setSampleFileUrl(ownMedium.getSampleFileUrl());
+                    songList.add(song);
+
+                }
+            }
+            if(songList.size()>0)
+            {
+                Category category = new Category();
+                category.setType("ownmedia");
+                category.setTitle(getContext().getResources().getString(R.string.my_upload));
+                //category.setId(mediaModel.getBody().getOwnMedia().get(i).getId());
+                category.setSongs(songList);
+                categoriesLsit.add(category);
+            }
 
 
         }
@@ -607,6 +659,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                         public void onSliderClick(BaseSliderView slider) {
                             ArrayList<Song> songList = new ArrayList<>();
 
+
                             for (final Medium medium : bannerBody.getMedia()) {
                                 Song song = new Song();
                                 song.setClipArtUrl(medium.getClipArtUrl());
@@ -623,9 +676,19 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
 
                             }
 
-                            Intent intent = new Intent(getActivity(), BannerListActivity.class);
-                            intent.putExtra("title", bannerBody.getTitle());
+
+
+                            Intent intent = new Intent(getActivity(), ViewAllSongActivity.class);
+                            intent.putExtra("isEdit",isEdit);
+                            intent.putExtra("mobile_no",mobileNo);
+                            intent.putExtra("contact_name",name);
+                            intent.putExtra("isIncoming",isIncoming);
+                            intent.putExtra("isAudio", isAudio);
+                            intent.putExtra("postion", 0);
+                            intent.putExtra("category", bannerBody.getTitle());
+                            intent.putExtra("contact_entity", contactEntity);
                             intent.putExtra("songsList", songList);
+                            intent.putExtra("IsBannerList", 1);
                             startActivity(intent);
 
 
@@ -646,6 +709,7 @@ public class HomeFragment extends Fragment implements NetworkCallBack, View.OnCl
                     adapter.addFragment(HomeVideoFragment.newInstance(getContext(), lists.get(0).getCategoryList(), 1, isEdit, mobileNo, name, isIncoming, contactEntity), getString(R.string.audio));
                     adapter.addFragment(HomeVideoFragment.newInstance(getContext(), lists.get(1).getCategoryList(), 0, isEdit, mobileNo, name, isIncoming, contactEntity), getString(R.string.video));
                     viewPager.setAdapter(adapter);
+                    viewPager.setCurrentItem(1);
                 }
             }
         }.execute();

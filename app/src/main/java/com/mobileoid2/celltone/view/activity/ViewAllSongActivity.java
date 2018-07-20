@@ -38,6 +38,7 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
     private int isIncoming;
     private ContactEntity contactEntity;
     private LinearLayout llMain;
+    private int isBannerList ;
 
 
     @Override
@@ -59,14 +60,15 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
         isIncoming = getIntent().getIntExtra("isIncoming", 0);
         contactEntity = (ContactEntity) getIntent().getSerializableExtra("contact_entity");
         songList = (List<Song>) getIntent().getSerializableExtra("songsList");
+        isBannerList =  getIntent().getIntExtra("IsBannerList", 0);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getIntent().getStringExtra("category"));
-        Fragment fragment = ViewAllSongsFragment.newInstance(this, songList, isAudio, type, categoryId, postion,
-                isEdit, mobileNo, name, isIncoming, contactEntity, this);
+        Fragment fragment = ViewAllSongsFragment.newInstance(this, songList, isAudio, categoryId, postion,
+                isEdit, mobileNo, name, isIncoming, contactEntity, this,isBannerList);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
         fragmentTransaction.addToBackStack(fragment.getClass().getName());

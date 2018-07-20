@@ -73,6 +73,11 @@ public class CategoriesSongsRecyclerViewAdapter extends RecyclerView.Adapter<Cat
         //holder.mIdView.setText(mValues.get(position).id);
         holder.mContentView.setText(holder.mItem.getTitle());
         Glide.with(mcontext).load(ApiConstant.MEDIA_URL + holder.mItem.getClipArtUrl()).into(holder.video_thumb);
+        if (holder.mItem.getClipArtUrl() != null)
+            Glide.with(mcontext).load(ApiConstant.MEDIA_URL + holder.mItem.getClipArtUrl()).into(holder.video_thumb);
+        else
+            holder.video_thumb.setImageResource(R.drawable.thumb_image);
+
         holder.llMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

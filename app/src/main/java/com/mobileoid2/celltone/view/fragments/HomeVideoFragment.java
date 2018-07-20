@@ -202,7 +202,7 @@ public class HomeVideoFragment extends Fragment {
 
         if(musicPojoList!=null) {
             ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
-            adapter.addFragment(HomeSongsListFragment.newInstance(musicPojoList, isAudio,isEdit,mobileNo,name,isIncoming,contactEntity), "Home");
+            adapter.addFragment(HomeSongsListFragment.newInstance(musicPojoList, isAudio,isEdit,mobileNo,name,isIncoming,contactEntity), getContext().getResources().getString(R.string.home));
             for (int i = 0; i < musicPojoList.size(); i++) {
                 adapter.addFragment(CategorySongListFragment.newInstance(musicPojoList.get(i), musicPojoList.get(i).getId(), musicPojoList.get(i).getType(),
                         musicPojoList.get(i).getSongs(), isAudio,isEdit,mobileNo,name,isIncoming,contactEntity), musicPojoList.get(i).getTitle());

@@ -104,7 +104,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     Formatter mFormatter;
     private List<Song> songList;
     private int isAudio;
-    private String type;
+  //  private String type;
     private int isMediaCompleted = 0;
     private String categoryId;
     private Context context;
@@ -135,17 +135,18 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
     int limit = 10;
     private int noOfPages = 0;
     int pastVisiblesItems, visibleItemCount, totalItemCount;
+    private  int isBannerList =0;
 
     public static ViewAllSongsFragment newInstance(Context context, List<Song> songList, int isAudio,
-                                                   String type, String categoryId, int postion,
+                                                    String categoryId, int postion,
                                                    int isEdit, String mobileNo, String name, int isIncoming,
-                                                   ContactEntity contactEntity, ChangeToolBarTitleListiner changeToolBarTitleListiner) {
+                                                   ContactEntity contactEntity, ChangeToolBarTitleListiner changeToolBarTitleListiner,int isBannerList) {
         ViewAllSongsFragment fragment = new ViewAllSongsFragment();
         fragment.context = context;
         fragment.songList = songList;
         fragment.isAudio = isAudio;
         fragment.categoryId = categoryId;
-        fragment.type = type;
+      //  fragment.type = type;
         fragment.postion = postion;
         fragment.isEdit = isEdit;
         fragment.mobileNo = mobileNo;
@@ -153,6 +154,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         fragment.name = name;
         fragment.changeToolBarTitleListiner = changeToolBarTitleListiner;
         fragment.contactEntity = contactEntity;
+        fragment.isBannerList =isBannerList;
         return fragment;
 
 
@@ -254,27 +256,28 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         else
             preview.setVisibility(View.GONE);
 
+         if(isBannerList==0) {
+             listSongs.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                 @Override
+                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                     if (dy > 0) //check for scroll down
+                     {
+                         visibleItemCount = mLayoutManager.getChildCount();
+                         totalItemCount = mLayoutManager.getItemCount();
+                         pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
-        listSongs.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (dy > 0) //check for scroll down
-                {
-                    visibleItemCount = mLayoutManager.getChildCount();
-                    totalItemCount = mLayoutManager.getItemCount();
-                    pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+                         if (loading & noCount > skip) {
+                             if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                                 loading = false;
+                                 skip = skip + limit;
+                                 getSongList();
 
-                    if (loading & noCount > skip) {
-                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                            loading = false;
-                            skip = skip + limit;
-                            getSongList();
-
-                        }
-                    }
-                }
-            }
-        });
+                             }
+                         }
+                     }
+                 }
+             });
+         }
 
     }
 
@@ -495,6 +498,7 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
 
                 int currentPosition = videoView.getCurrentPosition();
+                pos =currentPosition;
                 String currentPositionStr = millisecondsToString(currentPosition);
 
                 seekBar.setProgress(currentPosition);

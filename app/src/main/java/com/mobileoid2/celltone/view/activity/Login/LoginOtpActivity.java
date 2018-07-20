@@ -99,8 +99,21 @@ public class LoginOtpActivity extends AppCompatActivity implements NetworkCallBa
 
     @OnClick(R.id.txt_register)
     public void register() {
-        isRegister = 1;
-        txtInputName.setVisibility(View.VISIBLE);
+        if(isRegister==0) {
+            isRegister = 1;
+            txtInputName.setVisibility(View.VISIBLE);
+            txtRegister.setText(getString(R.string.alread_registered));
+
+
+        }
+        else
+        {
+            isRegister = 0;
+            txtInputName.setVisibility(View.GONE);
+            txtRegister.setText(getString(R.string.register));
+
+
+        }
     }
 
 

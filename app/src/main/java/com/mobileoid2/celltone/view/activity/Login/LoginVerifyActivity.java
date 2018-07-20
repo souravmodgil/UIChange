@@ -180,6 +180,7 @@ public class LoginVerifyActivity extends AppCompatActivity implements NetworkCal
                 if (pojoOTPVerifyResponse.getStatus()==1000) {
                     SharedPrefrenceHandler.getInstance().setUSER_TOKEN(pojoOTPVerifyResponse.getBody().getToken());
                     SharedPrefrenceHandler.getInstance().setCOUTRYCODE(pojoOTPVerifyResponse.getBody().getUser().getCountryCode());
+                    SharedPrefrenceHandler.getInstance().setName(pojoOTPVerifyResponse.getBody().getUser().getName());
                     SharedPrefrenceHandler.getInstance().setLoginState(true);
                     startPermissionActivity();
                     progressDialog.dismiss();

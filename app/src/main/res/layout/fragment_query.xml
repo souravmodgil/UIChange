@@ -10,7 +10,16 @@
         android:id="@+id/recyle_view_query"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         tools:listitem="@layout/row_query_list" />
+
+    <com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView
+        android:id="@+id/txt_no_records"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:text="@string/query_no_records"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_compose"

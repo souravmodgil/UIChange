@@ -44,7 +44,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class UserMediaUploadFragment extends Fragment implements NetworkCallBack {
     private int totalMediaCoun;
-    private TextView txtUserUploadCount,btUpload;
+    //private TextView txtUserUploadCount;
     private RecyclerView rcUserUploadList;
     private ApiInterface apiInterface;
     private ProgressBar progressBar;
@@ -64,19 +64,19 @@ public class UserMediaUploadFragment extends Fragment implements NetworkCallBack
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = getView() != null ? getView() : inflater.inflate(R.layout.fragment_user_upload, container, false);
         rcUserUploadList = view.findViewById(R.id.rc_user_upload_list);
-        btUpload = view.findViewById(R.id.bt_upload);
-        txtUserUploadCount = view.findViewById(R.id.txt_user_upload_count);
+//        btUpload = view.findViewById(R.id.bt_upload);
+//        txtUserUploadCount = view.findViewById(R.id.txt_user_upload_count);
         progressBar =view.findViewById(R.id.media_player_progress_bar);
         llMain =view.findViewById(R.id.ll_main);
       //  changeToolBarTitleListiner.setTitle("Upload");
         changeToolBarTitleListiner.setTitle(getString(R.string.upload));
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
-        btUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getActivity(),UploadActivity.class));
-            }
-        });
+//        btUpload.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startActivity(new Intent(getActivity(),UploadActivity.class));
+//            }
+//        });
         getMediaList();
         return view;
     }
@@ -111,10 +111,10 @@ public class UserMediaUploadFragment extends Fragment implements NetworkCallBack
                 rcUserUploadList.setNestedScrollingEnabled(false);
                 progressBar.setVisibility(View.GONE);
                 llMain.setVisibility(View.VISIBLE);
-                if(totalMediaCoun==0)
-                    txtUserUploadCount.setText(""+modle.size()+"/"+"Unlimited");
-                if(totalMediaCoun>0)
-                    txtUserUploadCount.setText(""+modle.size()+"/"+totalMediaCoun);
+//                if(totalMediaCoun==0)
+//                    txtUserUploadCount.setText(""+modle.size()+"/"+"Unlimited");
+//                if(totalMediaCoun>0)
+//                    txtUserUploadCount.setText(""+modle.size()+"/"+totalMediaCoun);
 
 
             }

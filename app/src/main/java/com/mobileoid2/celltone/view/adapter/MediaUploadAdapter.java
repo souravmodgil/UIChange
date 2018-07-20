@@ -38,7 +38,7 @@ public class MediaUploadAdapter extends RecyclerView.Adapter<MediaUploadAdapter.
         holder.mItem = mValues.get(position);
         //holder.mIdView.setText(mValues.get(position).id);
         holder.txtUploadMediaDate.setText(holder.mItem.getCreatedAt());
-        holder.txtUploadMediaName.setText(holder.mItem.getTitle());
+        holder.txtUploadMediaName.setText(holder.mItem.getTitle().trim());
         holder.txtUploadMediaStatus.setText(holder.mItem.getStatus());
         if (holder.mItem.getContentType().equals("audio"))
             holder.txtUploadMediaName.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.audio_icon,0);

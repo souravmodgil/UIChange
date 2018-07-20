@@ -99,8 +99,10 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
     private int isOutgoing;
     private int isRequestSend = 0;
     private int isAudio;
+    List<ContactEntity> contactFilterList;
     private boolean isChecked = false;
     private RecyclerView listSongs;
+    private int isGetAllData =0;
     private CheckBox cbAllCheck;
     private ProgressBar progressBar;
     private List<SelectContact> selectedContacts = new ArrayList<SelectContact>();
@@ -181,9 +183,10 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             if (contactList != null && contactList.size() > 0) {
                 myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit);
                 listSongs.setAdapter(myContactsRecyclerViewAdapter);
-            } else {
-                getContact();
             }
+
+                getContact();
+
 
         }
 
@@ -284,7 +287,14 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 submitButton.setVisibility(View.VISIBLE);
                 txtTotalSelected.setVisibility(View.VISIBLE);
                 txtTotalSelected.setText(selectedContacts.size() + " Selected");
-                myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
+              //  myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
+                 if(isGetAllData ==1 && contactFilterList!=null && contactFilterList.size()>0)
+                    myContactsRecyclerViewAdapter.updateAdater(contactFilterList, 0);
+                 else
+                     myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
+
+
+
             }
         } else {
 
@@ -297,9 +307,11 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             }
             selectedContacts.clear();
             selectedPhoneList.clear();
-            txtTotalSelected.setVisibility(View.GONE);
-            myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
-
+            txtTotalSelected.setVisibility(View.INVISIBLE);
+            if(isGetAllData ==1 && contactFilterList!=null && contactFilterList.size()>0)
+                myContactsRecyclerViewAdapter.updateAdater(contactFilterList, 0);
+            else
+                myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
 
         }
 
@@ -392,8 +404,13 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             if (selectedContacts.size() > 0) {
                 ContactEntity contactEntity = contactList.get(position);
                 contactEntity.setIsSelcted(0);
+
                 contactList.set(position, contactEntity);
-                SelectContact selectContact = new SelectContact(position, phoneNumber);
+                SelectContact selectContact;
+                if(isGetAllData==0)
+                    selectContact = new SelectContact(position, phoneNumber);
+                else
+                    selectContact = new SelectContact(contactEntity.getRowId(), phoneNumber);
                 selectedContacts.remove(selectContact);
                 selectedPhoneList.remove(phoneNumber);
                 cbAllCheck.setChecked(false);
@@ -581,7 +598,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
     private void filterList(CharSequence constraint) {
         int length = 1;
-        List<ContactEntity> contactFilterList = new ArrayList<>();
+        contactFilterList = new ArrayList<>();
         if (constraint != null && constraint.length() > 0 && contactList.size() > 0) {
             length = 0;
             //CHANGE TO UPPER
@@ -595,11 +612,14 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 if (contactList.get(i).getName().toUpperCase().contains(constraint)
                         || contactList.get(i).getNumber().contains(constraint)) {
                     //ADD PLAYER TO FILTERED PLAYERS
+                    ContactEntity contactEntity =contactList.get(i);
+                    contactEntity.setRowId(i);
                     contactFilterList.add(contactList.get(i));
                 }
             }
         }
-        if (contactFilterList != null) {
+        if (contactFilterList != null && myContactsRecyclerViewAdapter!=null ) {
+            isGetAllData =1;
             myContactsRecyclerViewAdapter.updateAdater(contactFilterList, length);
             submitButton.setVisibility(View.VISIBLE);
         }
@@ -619,6 +639,13 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         searchEditText.setTextColor(getResources().getColor(R.color.white));
         searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setQueryHint("Contact");
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                isGetAllData =0;
+                return false;
+            }
+        });
 
 
         // listening to search query text change

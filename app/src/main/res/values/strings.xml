@@ -156,15 +156,16 @@
     <string name="txt_cancel">Cancel</string>
     <string name="txt_save">Save</string>
     <string name="file_name_message">File Name can not be empty</string>
-    <string name="register">Register</string>
+    <string name="register">Not yet  Registered? Register</string>
+    <string name="alread_registered">Already registered! Login</string>
     <string name="coutry_prompt">Select Country</string>
     <string name="profile_info">Profile Info</string>
     <string name="profile_name">Name:</string>
     <string name="profile_Contact">Contact:</string>
     <string name="profile_plan">Plan</string>
     <string name="profile_current_plan">Current:</string>
-    <string name="profile_validity">Validate</string>
-    <string name="upgrade">UPGRADE</string>
+    <string name="profile_validity">Validity</string>
+    <string name="upgrade">Upgrade</string>
     <string name="profile_usage">Usage</string>
     <string name="profile_user_upload">User Uploads</string>
     <string name="default_notification_channel_id">Primary Channel</string>
@@ -286,6 +287,11 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="my_upload">My Uploads</string>
+    <string name="home">Home</string>
+    <string name="query_no_records">No Querys ,please compose  new query</string>
+    <string name="title_activity_tutorial">Tutorial</string>
+    <string name="skip_to_login">Skip to Login</string>
 
 
 </resources>

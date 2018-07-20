@@ -3,6 +3,7 @@ package com.mobileoid2.celltone.view.activity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -35,6 +36,31 @@ public class ComposeQueryActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.content_frame, fragment);
         fragmentTransaction.commit();
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBack();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void onBack()
+
+    {
+        if (getSupportFragmentManager().getBackStackEntryCount() >= 1)
+            super.onBackPressed();
+        else
+            finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        onBack();
     }
 
 

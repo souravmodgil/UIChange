@@ -45,6 +45,8 @@ public class SharedPrefrenceHandler {
     private String BANNERRESPONSE = "banner_response";
     private String VIDEORESPONSE = "video_resposne";
     private String COUTRYCODE = "coutry_code";
+    private String IS_FIRST_TIME ="isFirstTime";
+    private String NAME = "name";
     private String  FCMIDSET = "fcm_id_set";
     private String GET_ALL_AUDIO = "GET_ALL_AUDIOS";
     private String GET_ALL_VIDEO = "GET_ALL_VIDEOS";
@@ -60,6 +62,15 @@ public class SharedPrefrenceHandler {
     }
     public void setContactsUploaded(boolean androidID) {
         pSharedPref.edit().putBoolean(ContactsUploaded, androidID).apply();
+    }
+
+    /*FirstTime APP Install*/
+    public int getIsFirstTime() {
+        return pSharedPref.getInt(IS_FIRST_TIME, 0);
+
+    }
+    public void setISFirstTime(int isFirstTime) {
+        pSharedPref.edit().putInt(IS_FIRST_TIME, isFirstTime).apply();
     }
 
     /*USER_LOGIN_STATE*/
@@ -164,9 +175,18 @@ public class SharedPrefrenceHandler {
         pSharedPref.edit().putString(COUTRYCODE, code).apply();
 
     }
+    public String getName() {
+        return pSharedPref.getString(NAME, "");
+    }
+
+    public void setName(String code) {
+        pSharedPref.edit().putString(NAME, code).apply();
+
+    }
     public String getCOUTRYCODE() {
         return pSharedPref.getString(COUTRYCODE, "");
     }
+
 
     public boolean isFcpSend() {
         return pSharedPref.getBoolean(FCMIDSET, false);

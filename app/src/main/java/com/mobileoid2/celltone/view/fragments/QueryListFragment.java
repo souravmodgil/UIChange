@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
@@ -56,6 +57,7 @@ public class QueryListFragment extends Fragment implements NetworkCallBack,Query
     private int skip = 0;
     private boolean loading = true;
     private int noOfPages =0;
+    private TextView  txtNoRecords;
     int pastVisiblesItems, visibleItemCount, totalItemCount;
     private android.support.v7.widget.LinearLayoutManager mLayoutManager;
      QueryLisiner queryLisiner;
@@ -75,6 +77,7 @@ public class QueryListFragment extends Fragment implements NetworkCallBack,Query
         recyleViewQuery = view.findViewById(R.id.recyle_view_query);
         fabCompose = view.findViewById(R.id.fab_compose);
         progressBar = view.findViewById(R.id.progress_bar);
+        txtNoRecords = view.findViewById(R.id.txt_no_records);
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
         mLayoutManager = new LinearLayoutManager(getActivity());
         getQueryList();
@@ -139,6 +142,14 @@ public class QueryListFragment extends Fragment implements NetworkCallBack,Query
                 recyleViewQuery.setItemAnimator(new DefaultItemAnimator());
                 recyleViewQuery.setAdapter(planAdapter);
                 progressBar.setVisibility(View.GONE);
+                txtNoRecords.setVisibility(View.GONE);
+                recyleViewQuery.setVisibility(View.VISIBLE);
+                if(modle.getBody().getList().size()==0)
+                {
+                    txtNoRecords.setVisibility(View.VISIBLE);
+                    recyleViewQuery.setVisibility(View.GONE);
+
+                }
 
 
             }

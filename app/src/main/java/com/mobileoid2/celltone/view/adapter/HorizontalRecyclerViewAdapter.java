@@ -36,24 +36,22 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter<Horizont
 
     private Context mContext;
     private List<Song> mArrayList;
-    private int isAudio ;
+    private int isAudio;
     private Category category;
     private OnListFragmentInteractionListener onListFragmentInteractionListener;
     private int poistion;
     Activity mActivity;
 
     public HorizontalRecyclerViewAdapter(int isAudio, Context mContext, List<Song> mArrayList, Activity activity,
-                                         OnListFragmentInteractionListener  onListFragmentInteractionListener, int poistion, Category category) {
+                                         OnListFragmentInteractionListener onListFragmentInteractionListener, int poistion, Category category) {
         this.mContext = mContext;
         this.mArrayList = mArrayList;
         this.mActivity = activity;
-        this.category =category;
-        this.onListFragmentInteractionListener =onListFragmentInteractionListener;
-        this.poistion =poistion;
-        this.isAudio=isAudio;
+        this.category = category;
+        this.onListFragmentInteractionListener = onListFragmentInteractionListener;
+        this.poistion = poistion;
+        this.isAudio = isAudio;
     }
-
-
 
 
     @Override
@@ -65,21 +63,22 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter<Horizont
     AlertDialog alertDialog;
 
     @Override
-    public void onBindViewHolder(HorizontalViewHolder holder,final int position) {
+    public void onBindViewHolder(HorizontalViewHolder holder, final int position) {
         final Song current = mArrayList.get(position);
         holder.txtTitle.setText(current.getTitle());
         holder.txtSubTitle.setText(current.getArtistName());
         //holder.txtTitle.setTypeface(null, Typeface.ITALIC);
+        if (current.getClipArtUrl() != null)
+            Glide.with(mContext).load(ApiConstant.MEDIA_URL + current.getClipArtUrl()).into(holder.ivThumb);
+        else
+            holder.ivThumb.setImageResource(R.drawable.thumb_image);
 
-        if (current.getContentType().equalsIgnoreCase("video"))
-        Glide.with(mContext).load(ApiConstant.MEDIA_URL+current.getClipArtUrl()).into(holder.ivThumb);
-        else Glide.with(mContext).load(ApiConstant.MEDIA_URL+current.getClipArtUrl()).into(holder.ivThumb);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            //    Toast.makeText(mContext, current.getTitle(), Toast.LENGTH_SHORT).show();
-                onListFragmentInteractionListener.onListFragmentInteraction(category,position);
+                //    Toast.makeText(mContext, current.getTitle(), Toast.LENGTH_SHORT).show();
+                onListFragmentInteractionListener.onListFragmentInteraction(category, position);
                 /*--------------------------------*/
                 /*if (alertDialog == null) {
                     playVideoInDialog(current);
@@ -93,36 +92,6 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter<Horizont
         });
     }
 
-    private void playVideoInDialog(Body current) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext,R.style.Theme_Dialog);
-        LayoutInflater inflater = mActivity.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_video, null);
-        dialogBuilder.setView(dialogView);
-        VideoView customVideoView = (VideoView) dialogView.findViewById(R.id.video);
-        Uri video = Uri.fromFile(new File(current.getOriginalFileUrl()));
-
-        customVideoView.setVideoURI(video);
-        customVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.setLooping(true);
-                customVideoView.start();
-            }
-        });
-        alertDialog = dialogBuilder.create();
-        alertDialog.show();
-       // alertDialog.getWindow().setBackgroundDrawable(null);
-        alertDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, 400);
-        alertDialog.getWindow().setGravity(Gravity.TOP);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        Window window = alertDialog.getWindow();
-        lp.copyFrom(window.getAttributes());
-//This makes the dialog take up the full width
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = 400;
-        window.setAttributes(lp);
-
-    }
 
     @Override
     public int getItemCount() {

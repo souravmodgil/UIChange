@@ -13,6 +13,9 @@ public class Body {
     @SerializedName("category")
     @Expose
     private List<Category> category = null;
+    @SerializedName("ownMedia")
+    @Expose
+    private List<OwnMedium> ownMedia = null;
 
     public List<Trending> getTrending() {
         return trending;
@@ -29,5 +32,14 @@ public class Body {
     public void setCategory(List<Category> category) {
         this.category = category;
     }
+
+    public List<OwnMedium> getOwnMedia() {
+        return ownMedia;
+    }
+
+    public void setOwnMedia(List<OwnMedium> ownMedia) {
+        this.ownMedia = ownMedia;
+    }
+
 
 }

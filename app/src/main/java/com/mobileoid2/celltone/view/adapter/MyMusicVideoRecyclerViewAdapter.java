@@ -54,7 +54,10 @@ public class MyMusicVideoRecyclerViewAdapter extends RecyclerView.Adapter<MyMusi
         //holder.mIdView.setText(mValues.get(position).id);
 
         holder.mContentView.setText(holder.mItem.getTitle());
+        if(holder.mItem.getClipArtUrl()!=null)
         Glide.with(mcontext).load(ApiConstant.MEDIA_URL + holder.mItem.getClipArtUrl()).into(holder.video_thumb);
+        else
+            holder.video_thumb.setImageResource(R.drawable.thumb_image);
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -13,6 +13,9 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
 
     @Ignore
     private  int isSelcted = 0;
+    @Ignore
+    private  int rowId = -1;
+
     @PrimaryKey(autoGenerate = true)
     @NonNull
     @ColumnInfo(name = "_id")
@@ -163,5 +166,13 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
     public int compareTo(@NonNull ContactEntity contactEntity) {
         return this.getName().compareTo(contactEntity.getName());
 
+    }
+
+    public int getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(int rowId) {
+        this.rowId = rowId;
     }
 }

@@ -36,6 +36,7 @@ public class UploadActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(PERMISSIONS, PERMISSIONS_MULTIPLE_REQUEST);
         }
@@ -43,7 +44,7 @@ public class UploadActivity extends AppCompatActivity {
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getString(R.string.upload));
-        fragmentMusicUpload = FragmentMusicUpload.newInstance();
+        fragmentMusicUpload = FragmentMusicUpload.newInstance(getIntent().getIntExtra("isAudio",0));
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragmentMusicUpload);
         fragmentTransaction.commit();

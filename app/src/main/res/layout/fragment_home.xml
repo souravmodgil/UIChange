@@ -187,6 +187,15 @@
         android:layout_gravity="center"
         />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="end|bottom"
+        android:src="@drawable/upload"
+        app:backgroundTint="@color/colorPrimary"
+        android:layout_margin="16dp" />
+
 
 
 

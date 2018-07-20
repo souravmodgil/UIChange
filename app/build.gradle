@@ -8,14 +8,13 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
-        versionName "1.20"
+        versionName "1.21"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
 
     }
 
     buildTypes {
-
 
 
         android.applicationVariants.all { variant ->

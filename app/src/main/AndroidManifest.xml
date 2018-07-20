@@ -83,14 +83,13 @@
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
-        <service android:name="com.mobileoid2.celltone.Service.NotificationListener"
+        <service
+            android:name=".Service.NotificationListener"
             android:label="@string/app_name"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"><intent-filter>
-
-            <action android:name="android.service.notification.NotificationListenerService" />
-
-        </intent-filter>
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <provider
@@ -113,8 +112,6 @@
                 <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
             </intent-filter>
         </receiver>
-
-
 
         <!-- facebook -->
         <meta-data
@@ -162,21 +159,50 @@
             android:label="@string/title_activity_homemain"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
-        <activity android:name=".view.activity.PlanActivity" />
-        <activity android:name=".view.activity.OfferActivity" />
-        <activity android:name=".view.activity.UploadActivity" />
-        <activity android:name=".view.activity.ProfileActivity" />
-        <activity android:name=".view.activity.ContactActivity" />
-        <activity android:name=".view.activity.AbousUs" />
-        <activity android:name=".view.activity.QueryActivity" />
+        <activity
+            android:name=".view.activity.PlanActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.OfferActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.UploadActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.ProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.ContactActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.AbousUs"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.QueryActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".view.activity.QueryListActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".view.activity.ComposeQueryActivity" />
-        <activity android:name=".view.activity.BannerListActivity" />
-        <activity android:name=".view.activity.LanguageActivity" />
-        <activity android:name=".view.activity.FAQActivity" />
-        <activity android:name=".view.activity.SearchActivity" />
+        <activity
+            android:name=".view.activity.ComposeQueryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.BannerListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.LanguageActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.FAQActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.SearchActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.Tutorial"
+            android:label="@string/title_activity_tutorial"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

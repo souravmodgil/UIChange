@@ -45,6 +45,6 @@ public class CustomVideoView extends VideoView {
             }
         }
         // Log.i("@@@", "setting size: " + width + 'x' + height);
-        setMeasuredDimension(width, 500);
+        setMeasuredDimension(width, 650);
     }
 }

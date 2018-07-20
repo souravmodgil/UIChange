@@ -46,7 +46,7 @@ public class BannerListActivity extends AppCompatActivity implements ChangeToolB
         // toolbar fancy stuff
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getIntent().getStringExtra("title"));
-        Fragment fragment = BannerSongsListFragment.newInstance(this, songList,this);
+        Fragment fragment = BannerSongsListFragment.newInstance(this, songList,this,getIntent().getIntExtra("isEdit", 0));
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);

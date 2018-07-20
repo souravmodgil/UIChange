@@ -51,8 +51,7 @@ public class MyHomeSongsListRecyclerViewAdapter extends RecyclerView.Adapter<MyH
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).getTitle());
-       // holder.mIdView.setInputType(StringUtils.capitalize(mValues.get(position).toLowerCase().trim());
-        //holder.mContentView.setText(mValues.get(position).content);
+
         holder.mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,36 +60,17 @@ public class MyHomeSongsListRecyclerViewAdapter extends RecyclerView.Adapter<MyH
             }
         });
 
-//        holder.mView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (null != mListener) {
-//                    mListener.onListFragmentInteraction(holder.mItem,position);
-//                }
-//            }
-//        });
 
-        /*---------------*/
         HorizontalRecyclerViewAdapter itemListDataAdapter =
                 new HorizontalRecyclerViewAdapter(isAudio,mContext, holder.mItem.getSongs(),mActivity,mListener,position,holder.mItem);
 
         holder.mHorizontalRV.setHasFixedSize(true);
         holder.mHorizontalRV.setLayoutManager(new LinearLayoutManager(mContext,
                 LinearLayoutManager.HORIZONTAL, false));
-       // holder.mHorizontalRV.addItemDecoration(new GridSpacingItemDecoration(spanCount, spacing, includeEdge));
-       // ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(mContext, 10)
-        //
-        // holder.mHorizontalRV.addItemDecoration(itemDecoration);
         holder.mHorizontalRV.setAdapter(itemListDataAdapter);
 
         holder.mHorizontalRV.setNestedScrollingEnabled(false);
 
-        /*holder..setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(mContext, current.getTitle(), Toast.LENGTH_SHORT).show();
-            }
-        });*/
     }
 
     @Override

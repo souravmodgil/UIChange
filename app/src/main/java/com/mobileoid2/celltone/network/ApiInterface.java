@@ -8,6 +8,7 @@ import com.mobileoid2.celltone.pojo.CommentRequest;
 import com.mobileoid2.celltone.pojo.ComposeQueryRequest;
 import com.mobileoid2.celltone.pojo.FCMMODELREQUEST;
 import com.mobileoid2.celltone.pojo.MediaListReqeuestPojo;
+import com.mobileoid2.celltone.pojo.PojoContactsUpload;
 import com.mobileoid2.celltone.pojo.PojoLogin;
 import com.mobileoid2.celltone.pojo.PojoOTPRequest;
 import com.mobileoid2.celltone.pojo.PojoOTPVerifyRequest;
@@ -78,6 +79,12 @@ public interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("contacts/set/media")
     public Call<String> serMediaForUser(@Header("token") String token,@Body  SendContactsModel sendContactsModel);
+
+
+
+    @Headers("Content-Type: application/json")
+    @POST("contacts/sync")
+    public Call<String> syncContact(@Header("token") String token,@Body PojoContactsUpload sendContactsModel);
 
     @Multipart
     @POST("media/own-media")

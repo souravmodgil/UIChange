@@ -11,7 +11,9 @@ import android.os.IBinder;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.util.Patterns;
+import android.view.Display;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Util.Constant;
 import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.database.RingtoneEntity;
@@ -51,6 +54,8 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
     private int originalYPos;
     private boolean moving;
     private WindowManager windowManager;
+    private   LayoutInflater  inflater;
+    private ViewGroup mView;
     private CustomVideoView videoView;
 
     @Override
@@ -66,8 +71,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
         }
 
         if (Constant.PHONENUMBER == null && Constant.PHONENUMBER.isEmpty() && !
-                SharedPrefrenceHandler.getInstance().getLoginState()
-                ) {
+                SharedPrefrenceHandler.getInstance().getLoginState()) {
             stopVideoAndService();
             return;
         }
@@ -117,24 +121,30 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                 return;
             }
             windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-            overlayedLayout = new LinearLayout(this);
-            overlayedLayout.setOnClickListener(this);
-            overlayedLayout.setOnTouchListener(this);
-            overlayedLayout.setAlpha(0.0f);
+            LayoutInflater  inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            overlayedLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 300));
-            overlayedLayout.setOrientation(LinearLayout.VERTICAL);
-            overlayedLayout.setBackgroundColor(Color.RED);
-            overlayedLayout.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
+            mView =  (ViewGroup) inflater.inflate(R.layout.video_view, null);
+        //    overlayedLayout = new LinearLayout(this);
+            mView.setOnClickListener(this);
+            mView.setOnTouchListener(this);
+
+            mView.setAlpha(0.0f);
+//
+//            overlayedLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 600));
+//          //  overlayedLayout.setOrientation(LinearLayout.VERTICAL);
+//            overlayedLayout.setBackgroundColor(Color.RED);
+//            overlayedLayout.getLayoutParams().height =500;
+            // overlayedLayout.setLayoutParams(new LayoutParams(200, 300));
 
             if (path.getPath().endsWith("mp4")) {
-                videoView = new CustomVideoView(this);
-                videoView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
-                videoView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                //videoView.getLayoutParams().height = 300;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    videoView.setForegroundGravity(Gravity.CENTER);
-                }
+                //  videoView = new CustomVideoView(this);
+                videoView = mView.findViewById(R.id.videoView);
+//                videoView.setLayoutParams(new LayoutParams(200, 300));
+//                videoView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+//                videoView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+////                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    videoView.setForegroundGravity(Gravity.CENTER);
+//                }
                 Uri video = Uri.fromFile(path);
                 videoView.setVideoURI(video);
                 videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -144,7 +154,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                         mp.start();
                     }
                 });
-                overlayedLayout.addView(videoView);
+                //  overlayedLayout.addView(videoView);
 
 
             } else {
@@ -191,7 +201,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             params.gravity = Gravity.CENTER;
             params.x = 0;
             params.y = 0;
-            windowManager.addView(overlayedLayout, params);
+            windowManager.addView(mView, params);
 
             topLeftView = new View(this);
             LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
@@ -247,14 +257,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                     });
                     overlayedLayout.addView(videoView);
 
-               /* ImageView imageView=new ImageView(this);
-                imageView.setImageDrawable(getResources().getDrawable(R.drawable.adduser_icon));
-                imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
-                imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    imageView.setForegroundGravity(Gravity.CENTER);
-                }
-                overlayedLayout.addView(imageView);*/
+
 
 
                 } else {
@@ -300,10 +303,12 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
                 }
 
 
-                LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-                params.gravity = Gravity.CENTER;
+                LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
+                // params.gravity = Gravity.CENTER;
+
                 params.x = 0;
-                params.y = 0;
+                params.y = 100;
+                params.height= 50;
                 windowManager.addView(overlayedLayout, params);
 
                 topLeftView = new View(this);
@@ -356,7 +361,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             moving = false;
 
             int[] location = new int[2];
-            overlayedLayout.getLocationOnScreen(location);
+            mView.getLocationOnScreen(location);
 
             originalXPos = location[0];
             originalYPos = location[1];
@@ -374,7 +379,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             float x = event.getRawX();
             float y = event.getRawY();
 
-            WindowManager.LayoutParams params = (LayoutParams) overlayedLayout.getLayoutParams();
+            WindowManager.LayoutParams params = (LayoutParams) mView.getLayoutParams();
 
             int newX = (int) (offsetX + x);
             int newY = (int) (offsetY + y);
@@ -386,7 +391,7 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
             params.x = newX - (topLeftLocationOnScreen[0]);
             params.y = newY - (topLeftLocationOnScreen[1]);
 
-            windowManager.updateViewLayout(overlayedLayout, params);
+            windowManager.updateViewLayout(mView, params);
             moving = true;
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
             if (moving) {
@@ -406,7 +411,6 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
         if (videoView != null) {
             videoView.stopPlayback();
             videoView.setVisibility(View.GONE);
-            // windowManager.removeView(overlayedLayout);
         }
 
         if (mediaPlayer != null) {

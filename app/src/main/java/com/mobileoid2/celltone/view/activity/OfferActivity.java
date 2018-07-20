@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.mobileoid2.celltone.R;
 import  com.mobileoid2.celltone.view.fragments.OfferFragment;
@@ -30,10 +31,27 @@ public class OfferActivity extends AppCompatActivity {
 
 
     }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBack();
+                return true;
+        }
 
+        return super.onOptionsItemSelected(item);
+    }
+    private void onBack()
+
+    {
+        if( getSupportFragmentManager().getBackStackEntryCount()>=1)
+            super.onBackPressed();
+        else
+            finish();
+    }
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        finish();
+        onBack();
     }
+
 }

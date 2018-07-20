@@ -202,10 +202,11 @@ public class VideoCapture extends Activity implements Camera.PreviewCallback {
     }
 
     protected void stopRecording() {
-        buttonCamera.setVisibility(View.VISIBLE);
-        buttonDelete.setVisibility(View.VISIBLE);
+        buttonCamera.setVisibility(View.GONE);
+        buttonDelete.setVisibility(View.GONE);
         buttonAssignContact.setVisibility(View.VISIBLE);
         startRecording.setImageDrawable(getResources().getDrawable(R.mipmap.record_video));
+        startRecording.setVisibility(View.GONE);
 
         if (mrec == null) return;
         try {

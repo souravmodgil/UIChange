@@ -45,6 +45,7 @@ import com.mobileoid2.celltone.pojo.Music;
 import com.mobileoid2.celltone.pojo.getmedia.Body;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
+import com.mobileoid2.celltone.view.activity.Tutorial;
 import com.mobileoid2.celltone.view.activity.UploadActivity;
 import com.mobileoid2.celltone.view.activity.VideoCapture;
 
@@ -112,12 +113,14 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private String videoPath;
     private static boolean isFileMade = true;
     private File mediaFolder;
+    private int IsAudio ;
     private boolean isVideoRecorded = false;
     //  File mediaFolder = Environment.getExternalStoragePublicDirectory("VideoCompression");
 
 
-    public static FragmentMusicUpload newInstance() {
+    public static FragmentMusicUpload newInstance(int isAudio) {
         FragmentMusicUpload fragment = new FragmentMusicUpload();
+        fragment.isAudio =isAudio;
         return fragment;
     }
 
@@ -152,6 +155,22 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             layoutRecording = view.findViewById(R.id.layout_record_audio);
             progressBar = view.findViewById(R.id.media_player_progress_bar);
             llButtons = view.findViewById(R.id.ll_buttons);
+            if(isAudio==0)
+            {
+                cardViewMic.setVisibility(View.GONE);
+                cardViewVideoCamera.setVisibility(View.VISIBLE);
+            }
+            else if(isAudio ==1)
+            {
+
+                cardViewMic.setVisibility(View.VISIBLE);
+                cardViewVideoCamera.setVisibility(View.GONE);
+            }
+            else
+            {
+                cardViewMic.setVisibility(View.VISIBLE);
+                cardViewVideoCamera.setVisibility(View.VISIBLE);
+            }
 
             cardViewMic.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -276,6 +295,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private void requestRecording(int isAudio) {
         try {
             imageButtonLeft = view.findViewById(R.id.image_button_left);
+            imageButtonLeft.setVisibility(View.GONE);
             imageButtonCenter = view.findViewById(R.id.image_button_center);
             imageButtonRight = view.findViewById(R.id.image_button_right);
             textViewAudioRecordingName = view.findViewById(R.id.text_view_name);
@@ -311,7 +331,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             txtSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (etxtFileName.length() > 0) {
+                    if (etxtFileName.getText().toString().trim().length() > 0) {
                         progressBar.setVisibility(View.VISIBLE);
                         setDataForRequest(etxtFileName.getText().toString(), currentOutFile);
                     } else
@@ -799,7 +819,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private Observable<SetOwnMediaModel> getMediaResponse(String response) {
         Gson gsonObj = new Gson();
         final SetOwnMediaModel planBody = gsonObj.fromJson(response, SetOwnMediaModel.class);
-        if (mediaFile.exists())
+        if (mediaFile!=null && mediaFile.exists())
             mediaFile.delete();
 
         return Observable.create(new ObservableOnSubscribe<SetOwnMediaModel>() {
