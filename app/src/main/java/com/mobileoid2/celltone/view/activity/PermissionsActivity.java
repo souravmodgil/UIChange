@@ -4,6 +4,8 @@ import android.app.NotificationManager;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView;
+import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Service.ServiceCallScreenChanged;
 
 import android.Manifest;
@@ -14,23 +16,35 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 
 public class PermissionsActivity extends Activity {
+    private RelativeLayout llLaout;
 
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION = 6;
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS = 7;
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY = 8138;
+   private CountDownTimer toastCountDown;
 
     public static final String TAG = PermissionsActivity.class.getSimpleName();
+    private Toast toast;
 
     String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.PROCESS_OUTGOING_CALLS,
@@ -67,45 +81,62 @@ public class PermissionsActivity extends Activity {
 
 
     private void requestOtherPermissionsOrLaunchMainActivity() {
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Boolean isNotificationAccess =false;
-
-        for (String service : NotificationManagerCompat.getEnabledListenerPackages(this)) {
-            if (service.equals(getPackageName()))
-                isNotificationAccess =true;
-
-
-        }
-
-        for (String service : NotificationManagerCompat.getEnabledListenerPackages(this)) {
-            if (service.equals(getPackageName())) {
-                Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-                startActivity(intent);
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(PermissionsActivity.this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
-            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !notificationManager.isNotificationPolicyAccessGranted()) {
-            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
-            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION);
-
-        } else if (!isAccessibilitySettingsOn(getApplicationContext())) {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
-
-        }
-       else  if (!isNotificationAccess)
-            startActivity(new Intent(
-                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-
-
-        else{
-            startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
+        startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
             PermissionsActivity.this.finish();
-        }
+
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//        Boolean isNotificationAccess = false;
+//
+//        for (String service : NotificationManagerCompat.getEnabledListenerPackages(this)) {
+//            if (service.equals(getPackageName()))
+//                isNotificationAccess = true;
+//
+//
+//        }
+//
+//
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(PermissionsActivity.this)) {
+//            if(toast!=null)
+//                toast.cancel();
+//            if(toastCountDown!=null)
+//                toastCountDown.cancel();
+//            showToast("Enable Draw Over Other App to Use Kolbeat");
+
+
+//
+//            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
+//            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY);
+//        }
+////        else if (!isAccessibilitySettingsOn(getApplicationContext())) {
+////            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+////            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
+////
+////        }
+//        else if (!isNotificationAccess)
+//
+//
+//        {
+//         if(toastCountDown!=null)
+//             toastCountDown.cancel();
+//            showToast("Enable Notification Access to Use Kolbeat");
+//            startActivity(new Intent(
+//                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+//        } else {
+//            if(toast!=null)
+//                toast.cancel();
+//            if(toastCountDown!=null)
+//                toastCountDown.cancel();
+//            startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
+//            PermissionsActivity.this.finish();
+//        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+//        toast.cancel();
+        super.onBackPressed();
     }
 
     private boolean isAccessibilitySettingsOn(Context mContext) {
@@ -232,19 +263,32 @@ public class PermissionsActivity extends Activity {
                     startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION);
                 }
             }
-        } else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS) {
-            if (!isAccessibilitySettingsOn(getApplicationContext())) {
-                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
-            }
+        }
+// else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS) {
+//            if (!isAccessibilitySettingsOn(getApplicationContext())) {
+//                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+//                startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
+//            }
 
 
-        } else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY) {
+        //}
+        else if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY) {
+                if(toast!=null)
+                    toast.cancel();
+            if(toastCountDown!=null)
+            toastCountDown.cancel();
             startActivity(new Intent(PermissionsActivity.this, HomeActivity.class));
             PermissionsActivity.this.finish();
         }
 
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+            if(toast!=null)
+                toast.cancel();
+        if(toastCountDown!=null)
+            toastCountDown.cancel();
+    }
 }

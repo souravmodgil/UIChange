@@ -21,7 +21,7 @@ import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.database.ContactEntity;
 import com.mobileoid2.celltone.view.fragments.ViewAllSongsFragment;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
-import com.splunk.mint.Mint;
+
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class ViewAllSongActivity extends AppCompatActivity implements ChangeTool
       //  B3:C2:C6:F6:39:C3:8E:24:D6:75:D3:2B:24:93:25:ED:7D:AF:D8:27
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all_song);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         type = getIntent().getStringExtra("type");
         isAudio = getIntent().getIntExtra("isAudio", 0);
         llMain = findViewById(R.id.ll_main);

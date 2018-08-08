@@ -28,6 +28,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
+import com.mobileoid2.celltone.network.model.MainNetworkModel;
 import com.mobileoid2.celltone.view.activity.ChangeToolBarTitleListiner;
 import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiConstant;
@@ -143,7 +144,7 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
     }
 
     private void selectImage() {
-        final CharSequence[] items = {"Take Photo", "Choose from Library",
+        final CharSequence[] items = {"Take Photo", "Choose from Library","Remove",
                 "Cancel"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Add Photo!");
@@ -163,6 +164,11 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
                         galleryIntent();
                 } else if (items[item].equals("Cancel")) {
                     dialog.dismiss();
+                }
+                else if (items[item].equals("Remove")) {
+                    dialog.dismiss();
+                    progressBar.setVisibility(View.VISIBLE);
+                    SendRequest.sendRequest(ApiConstant.REMOVE_AVATAR,apiInterface.deleteAvatar(SharedPrefrenceHandler.getInstance().getUSER_TOKEN()),ProfileFragment.this);
                 }
             }
         });
@@ -212,7 +218,8 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
                     }
                     if (currentPlan != null)
                         txtProfileValidateDate.setText("(" + Utils.parseDate(currentPlan.getStartDate()) + "-" + Utils.parseDate(currentPlan.getEndDate()) + ")");
-                    if (userProfile.getAvatar() != null && getActivity() != null)
+                    if (getActivity() != null &&
+                            userProfile.getAvatar() != null && !userProfile.getAvatar().isEmpty() )
                         Glide.with(getActivity()).load(ApiConstant.MEDIA_URL + userProfile.getAvatar()).
                                 into(profileImage);
                     txtProfileUserUpload.setText(profileBody.getOwnMediaCount() + "/" + planDetail.getOwnMediaCount());
@@ -359,6 +366,60 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
             progressBar.setVisibility(View.GONE);
 
     }
+    private void parseRemoveAvatar(String response)
+    {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(removeProfilePic(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(parseRemovePic()));
+    }
+
+    private Observable<MainNetworkModel> removeProfilePic(String response) {
+        Gson gsonObj = new Gson();
+        final MainNetworkModel planBody = gsonObj.fromJson(response, MainNetworkModel.class);
+
+        return Observable.create(new ObservableOnSubscribe<MainNetworkModel>() {
+            @Override
+            public void subscribe(ObservableEmitter<MainNetworkModel> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(planBody);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
+    private DisposableObserver<MainNetworkModel> parseRemovePic() {
+        return new DisposableObserver<MainNetworkModel>() {
+
+            @Override
+            public void onNext(MainNetworkModel profileModel) {
+
+                progressBar.setVisibility(View.GONE);
+                if(profileModel.getStatus()==1000)
+                {
+                    profileImage.setImageResource(R.drawable.profile_avatar);
+                }
+                Toast.makeText(getActivity(),profileModel.getMessage(),Toast.LENGTH_LONG).show();
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+
 
 
     @Override
@@ -371,6 +432,10 @@ public class ProfileFragment extends Fragment implements NetworkCallBack {
                     break;
                 case ApiConstant.PROFILE_UPLOADAVATAR:
                     progressBar.setVisibility(View.GONE);
+                    break;
+                case ApiConstant.REMOVE_AVATAR:
+                    progressBar.setVisibility(View.GONE);
+                    parseRemoveAvatar(response.getObject());
                     break;
             }
         } else {

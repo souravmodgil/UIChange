@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Util.CelltoneApplication;
 import com.mobileoid2.celltone.Util.Constant;
+import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.ApiInterface;
@@ -78,6 +79,9 @@ public class MyMessagingService extends FirebaseMessagingService implements Netw
                     case Constant.MEDIA_SET:
                         refreshMediaSetByOther();
                         break;
+                    case Constant.MEDIA_UNSET:
+                        refreshMediaSetByOther();
+                        break;
                 }
                 Notification notification = new NotificationCompat.Builder(this)
                         .setContentTitle(remoteMessage.getData().get("title"))
@@ -119,7 +123,8 @@ public class MyMessagingService extends FirebaseMessagingService implements Netw
     public void getResponse(JsonResponse response, int type) {
         if (response.getObject() != null) {
             Utils utils = new Utils();
-            utils.parseRequest(response.getObject(),this);
+            AppDatabase appDatabase =AppDatabase.getAppDatabase(this);
+            utils.parseRequest(response.getObject(),this,appDatabase);
 
         }
 

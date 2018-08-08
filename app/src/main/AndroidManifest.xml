@@ -202,7 +202,15 @@
         <activity
             android:name=".view.activity.Tutorial"
             android:label="@string/title_activity_tutorial"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".view.activity.OverlayActivity"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar"
+             />
+        <activity android:name=".view.activity.MainActivity"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar"></activity>
     </application>
 
 </manifest>

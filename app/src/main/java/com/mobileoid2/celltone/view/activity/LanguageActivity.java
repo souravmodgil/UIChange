@@ -9,7 +9,7 @@ import android.view.MenuItem;
 
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.view.fragments.LanguageFragment;
-import com.splunk.mint.Mint;
+
 
 public class LanguageActivity extends AppCompatActivity {
 
@@ -17,7 +17,7 @@ public class LanguageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_offer2);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Fragment fragment= new LanguageFragment();

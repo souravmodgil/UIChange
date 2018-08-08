@@ -24,6 +24,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
@@ -48,7 +49,7 @@ public interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("user/register")
     public Call<String> register(@Body PojoLogin pojoOTPRequest);
-    @GET("contacts/my-media")
+    @GET("contacts/consumed-media")
     public Call<String> getMediForMe(@Header("token") String token);
     @Headers("Content-Type: application/json")
     @POST("user/validate/otp")
@@ -135,6 +136,10 @@ public interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("media/all")
     public Call<String> getSongs( @Header("token") String token,@Body CategeoryRequest categeoryRequest);
+
+    @DELETE("user/remove/avatar")
+   public Call<String> deleteAvatar( @Header("token") String token);
+
 
 
 

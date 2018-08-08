@@ -22,11 +22,13 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -88,6 +90,8 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
 
     private RecyclerView listSongs;
     private VideoView videoView;
+    private RelativeLayout tutSetSong;
+    private Button buttonSkip;
     private CategoriesSongsRecyclerViewAdapter categoriesSongsRecyclerViewAdapter;
     private ImageView preview, previous, playButton, playNext, iconAddTone;
     private TextView txtSongDuration, txtCurrentTime, txtTitle, txtArtistName;
@@ -171,6 +175,8 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         previous = view.findViewById(R.id.previous);
         playNext = view.findViewById(R.id.play_next);
         preview = view.findViewById(R.id.preview);
+        tutSetSong =view.findViewById(R.id.tut_layout);
+        buttonSkip = view.findViewById(R.id.button_skip);
         txtArtistName = view.findViewById(R.id.txt_artist_name);
         playButton = view.findViewById(R.id.play_button);
         playNext = view.findViewById(R.id.play_next);
@@ -205,7 +211,12 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         }
 
         initalizeView();
-
+       buttonSkip.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               tutSetSong.setVisibility(View.GONE);
+           }
+       });
 
         iconAddTone.setOnClickListener(this);
         previous.setOnClickListener(this);
@@ -247,6 +258,21 @@ public class ViewAllSongsFragment extends Fragment implements OnSongsClickLisner
         listSongs.setLayoutManager(mLayoutManager);
         listSongs.setItemAnimator(new DefaultItemAnimator());
         listSongs.addItemDecoration(separatorDecoration);
+
+        if(SharedPrefrenceHandler.getInstance().getIsFirstTimeSetSong()==0)
+        {
+            tutSetSong.setVisibility(View.VISIBLE);
+            SharedPrefrenceHandler.getInstance().setIsFirstTimeSetSong(1);
+            tutSetSong.postDelayed(new Runnable() {
+                public void run() {
+                    tutSetSong.setVisibility(View.GONE);
+                }
+            }, 100000);
+
+        }
+        else
+            tutSetSong.setVisibility(View.GONE);
+
         categoriesSongsRecyclerViewAdapter = new CategoriesSongsRecyclerViewAdapter(context, songList, isAudio, this, this,
                 isEdit);
         listSongs.setAdapter(categoriesSongsRecyclerViewAdapter);

@@ -34,6 +34,7 @@ public class ApiConstant {
     public static final int OTP_VERIFY_API = 17;
     public static final int MEDIA_SET_API = 18;
     public static final int SYNC_CONTACT_API = 19;
+    public static final int REMOVE_AVATAR = 20;
     //
 
 

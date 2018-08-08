@@ -13,7 +13,7 @@ import com.mobileoid2.celltone.network.model.feedback.FeedBackList;
 import com.mobileoid2.celltone.view.fragments.PlanFragment;
 import com.mobileoid2.celltone.view.fragments.QueryListFragment;
 import com.mobileoid2.celltone.view.listener.QueryLisiner;
-import com.splunk.mint.Mint;
+
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class QueryActivity extends AppCompatActivity implements QueryLisiner {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_offer);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // toolbar fancy stuff

@@ -10,7 +10,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.Volley;
-import com.splunk.mint.Mint;
+
 
 public class CelltoneApplication extends MultiDexApplication {
 
@@ -50,7 +50,7 @@ public class CelltoneApplication extends MultiDexApplication {
 
         MultiDex.install(this);
         FontsOverride.setDefaultFont(this, "MONOSPACE", "fonts/OPTIMA.TTF");
-        Mint.initAndStartSession(this, "f9ede8e8");
+
     }
 
     public static Context getAppContext() {

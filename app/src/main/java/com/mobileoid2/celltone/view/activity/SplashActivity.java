@@ -26,42 +26,17 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        try {
-//            PackageInfo info = getPackageManager().getPackageInfo(
-//                    "com.mobileoid2.celltone",
-//                    PackageManager.GET_SIGNATURES);
-//            for (Signature signature : info.signatures) {
-//                MessageDigest md = MessageDigest.getInstance("SHA");
-//                md.update(signature.toByteArray());
-//               // s8LG9jnDjiTWddMrJJMl7X2v2Cc=
-//
-//                        String hash = Base64.encodeToString(md.digest(), Base64.DEFAULT);
-//                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-//            }
-//        } catch (PackageManager.NameNotFoundException e) {
-//
-//        } catch (NoSuchAlgorithmException e) {
-//
-//        }
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 //setScreenDimensions();
 
                 if (!SharedPrefrenceHandler.getInstance().getLoginState())
-                   // if(SharedPrefrenceHandler.getInstance().getIsFirstTime()==1)
                     startActivity(new Intent(getApplicationContext(), LoginOtpActivity.class));
-//                    else
-//                    {
-//                        // SharedPrefrenceHandler.getInstance().setISFirstTime(1);
-//                        startActivity(new Intent(getApplicationContext(), Tutorial.class));
-//
-//                    }
 
-
-                    // startActivity(new Intent(getApplicationContext(), LoginVerifyActivity.class));
                 else {
-                    //if(SharedPrefrenceHandler.getInstance().getIsFirstTime()==1)
+
                     startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                 }
 

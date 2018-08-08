@@ -20,7 +20,7 @@ import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.database.ContactEntity;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.view.fragments.BannerSongsListFragment;
-import com.splunk.mint.Mint;
+
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class BannerListActivity extends AppCompatActivity implements ChangeToolB
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all_song);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         type = getIntent().getStringExtra("type");
         llMain = findViewById(R.id.ll_main);
         songList = (List<Song>) getIntent().getSerializableExtra("songsList");

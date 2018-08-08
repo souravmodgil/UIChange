@@ -16,10 +16,9 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
     @Ignore
     private  int rowId = -1;
 
-    @PrimaryKey(autoGenerate = true)
+
+    @PrimaryKey
     @NonNull
-    @ColumnInfo(name = "_id")
-    private long id;
     @ColumnInfo(name = "phone_no")
     private String number;
     @ColumnInfo(name = "phoneName")
@@ -40,6 +39,9 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
     private String outgoingSongName;
     @ColumnInfo(name = "outgoing_artist_name" )
     private String outgoingArtistName;
+    @ColumnInfo(name = "sample_url" )
+    private String sampleUrl;
+
 
 
 
@@ -72,19 +74,12 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
         this.isSelcted = isSelcted;
     }
 
-    @NonNull
-    public long getId() {
-        return id;
-    }
 
-    public void setId(@NonNull long id) {
-        this.id = id;
-    }
 
     public String getNumber() {
         return number;
     }
-
+    @NonNull
     public void setNumber(String number) {
         this.number = number;
     }
@@ -174,5 +169,13 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
 
     public void setRowId(int rowId) {
         this.rowId = rowId;
+    }
+
+    public String getSampleUrl() {
+        return sampleUrl;
+    }
+
+    public void setSampleUrl(String sampleUrl) {
+        this.sampleUrl = sampleUrl;
     }
 }

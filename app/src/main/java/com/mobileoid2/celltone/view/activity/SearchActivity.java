@@ -23,7 +23,7 @@ import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.view.fragments.OfferFragment;
 import com.mobileoid2.celltone.view.fragments.SearchFragment;
 import com.mobileoid2.celltone.view.fragments.ViewAllSongsFragment;
-import com.splunk.mint.Mint;
+
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class SearchActivity extends AppCompatActivity implements ChangeToolBarTi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all_song);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         type = getIntent().getStringExtra("type");
         isAudio = getIntent().getIntExtra("isAudio", 0);
         llMain = findViewById(R.id.ll_main);

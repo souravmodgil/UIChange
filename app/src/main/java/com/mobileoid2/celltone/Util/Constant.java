@@ -10,6 +10,7 @@ public class Constant {
     public static boolean isIncoming = true;
     public static String PHONENUMBER = "";
     public  static  final String MEDIA_SET = "media_set";
+    public  static  final String MEDIA_UNSET = "media_unset";
 
 
     public static final String RECORDING_AUDIO_PATH = Environment.getExternalStorageDirectory() + "/Recordings/audio";

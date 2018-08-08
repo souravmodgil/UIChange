@@ -1,15 +1,21 @@
 package  com.mobileoid2.celltone.view.fragments;
 
+import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.CardView;
 import android.text.InputType;
@@ -18,13 +24,18 @@ import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.mobileoid2.celltone.CustomWidget.TextView.OptimaBoldTextview;
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.database.ContactEntity;
 import com.mobileoid2.celltone.network.model.treadingMedia.Category;
+import com.mobileoid2.celltone.view.activity.HomeActivity;
+import com.mobileoid2.celltone.view.activity.OverlayActivity;
 import com.mobileoid2.celltone.view.activity.PlanActivity;
+import com.valdesekamdem.library.mdtoast.MDToast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +62,7 @@ public class HomeVideoFragment extends Fragment {
     private String name = "";
     private OnFragmentInteractionListener mListener;
     private TabLayout tabLayout;
+
 
     public HomeVideoFragment() {
         // Required empty public constructor
@@ -111,6 +123,8 @@ public class HomeVideoFragment extends Fragment {
         tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FFFFFF"));
         tabLayout.setSelectedTabIndicatorHeight((int) (5 * getResources().getDisplayMetrics().density));
         tabLayout.setTabTextColors(Color.parseColor("#adadad"), Color.parseColor("#000000"));
+      //  MDToast mdToast = MDToast.makeText(getActivity(), "Testing", 120000,  MDToast.TYPE_ERROR);
+        //mdToast.show();
 
         txtRegisterNow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,6 +140,17 @@ public class HomeVideoFragment extends Fragment {
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
+
+
+
+
+
 
     public void setCustomFont() {
 
@@ -210,8 +235,10 @@ public class HomeVideoFragment extends Fragment {
 
 
             viewPager.setAdapter(adapter);
+            
         }
     }
+    
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();

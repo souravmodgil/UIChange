@@ -11,8 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -52,6 +55,8 @@ public class ComposeQueryFragment extends Fragment implements AdapterView.OnItem
     String[] typeList = { "Type", "Query", "Issue"};
     private String selectedType ="Type";
     private ProgressBar progressBar;
+    private RelativeLayout tutSetQuery;
+    private Button buttonSkip;
 
 
 
@@ -64,7 +69,9 @@ public class ComposeQueryFragment extends Fragment implements AdapterView.OnItem
         typeSppiner = view.findViewById(R.id.type_sppiner);
         inputComments = view.findViewById(R.id.input_comments);
         inputSubject = view.findViewById(R.id.input_subject);
+        tutSetQuery =  view.findViewById(R.id.tut_layout);
         progressBar =view.findViewById(R.id.progress_bar);
+        buttonSkip = view.findViewById(R.id.button_skip);
         typeSppiner.setOnItemSelectedListener(this);
 
         //Creating the ArrayAdapter instance having the country list
@@ -72,6 +79,26 @@ public class ComposeQueryFragment extends Fragment implements AdapterView.OnItem
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //Setting the ArrayAdapter data on the Spinner
         typeSppiner.setAdapter(aa);
+        buttonSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tutSetQuery.setVisibility(View.GONE);
+            }
+        });
+
+        if(SharedPrefrenceHandler.getInstance().getIsFirstTimeQuery()==0)
+        {
+            tutSetQuery.setVisibility(View.VISIBLE);
+            SharedPrefrenceHandler.getInstance().setIsFirstTimeQuery(1);
+            tutSetQuery.postDelayed(new Runnable() {
+                public void run() {
+                    tutSetQuery.setVisibility(View.GONE);
+                }
+            }, 100000);
+
+        }
+        else
+            tutSetQuery.setVisibility(View.GONE);
 
 
 

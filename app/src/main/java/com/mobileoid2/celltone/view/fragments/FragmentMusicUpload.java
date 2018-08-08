@@ -113,14 +113,17 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private String videoPath;
     private static boolean isFileMade = true;
     private File mediaFolder;
-    private int IsAudio ;
+    private int isRecord = 0;
+    private int IsAudio;
     private boolean isVideoRecorded = false;
     //  File mediaFolder = Environment.getExternalStoragePublicDirectory("VideoCompression");
 
 
-    public static FragmentMusicUpload newInstance(int isAudio) {
+    public static FragmentMusicUpload newInstance(int isAudio, int isRecord, String currentOutFile) {
         FragmentMusicUpload fragment = new FragmentMusicUpload();
-        fragment.isAudio =isAudio;
+        fragment.isAudio = isAudio;
+        fragment.currentOutFile = currentOutFile;
+        fragment.isRecord = isRecord;
         return fragment;
     }
 
@@ -155,19 +158,38 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             layoutRecording = view.findViewById(R.id.layout_record_audio);
             progressBar = view.findViewById(R.id.media_player_progress_bar);
             llButtons = view.findViewById(R.id.ll_buttons);
-            if(isAudio==0)
-            {
-                cardViewMic.setVisibility(View.GONE);
-                cardViewVideoCamera.setVisibility(View.VISIBLE);
-            }
-            else if(isAudio ==1)
-            {
+            cardViewMic.setVisibility(View.GONE);
+            cardViewVideoCamera.setVisibility(View.GONE);
+            if (isAudio == 0) {
+                if (isRecord == 1)
+                    recordVideo();
+                else {
+                    statusCenter = 2;
+//                    playVideoAudio();
 
-                cardViewMic.setVisibility(View.VISIBLE);
-                cardViewVideoCamera.setVisibility(View.GONE);
-            }
-            else
-            {
+                    if (!currentOutFile.isEmpty()) {
+                        UploadActivity.isPopupVisible = 1;
+                        layoutRecording.setVisibility(View.VISIBLE);
+                    }
+                    isAudio = 0;
+                    statusCenter = 2;
+                    requestRecording(isAudio, isRecord);
+                }
+            } else if (isAudio == 1) {
+                if (isRecord == 1) {
+                    if (!isRecordingLayoutVisible) {
+                        isAudio = 1;
+                        requestRecording(isAudio, isRecord);
+                    }
+                } else {
+                    //     stopRecorder();
+
+                    requestRecording(isAudio, isRecord);
+                    statusCenter = 2;
+
+                }
+
+            } else {
                 cardViewMic.setVisibility(View.VISIBLE);
                 cardViewVideoCamera.setVisibility(View.VISIBLE);
             }
@@ -178,7 +200,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
 
                     if (!isRecordingLayoutVisible) {
                         isAudio = 1;
-                        requestRecording(1);
+                        requestRecording(isAudio, isRecord);
                     }
                 }
             });
@@ -187,33 +209,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 @Override
                 public void onClick(View v) {
 
-                    if (!isFileMade) {
-
-                        Toast.makeText(activity, R.string.text_unable_to_create, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
-                    String currentTimeStamp = dateFormat.format(new Date());
-
-                    nameFile = "video_recording_" + currentTimeStamp + ".mp4";
-                    File currentFile = new File(Constant.RECORDING_VIDEO_PATH, nameFile);
-                    try {
-                        if (!currentFile.createNewFile()) {
-                            Toast.makeText(activity, R.string.text_unable_to_create, Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                    } catch (IOException e) {
-                        Toast.makeText(activity, R.string.text_unable_to_create, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    videoPath = currentFile.getAbsolutePath();
-                    isVideoRecorded = true;
-                    Intent intent = new Intent(activity.getApplicationContext(), VideoCapture.class);
-                    intent.putExtra(VideoCapture.PATH_WITH_NAME, videoPath);
-                    startActivityForResult(intent, VIDEO_RECORDING_CODE);
-
+                    recordVideo();
                 }
             });
 
@@ -222,6 +218,36 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             Log.e("ERROR: UPLOAD OWN", AppUtils.instance.getExceptionString(e));
         }
         return view;
+    }
+
+    private void recordVideo() {
+        if (!isFileMade) {
+
+            Toast.makeText(activity, R.string.text_unable_to_create, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
+        String currentTimeStamp = dateFormat.format(new Date());
+
+        nameFile = "video_recording_" + currentTimeStamp + ".mp4";
+        File currentFile = new File(Constant.RECORDING_VIDEO_PATH, nameFile);
+        try {
+            if (!currentFile.createNewFile()) {
+                Toast.makeText(activity, R.string.text_unable_to_create, Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (IOException e) {
+            Toast.makeText(activity, R.string.text_unable_to_create, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        videoPath = currentFile.getAbsolutePath();
+        isVideoRecorded = true;
+        Intent intent = new Intent(activity.getApplicationContext(), VideoCapture.class);
+        intent.putExtra(VideoCapture.PATH_WITH_NAME, videoPath);
+        startActivityForResult(intent, VIDEO_RECORDING_CODE);
+
     }
 
 
@@ -238,7 +264,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 }
                 isAudio = 0;
                 statusCenter = 2;
-                requestRecording(0);
+                requestRecording(isAudio, isRecord);
                 //    PATH_WITH_NAME
 
 
@@ -292,7 +318,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private int statusCenter = 0;
 
 
-    private void requestRecording(int isAudio) {
+    private void requestRecording(int isAudio, int isRecord) {
         try {
             imageButtonLeft = view.findViewById(R.id.image_button_left);
             imageButtonLeft.setVisibility(View.GONE);
@@ -305,7 +331,16 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             etxtFileName = view.findViewById(R.id.etxt_file_name);
             txtSave = view.findViewById(R.id.txt_save);
             videoView = view.findViewById(R.id.video_view);
-            llFileName.setVisibility(View.GONE);
+            if (isRecord == 1) {
+                llFileName.setVisibility(View.GONE);
+                llButtons.setVisibility(View.VISIBLE);
+            } else {
+                llFileName.setVisibility(View.VISIBLE);
+                llButtons.setVisibility(View.GONE);
+
+            }
+
+
             llAudio = view.findViewById(R.id.ll_audio);
             llVideo = view.findViewById(R.id.ll_video);
             if (isAudio == 0) {
@@ -325,6 +360,17 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 public void onClick(View v) {
                     UploadActivity.isPopupVisible = 0;
                     layoutRecording.setVisibility(View.GONE);
+                    if(videoView!=null && videoView.isPlaying())
+                    videoView.stopPlayback();
+                    try
+                    {
+                        if(AudioPlayer.isMusicPlaying())
+                            AudioPlayer.stop();
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
 
                 }
             });
@@ -376,6 +422,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                     try {
                         if (isAudio == 1)
                             AudioPlayer.play();
+
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -445,93 +492,8 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             isRecording = false;
     }
 
-//    private class Compress extends AsyncTask<String, Integer, String> {
-//
-//        private Context context;
-//        private PowerManager.WakeLock mWakeLock;
-//        private String filePath;
-//        private  String mFolder ="";
-//
-//        public Compress(Context context, String filePath) {
-//            this.context = context;
-//            this.filePath = filePath;
-//        }
-//
-//        @Override
-//        protected String doInBackground(String... sUrl) {
-//
-//
-//            String input = sUrl[0];
-//
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
-//            String currentTimeStamp = dateFormat.format(new Date());
-//
-//
-//            String output = "";
-//            LoadJNI vk = new LoadJNI();
-//            String commandStr = "";
-//            try {
-//                if (isAudio == 0) {
-//
-//                    mFolder =new File(Constant.RECORDING_VIDEO_PATH).getAbsolutePath() + "/";
-//                    output = mFolder+ currentTimeStamp + ".mp4";
-//
-//                    commandStr = "ffmpeg -y   -i " + input + " -strict -2 -s 480x270 " + output;
-//                } else {
-//                    mFolder =new File(Constant.RECORDING_AUDIO_PATH).getAbsolutePath() + "/";
-//                    output = mFolder+ currentTimeStamp + ".mp3";
-//                    commandStr = "ffmpeg -y  -i " + input + " -ac 1 -ab 64k -strict -2" + output;
-//                }
-//                if (!commandStr.isEmpty())
-//                    vk.run(GeneralUtils.utilConvertToComplex(commandStr), mFolder, getActivity());
-//                File file = new File(filePath);
-//
-//// Get length of file in bytes
-//                long fileSizeInBytes = file.length();
-//// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-//                long fileSizeInKB = fileSizeInBytes / 1024;
-//// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-//                long fileSizeInMB = fileSizeInKB / 1024;
-//
-//                System.out.println("Actual FileSize"+fileSizeInMB);
-//
-//                 fileSizeInBytes = new File(output).length();
-//// Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-//                 fileSizeInKB = fileSizeInBytes / 1024;
-//// Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-//                 fileSizeInMB = fileSizeInKB / 1024;
-//
-//                System.out.println("Actual FileSize after Compression"+fileSizeInMB);
-//
-//
-//                if (file.exists())
-//                    file.delete();
-//
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//               // progressBar.setVisibility(View.GONE);
-//                UploadActivity.isPopupVisible = 0;
-//                layoutRecording.setVisibility(View.GONE);
-//
-//            }
-//
-//
-//            return "";
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String fileName) {
-//            super.onPostExecute(fileName);
-//
-//        }
-//    }
-
 
     public void setDataForRequest(String fileName, String filePath) {
-
-//        Compress task = new Compress(getActivity(), filePath);
-//        task.execute(filePath);
 
 
         partMap.put("title", RequestBody.create(parse("text/plain"), fileName));
@@ -681,9 +643,9 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 handler.removeCallbacks(updateTimer);
                 totalSeconds = 0;
 
-                AudioPlayer.getInstance(activity, view.findViewById(R.id.layout_upper), currentOutFile, new Handler());
+                    AudioPlayer.getInstance(activity, view.findViewById(R.id.layout_upper), currentOutFile, new Handler());
 
-                Toast.makeText(activity, "Recording saved : " + currentOutFile, Toast.LENGTH_SHORT).show();
+                //  Toast.makeText(activity, "Recording saved : " + currentOutFile, Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -705,6 +667,20 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
         }
     }
 
+    @Override
+    public void onDestroyView() {
+       try
+       {
+           if(AudioPlayer.isMusicPlaying())
+           AudioPlayer.stop();
+       }
+       catch (Exception ex)
+       {
+
+       }
+        super.onDestroyView();
+    }
+
     private void resumeRecorder() {
         try {
             if (null != myAudioRecorder) {
@@ -719,56 +695,6 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
             e.printStackTrace();
         }
     }
-
-
-    private void proceedFurtherWithAudioFile() throws Exception {
-
-//        if (AudioPlayer.getMeidaDuration() < 10000) {
-//            Toast.makeText(activity, getResources().getString(R.string.text_make_a_rec), Toast.LENGTH_SHORT).show();
-//            File recording = new File(currentOutFile);
-//            if (recording.exists() && recording.delete()) {
-//                Toast.makeText(activity, "Recording deleted : " + nameFile, Toast.LENGTH_SHORT).show();
-//            } else
-//                Toast.makeText(activity, "Doesnt exist" + nameFile, Toast.LENGTH_SHORT).show();
-//
-//
-//            AudioPlayer.stop();
-//            setInitialRecordingScreen();
-//
-//            return;
-//        }
-
-
-        // selectIncomingOrOutgoing(music);
-    }
-
-//    public void selectIncomingOrOutgoing(Music selectedMusic) {
-//
-//        ArrayList<BeanDialogsOption> option = new ArrayList<BeanDialogsOption>();
-//
-//        option.add(new BeanDialogsOption(getString(R.string.text_set_as_incoming), activity.getResources().getDrawable(R.mipmap.dialog_music), new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                DialogsCustom.instance.cancelDialog();
-//                ((BaseActivity) activity).initiateContactSelection(selectedMusic, true);
-//            }
-//        }));
-//
-//
-//        option.add(new BeanDialogsOption(getString(R.string.text_as_outgoing), activity.getResources().getDrawable(R.mipmap.dialog_video), new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                DialogsCustom.instance.cancelDialog();
-//                ((BaseActivity) activity).initiateContactSelection(selectedMusic, false);
-//            }
-//        }));
-//
-//        DialogsCustom.instance.showOptionsDialog(activity, option, getString(R.string.text_set_an_option));
-//
-//
-//    }
 
     private void parsePlan(String response) {
         CompositeDisposable disposable = new CompositeDisposable();
@@ -787,6 +713,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
                 UploadActivity.isPopupVisible = 0;
                 layoutRecording.setVisibility(View.GONE);
                 progressBar.setVisibility(View.GONE);
+                getActivity().finish();
 
 
             }
@@ -819,7 +746,7 @@ public class FragmentMusicUpload extends Fragment implements NetworkCallBack {
     private Observable<SetOwnMediaModel> getMediaResponse(String response) {
         Gson gsonObj = new Gson();
         final SetOwnMediaModel planBody = gsonObj.fromJson(response, SetOwnMediaModel.class);
-        if (mediaFile!=null && mediaFile.exists())
+        if (mediaFile != null && mediaFile.exists())
             mediaFile.delete();
 
         return Observable.create(new ObservableOnSubscribe<SetOwnMediaModel>() {

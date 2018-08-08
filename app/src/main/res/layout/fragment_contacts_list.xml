@@ -76,6 +76,30 @@
             android:indeterminateTint="@color/colorPrimary"
             />
     </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:id="@+id/tut_layout">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/tut3"/>
+
+        <Button
+            android:id="@+id/button_skip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="24dp"
+            android:layout_marginRight="20dp"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:text="Skip"
+            android:layout_marginEnd="13dp" />
+
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>
 

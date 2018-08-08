@@ -14,14 +14,22 @@ public class RingtoneEntity {
     @ColumnInfo(name = "phone_no")
     private String number;
 
-    @ColumnInfo(name = "sample_file_url")
-    private String sampleFileUrl;
-    @ColumnInfo(name = "media_id")
-    private String mediaId;
+    @ColumnInfo(name = "outgoing_sample_file_url")
+    private String outgoingSampleFileUrl;
+    @ColumnInfo(name = "incoming_sample_file_url")
+    private String incomingSampleFileUrl;
+    @ColumnInfo(name = "outgoing_media_id")
+    private String outgoingMediaId;
+    @ColumnInfo(name = "incoming_media_id")
+    private String incomingMediaId;
     @ColumnInfo(name = "content_yype")
     private String contentType ;
     @ColumnInfo(name = "action_type")
     private String actionType ;
+
+
+
+
 
 
 
@@ -33,20 +41,35 @@ public class RingtoneEntity {
         this.number = number;
     }
 
-    public String getSampleFileUrl() {
-        return sampleFileUrl;
+    public String getOutgoingSampleFileUrl() {
+        return outgoingSampleFileUrl;
     }
 
-    public void setSampleFileUrl(String sampleFileUrl) {
-        this.sampleFileUrl = sampleFileUrl;
+    public void setOutgoingSampleFileUrl(String outgoingSampleFileUrl) {
+        this.outgoingSampleFileUrl = outgoingSampleFileUrl;
     }
 
-    public String getMediaId() {
-        return mediaId;
+    public String getIncomingSampleFileUrl() {
+        return incomingSampleFileUrl;
     }
 
-    public void setMediaId(String mediaId) {
-        this.mediaId = mediaId;
+    public void setIncomingSampleFileUrl(String incomingSampleFileUrl) {
+        this.incomingSampleFileUrl = incomingSampleFileUrl;
+    }
+
+    public String getOutgoingMediaId() {
+        return outgoingMediaId;
+    }
+
+    public void setOutgoingMediaId(String mediaId) {
+        this.outgoingMediaId = mediaId;
+    }
+    public String getIncomingMediaId() {
+        return incomingMediaId;
+    }
+
+    public void setIncomingMediaId(String mediaId) {
+        this.incomingMediaId = mediaId;
     }
 
     public String getContentType() {
@@ -64,4 +87,6 @@ public class RingtoneEntity {
     public void setActionType(String actionType) {
         this.actionType = actionType;
     }
+
+
 }

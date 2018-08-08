@@ -71,12 +71,7 @@ public class UserMediaUploadFragment extends Fragment implements NetworkCallBack
       //  changeToolBarTitleListiner.setTitle("Upload");
         changeToolBarTitleListiner.setTitle(getString(R.string.upload));
         apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
-//        btUpload.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startActivity(new Intent(getActivity(),UploadActivity.class));
-//            }
-//        });
+
         getMediaList();
         return view;
     }

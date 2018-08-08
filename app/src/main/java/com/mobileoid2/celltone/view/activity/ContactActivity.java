@@ -12,7 +12,7 @@ import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.view.fragments.ContactsFragment;
 import com.mobileoid2.celltone.view.fragments.OfferFragment;
-import com.splunk.mint.Mint;
+
 
 public class ContactActivity extends AppCompatActivity {
 
@@ -20,7 +20,7 @@ public class ContactActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_offer);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

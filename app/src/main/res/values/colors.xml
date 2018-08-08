@@ -25,5 +25,6 @@
     <color name="gplus_color_3">#427fed</color>
     <color name="gplus_color_4">#b23424</color>
     <color name="profile_text_color">#303030</color>
+    <color name="transparent">#80000000</color>
 
 </resources>

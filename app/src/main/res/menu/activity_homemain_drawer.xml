@@ -7,10 +7,6 @@
         <item
             android:id="@+id/nav_profile"
             android:title="@string/profile" />
-        <item
-            android:id="@+id/nav_upload_own"
-            android:title="@string/uploadOwn"
-           />
 
         <item
             android:id="@+id/nav_contacts"

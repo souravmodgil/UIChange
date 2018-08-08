@@ -31,10 +31,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -94,6 +97,8 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION = 6;
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS = 7;
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE_OVERLAY = 8138;
+    private RelativeLayout tutSetOnContact;
+    private Button buttonSkip;
     private ApiInterface apiInterface;
     private Song songs;
     private int isOutgoing;
@@ -102,7 +107,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
     List<ContactEntity> contactFilterList;
     private boolean isChecked = false;
     private RecyclerView listSongs;
-    private int isGetAllData =0;
+    private int isGetAllData = 0;
     private CheckBox cbAllCheck;
     private ProgressBar progressBar;
     private List<SelectContact> selectedContacts = new ArrayList<SelectContact>();
@@ -150,7 +155,8 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         progressBar = view.findViewById(R.id.media_player_progress_bar);
         submitButton = view.findViewById(R.id.submit_button);
         cbAllCheck = view.findViewById(R.id.cb_all_check);
-
+        tutSetOnContact = view.findViewById(R.id.tut_layout);
+        buttonSkip = view.findViewById(R.id.button_skip);
         txtTotalSelected = view.findViewById(R.id.txt_total_selected);
         mFormatBuilder = new StringBuilder();
         mFormatter = new Formatter(mFormatBuilder, Locale.getDefault());
@@ -171,6 +177,12 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         else
             cbAllCheck.setVisibility(View.VISIBLE);
         cbAllCheck.setOnClickListener(this::onClick);
+        buttonSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tutSetOnContact.setVisibility(View.GONE);
+            }
+        });
         if (ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(),
@@ -185,7 +197,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 listSongs.setAdapter(myContactsRecyclerViewAdapter);
             }
 
-                getContact();
+            getContact();
 
 
         }
@@ -221,9 +233,22 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 super.onPostExecute(contacts);
                 contactList.addAll(contacts);
                 Collections.sort(contactList);
+                if (SharedPrefrenceHandler.getInstance().getIsFirstTimeContact() == 0) {
+                    tutSetOnContact.setVisibility(View.VISIBLE);
+                    SharedPrefrenceHandler.getInstance().setIsFirstTimeContact(1);
+                    tutSetOnContact.postDelayed(new Runnable() {
+                        public void run() {
+                            tutSetOnContact.setVisibility(View.GONE);
+                        }
+                    }, 100000);
+
+                } else
+                    tutSetOnContact.setVisibility(View.GONE);
+
                 progressBar.setVisibility(View.GONE);
                 myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, ContactsFragment.this, isEdit);
                 listSongs.setAdapter(myContactsRecyclerViewAdapter);
+
 
             }
         }.execute();
@@ -287,12 +312,11 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 submitButton.setVisibility(View.VISIBLE);
                 txtTotalSelected.setVisibility(View.VISIBLE);
                 txtTotalSelected.setText(selectedContacts.size() + " Selected");
-              //  myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
-                 if(isGetAllData ==1 && contactFilterList!=null && contactFilterList.size()>0)
+                //  myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
+                if (isGetAllData == 1 && contactFilterList != null && contactFilterList.size() > 0)
                     myContactsRecyclerViewAdapter.updateAdater(contactFilterList, 0);
-                 else
-                     myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
-
+                else
+                    myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
 
 
             }
@@ -308,7 +332,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             selectedContacts.clear();
             selectedPhoneList.clear();
             txtTotalSelected.setVisibility(View.INVISIBLE);
-            if(isGetAllData ==1 && contactFilterList!=null && contactFilterList.size()>0)
+            if (isGetAllData == 1 && contactFilterList != null && contactFilterList.size() > 0)
                 myContactsRecyclerViewAdapter.updateAdater(contactFilterList, 0);
             else
                 myContactsRecyclerViewAdapter.updateAdater(contactList, 0);
@@ -339,11 +363,13 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
             startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION);
 
-        } else if (!isAccessibilitySettingsOn(getActivity())) {
-            isRequestSend = 1;
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
-        } else {
+        }
+//        else if (!isAccessibilitySettingsOn(getActivity())) {
+//            isRequestSend = 1;
+//            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+//            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
+//        }
+        else {
             progressBar.setVisibility(View.VISIBLE);
             sendContact();
         }
@@ -407,14 +433,14 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
                 contactList.set(position, contactEntity);
                 SelectContact selectContact;
-                if(isGetAllData==0)
+                if (isGetAllData == 0)
                     selectContact = new SelectContact(position, phoneNumber);
                 else
                     selectContact = new SelectContact(contactEntity.getRowId(), phoneNumber);
                 selectedContacts.remove(selectContact);
                 selectedPhoneList.remove(phoneNumber);
                 cbAllCheck.setChecked(false);
-                isChecked =false;
+                isChecked = false;
                 txtTotalSelected.setVisibility(View.VISIBLE);
                 txtTotalSelected.setText(selectedContacts.size() + " Selected");
             } else {
@@ -425,11 +451,10 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
 
         if (selectedContacts.size() == contactList.size()) {
             cbAllCheck.setChecked(true);
-            isChecked =true;
+            isChecked = true;
             isCheckedAll();
-        }
-        else if(selectedContacts.size()==0) {
-            isChecked =false;
+        } else if (selectedContacts.size() == 0) {
+            isChecked = false;
             cbAllCheck.setChecked(false);
             isCheckedAll();
         }
@@ -612,14 +637,14 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 if (contactList.get(i).getName().toUpperCase().contains(constraint)
                         || contactList.get(i).getNumber().contains(constraint)) {
                     //ADD PLAYER TO FILTERED PLAYERS
-                    ContactEntity contactEntity =contactList.get(i);
+                    ContactEntity contactEntity = contactList.get(i);
                     contactEntity.setRowId(i);
                     contactFilterList.add(contactList.get(i));
                 }
             }
         }
-        if (contactFilterList != null && myContactsRecyclerViewAdapter!=null ) {
-            isGetAllData =1;
+        if (contactFilterList != null && myContactsRecyclerViewAdapter != null) {
+            isGetAllData = 1;
             myContactsRecyclerViewAdapter.updateAdater(contactFilterList, length);
             submitButton.setVisibility(View.VISIBLE);
         }
@@ -642,7 +667,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                isGetAllData =0;
+                isGetAllData = 0;
                 return false;
             }
         });

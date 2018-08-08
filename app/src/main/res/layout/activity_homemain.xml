@@ -10,6 +10,8 @@
 
 
 
+
+
     <include
         layout="@layout/app_bar_homemain"
         android:id="@+id/mainView"
@@ -31,5 +33,7 @@
         app:itemIconTint="@android:color/black"
         app:insetForeground="@android:color/black"
         />
+
+
 
 </android.support.v4.widget.DrawerLayout>

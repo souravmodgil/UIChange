@@ -13,6 +13,7 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.Util.AppUtils;
 import com.mobileoid2.celltone.utility.AudioPlayerTest;
 import com.mobileoid2.celltone.utility.Utils;
@@ -28,11 +29,13 @@ public class NotificationListener extends NotificationListenerService {
     public void onNotificationPosted(StatusBarNotification sbn) {
 
         Bundle extras = sbn.getNotification().extras;
+        String ss = extras.getString(Notification.EXTRA_TEXT);
 
-        if ("Ongoing call".equals(extras.getString(Notification.EXTRA_TEXT))) {
-            Toast.makeText(this,"Call picked",Toast.LENGTH_LONG).show();
+
+
+        if (ss.indexOf(getResources().getString(R.string.outgoing_call))!=-1) {
+
             if (Utils.isMyServiceRunning(getApplicationContext(), OverlayShowingService.class)) {
-                Toast.makeText(this,"Call picked",Toast.LENGTH_LONG).show();
                 stopService(new Intent(this, OverlayShowingService.class));
                 Log.e("myaccess", "Main Service called");
             }

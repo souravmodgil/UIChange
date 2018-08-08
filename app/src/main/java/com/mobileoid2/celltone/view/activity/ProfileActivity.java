@@ -21,7 +21,7 @@ import android.view.MenuItem;
 
 import com.mobileoid2.celltone.R;
 import com.mobileoid2.celltone.view.fragments.ProfileFragment;
-import com.splunk.mint.Mint;
+
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class ProfileActivity extends AppCompatActivity implements ChangeToolBarT
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 

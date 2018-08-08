@@ -1,17 +1,25 @@
 package com.mobileoid2.celltone.view.activity;
 
+import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,26 +27,28 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.mobileoid2.celltone.CustomWidget.TextView.ProximumBoldTextView;
+
+
+import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.database.ContactEntity;
 import com.mobileoid2.celltone.network.model.treadingMedia.Song;
 import com.mobileoid2.celltone.view.activity.Login.LoginOtpActivity;
 import com.mobileoid2.celltone.R;
-import com.mobileoid2.celltone.view.fragments.AbousUsFragment;
-import com.mobileoid2.celltone.view.fragments.FAQFragment;
-import com.mobileoid2.celltone.view.fragments.FragmentMusicUpload;
 import com.mobileoid2.celltone.view.fragments.HomeFragment;
-import com.mobileoid2.celltone.view.fragments.LanguageFragment;
-import com.mobileoid2.celltone.view.fragments.OfferFragment;
-import com.mobileoid2.celltone.view.fragments.PlanFragment;
-import com.mobileoid2.celltone.view.fragments.ProfileFragment;
-import com.mobileoid2.celltone.view.fragments.QueryListFragment;
 import com.mobileoid2.celltone.view.listener.NavigationLisitner;
 import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiConstant;
@@ -52,15 +62,18 @@ import com.mobileoid2.celltone.pojo.PojoContactsUpload;
 import com.mobileoid2.celltone.utility.ContactFetcher;
 import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
 import com.mobileoid2.celltone.utility.Utils;
-import com.mobileoid2.celltone.view.listener.QueryLisiner;
-import com.splunk.mint.Mint;
+import com.shashank.sony.fancytoastlib.FancyToast;
+
+
+import net.alexandroid.utils.toaster.Toaster;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
-        NavigationLisitner, NetworkCallBack, ChangeToolBarTitleListiner, QueryLisiner {
+public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, NavigationLisitner, NetworkCallBack {
 
     public static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -70,22 +83,27 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private ImageView matNav;
     private DrawerLayout drawer;
     private int isEdit = 0;
+    private AppDatabase appDatabase;
     private String mobileNo = "";
     private String name = "";
     private int isIncoming = -1;
     private ContactEntity contactEntity = null;
     private View view;
     private ApiInterface apiInterface;
+    private Toast toast;
+    private CountDownTimer toastCountDown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homemain);
-        Mint.initAndStartSession(this.getApplication(), "f9ede8e8");
+        appDatabase = AppDatabase.getAppDatabase(this);
         view = findViewById(R.id.mainView);
-        apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
         drawer = findViewById(R.id.drawer_layout);
         Intent intent = getIntent();
         if (intent.getIntExtra("isEdit", 0) == 1) {
@@ -99,7 +117,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         } else
             refreshMediaSetByOther();
         if (!SharedPrefrenceHandler.getInstance().isFcpSend()) {
-
+            // ace apiInterface = (ApiInterface) APIClient.getClient().create(ApiInterface.class); ApiInterf
             FCMMODELREQUEST fcmmodelrequest = new FCMMODELREQUEST();
             fcmmodelrequest.setFcpId(SharedPrefrenceHandler.getInstance().getFCPTCOKEN());
             SendRequest.sendRequest(ApiConstant.FCM_API, apiInterface.uploadFcm(SharedPrefrenceHandler.getInstance().getUSER_TOKEN(), fcmmodelrequest), this);
@@ -163,7 +181,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             snackbar.setText(msg);
             snackbar.show();
         }
-        setFragment(HomeFragment.newInstance(this, isEdit, mobileNo, name, isIncoming, contactEntity), HomeFragment.class.getSimpleName());
+        setHomeFragment(HomeFragment.newInstance(this, isEdit, mobileNo, name, isIncoming, contactEntity), HomeFragment.class.getSimpleName());
 
 
     }
@@ -215,33 +233,36 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }.execute();
     }
 
-    private void setFragment(Fragment homeFragment, String TAG) {
+    private void setHomeFragment(Fragment homeFragment, String TAG) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.content_frame, homeFragment).addToBackStack(TAG);
         ft.commit();
     }
 
-
-    private void onBack()
-
-    {
-        int count = getSupportFragmentManager().getBackStackEntryCount();
-        if (getSupportFragmentManager().getBackStackEntryCount() >= 1)
-            super.onBackPressed();
-        else
-            finish();
-    }
-
-
     @Override
     public void onBackPressed() {
+        if (toast != null)
+            toast.cancel();
+        if (toastCountDown != null)
+            toastCountDown.cancel();
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else
-            onBack();
-
-
+        } else {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            System.out.println("HomeActivity.onBackPressed" + fragmentManager.getBackStackEntryCount());
+            if (fragmentManager.getBackStackEntryCount() > 1) {
+                fragmentManager.popBackStack();
+                System.out.println("HomeActivity.onBackPressed------");
+            } else {
+                System.out.println("HomeActivity.onBackPressed");
+                Intent startMain = new Intent(Intent.ACTION_MAIN);
+                startMain.addCategory(Intent.CATEGORY_HOME);
+                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(startMain);
+                finish();
+            }
+        }
     }
 
     @Override
@@ -263,18 +284,28 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             refreshMediaSetByOther();
             return true;
         }
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBack();
-                return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        if (apiInterface == null)
+            apiInterface = APIClient.getClient().create(ApiInterface.class);
+        if (toast != null)
+            toast.cancel();
+        if (toastCountDown != null)
+            toastCountDown.cancel();
+
+        //  showToast("Network,",4);
+        super.onResume();
+
+    }
 
     private void refreshMediaSetByOther() {
 
+        if (apiInterface == null)
+            apiInterface = APIClient.getClient().create(ApiInterface.class);
         Utils.getMediForMe(apiInterface, this);
     }
 
@@ -284,35 +315,26 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         Fragment fragment = null;
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         switch (item.getItemId()) {
 
             case R.id.nav_offer:
-                getSupportActionBar().setTitle(getString(R.string.offer));
-                setFragment(OfferFragment.newInstance(), OfferFragment.class.getSimpleName());
-                //startActivity(new Intent(this, OfferActivity.class));
+
+                startActivity(new Intent(this, OfferActivity.class));
                 break;
             case R.id.nav_plan:
-                getSupportActionBar().setTitle(getString(R.string.my_plan));
-                setFragment(PlanFragment.newInstance(this), PlanFragment.class.getSimpleName());
+
+                startActivity(new Intent(this, PlanActivity.class));
                 break;
-            case R.id.nav_upload_own:
-                getSupportActionBar().setTitle(getString(R.string.upload));
-                //  fragmentMusicUpload = FragmentMusicUpload.newInstance(getIntent().getIntExtra("isAudio",0));
-                setFragment(FragmentMusicUpload.newInstance(2), FragmentMusicUpload.class.getSimpleName());
-                // startActivity(new Intent(this, UploadActivity.class));
-                break;
+//            case R.id.nav_upload_own:
+//                startActivity(new Intent(this, UploadActivity.class));
+//                break;
             case R.id.nav_faq:
-                getSupportActionBar().setTitle(getString(R.string.faq));
-                setFragment(new FAQFragment(), FAQFragment.class.getSimpleName());
-                //  startActivity(new Intent(this, FAQActivity.class));
+                startActivity(new Intent(this, FAQActivity.class));
                 break;
 
 
             case R.id.nav_profile:
-//                startActivity(new Intent(this, ProfileActivity.class));
-                getSupportActionBar().setTitle(getString(R.string.my_profile));
-                setFragment(ProfileFragment.newInstance(this), ProfileFragment.class.getSimpleName());
+                startActivity(new Intent(this, ProfileActivity.class));
                 break;
 
 
@@ -326,43 +348,31 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 break;
 
             case R.id.nav_contact_us:
-//                Intent contactUs = new Intent(this, AbousUs.class);
-//                contactUs.putExtra("typeName", getString(R.string.contact_us));
-//                contactUs.putExtra("type", "legal/one/contact");
-//                startActivity(contactUs);
-
-                getSupportActionBar().setTitle(getString(R.string.contact_us));
-                setFragment(AbousUsFragment.newInstance("legal/one/contact"), AbousUsFragment.class.getSimpleName());
+                Intent contactUs = new Intent(this, AbousUs.class);
+                contactUs.putExtra("typeName", getString(R.string.contact_us));
+                contactUs.putExtra("type", "legal/one/contact");
+                startActivity(contactUs);
                 break;
 
 
             case R.id.nav_about_us:
-//                Intent aboutUs = new Intent(this, AbousUs.class);
-//                aboutUs.putExtra("typeName", getString(R.string.about_us));
-//                aboutUs.putExtra("type", "legal/one/about");
-//                startActivity(aboutUs);
-
-                getSupportActionBar().setTitle(getString(R.string.about_us));
-                setFragment(AbousUsFragment.newInstance("legal/one/about"), AbousUsFragment.class.getSimpleName());
+                Intent aboutUs = new Intent(this, AbousUs.class);
+                aboutUs.putExtra("typeName", getString(R.string.about_us));
+                aboutUs.putExtra("type", "legal/one/about");
+                startActivity(aboutUs);
                 break;
             case R.id.nav_privacy:
-//                Intent privacy = new Intent(this, AbousUs.class);
-//                privacy.putExtra("typeName", getString(R.string.privacy_policy));
-//                privacy.putExtra("type", "legal/one/privacy");
-//                startActivity(privacy);
-                getSupportActionBar().setTitle(getString(R.string.privacy_policy));
-                setFragment(AbousUsFragment.newInstance("legal/one/privacy"), AbousUsFragment.class.getSimpleName());
+                Intent privacy = new Intent(this, AbousUs.class);
+                privacy.putExtra("typeName", getString(R.string.privacy_policy));
+                privacy.putExtra("type", "legal/one/privacy");
+                startActivity(privacy);
                 break;
             case R.id.nav_query:
-                getSupportActionBar().setTitle(getString(R.string.query));
-                setFragment(QueryListFragment.newInstance(this), QueryListFragment.class.getSimpleName());
 
-                //  startActivity(new Intent(this, QueryActivity.class));
+                startActivity(new Intent(this, QueryActivity.class));
                 break;
             case R.id.nav_language:
-                // startActivity(new Intent(this, LanguageActivity.class));
-                setFragment(new LanguageFragment(), LanguageFragment.class.getSimpleName());
-                getSupportActionBar().setTitle(getString(R.string.choose_language));
+                startActivity(new Intent(this, LanguageActivity.class));
                 break;
 
 
@@ -423,7 +433,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         //replacing the fragment
         if (fragment != null) {
-            setFragment(fragment, TAG);
+            setHomeFragment(fragment, TAG);
         }
 
         drawer.closeDrawer(GravityCompat.START);
@@ -447,6 +457,17 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        if (fragments != null) {
+            for (Fragment fragment : fragments) {
+                fragment.onActivityResult(requestCode, resultCode, data);
+            }
+        }
+    }
+
+    @Override
     public void getResponse(JsonResponse response, int type) {
         if (response.getObject() != null) {
             switch (type) {
@@ -455,7 +476,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     break;
                 case ApiConstant.MEDIA_SET_API:
                     Utils utils = new Utils();
-                    utils.parseRequest(response.getObject(), this);
+                    utils.parseRequest(response.getObject(), this,appDatabase);
                     break;
                 case ApiConstant.SYNC_CONTACT_API:
                     String ss = response.getObject();
@@ -463,26 +484,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
         }
         //   {"status":1000,"body":true,"message":"success"}
-    }
-
-    @Override
-    public void setTitle(String text) {
-        getSupportActionBar().setTitle(text);
-    }
-
-    @Override
-    public void setTitle(String text, String songName) {
-
-    }
-
-    @Override
-    public void setFragmnet(String text, Fragment fragment, int isHide) {
-        setFragment(fragment, "");
-        if (isHide == 1)
-            getActionBar().hide();
-        else
-            getActionBar().show();
-
     }
 
     /*-------------------------*/

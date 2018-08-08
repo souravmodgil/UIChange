@@ -292,6 +292,7 @@
     <string name="query_no_records">No Querys ,please compose  new query</string>
     <string name="title_activity_tutorial">Tutorial</string>
     <string name="skip_to_login">Skip to Login</string>
+    <string name="outgoing_call">Ongoing call</string>
 
 
 </resources>

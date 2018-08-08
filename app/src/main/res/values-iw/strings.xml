@@ -178,6 +178,7 @@
     <string name="privacy">מדיניות פרטיות</string>
     <string name="query_report">שאילתות / דוח</string>
     <string name="faq">שאלות נפוצות</string>
+    <string name="outgoing_call">שיחה מתמשכת</string>
 
     <string-array name="alert_box_music_type_list">
         <item>הגדר צליל</item>

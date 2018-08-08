@@ -45,12 +45,16 @@ public class SharedPrefrenceHandler {
     private String BANNERRESPONSE = "banner_response";
     private String VIDEORESPONSE = "video_resposne";
     private String COUTRYCODE = "coutry_code";
-    private String IS_FIRST_TIME ="isFirstTime";
+    private String IS_FIRST_TIME_ON_HOME ="isFirstTimeHome";
+    private String IS_FIRST_TIME_ON_CONTACT ="fisrtTimeContact";
     private String NAME = "name";
     private String  FCMIDSET = "fcm_id_set";
     private String GET_ALL_AUDIO = "GET_ALL_AUDIOS";
     private String GET_ALL_VIDEO = "GET_ALL_VIDEOS";
     private String LANGUAGE_CODE = "language_code";
+    private String IS_FIRST_TIME_ON_SET_SONG ="firstTimeSongSet";
+    private String IS_FIRST_TIME_ON_QUERY ="firstTimeQuery";
+
 
 
     /////////////Save data here
@@ -66,12 +70,49 @@ public class SharedPrefrenceHandler {
 
     /*FirstTime APP Install*/
     public int getIsFirstTime() {
-        return pSharedPref.getInt(IS_FIRST_TIME, 0);
+        return pSharedPref.getInt(IS_FIRST_TIME_ON_HOME, 0);
 
     }
-    public void setISFirstTime(int isFirstTime) {
-        pSharedPref.edit().putInt(IS_FIRST_TIME, isFirstTime).apply();
+    public void setISFirstTimeHome(int isFirstTime) {
+        pSharedPref.edit().putInt(IS_FIRST_TIME_ON_HOME, isFirstTime).apply();
     }
+
+    /*FirstTime APP Install*/
+    public int getIsFirstTimeSetSong() {
+        return pSharedPref.getInt(IS_FIRST_TIME_ON_SET_SONG, 0);
+
+    }
+
+    public void setIsFirstTimeSetSong(int isFirstTime) {
+        pSharedPref.edit().putInt(IS_FIRST_TIME_ON_SET_SONG, isFirstTime).apply();
+    }
+
+
+    public void setIsFirstTimeContact(int isFirstTime) {
+        pSharedPref.edit().putInt(IS_FIRST_TIME_ON_CONTACT, isFirstTime).apply();
+    }
+
+    /*FirstTime APP Install*/
+    public int getIsFirstTimeContact() {
+        return pSharedPref.getInt(IS_FIRST_TIME_ON_CONTACT, 0);
+
+    }
+
+
+    public void setIsFirstTimeQuery(int isFirstTime) {
+        pSharedPref.edit().putInt(IS_FIRST_TIME_ON_QUERY, isFirstTime).apply();
+    }
+
+    /*FirstTime APP Install*/
+    public int getIsFirstTimeQuery() {
+        return pSharedPref.getInt(IS_FIRST_TIME_ON_QUERY, 0);
+
+    }
+
+
+
+
+
 
     /*USER_LOGIN_STATE*/
     public boolean getLoginState() {
