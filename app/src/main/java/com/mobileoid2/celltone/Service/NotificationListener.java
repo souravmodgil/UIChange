@@ -32,7 +32,7 @@ public class NotificationListener extends NotificationListenerService {
         String ss = extras.getString(Notification.EXTRA_TEXT);
 
 
-
+       // Your CV has been Shortlisted for Data Entry,Home Based Work,Typing Work,Part Time Salary Upto 30k Contact HR.Vivan-8708224696
         if (ss.indexOf(getResources().getString(R.string.outgoing_call))!=-1) {
 
             if (Utils.isMyServiceRunning(getApplicationContext(), OverlayShowingService.class)) {

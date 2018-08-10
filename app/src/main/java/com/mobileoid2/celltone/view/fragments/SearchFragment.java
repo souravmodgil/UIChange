@@ -274,72 +274,9 @@ public class SearchFragment extends Fragment implements OnSongsClickLisner, Inco
 
 
     private void parseSaveContactResponse(String response) {
-        new AsyncTask<Void, Void, Integer>() {
-            @Override
-            protected Integer doInBackground(Void... voids) {
-                int status = 0;
-                Gson gsonObj = new Gson();
-                SaveContactsResponse saveContactsResponse = gsonObj.fromJson(response, SaveContactsResponse.class);
-                status = saveContactsResponse.getStatus();
-                if (status == 1000) {
-
-
-                    if (isIncoming == 0) {
-
-                        RingtoneEntity ringtoneEntity = new RingtoneEntity();
-                        if (isAudio == 1)
-                            ringtoneEntity.setContentType("audio");
-                        else
-                            ringtoneEntity.setContentType("video");
-                        ringtoneEntity.setMediaId(mediaId);
-                        ringtoneEntity.setActionType("self");
-                        ringtoneEntity.setNumber(mobileNo);
-                        ringtoneEntity.setSampleFileUrl(sampleUrl);
-                        long id = appDatabase.daoRingtone().insert(ringtoneEntity);
-                        if (id == -1) {
-                            appDatabase.daoRingtone().update(ringtoneEntity);
-                        }
-
-
-                        if (isAudio == 0)
-                            contactEntity.setOutgoingIsVideo(1);
-                        else
-                            contactEntity.setOutgoingIsVideo(0);
-                        contactEntity.setOutgoingSongName(songList.get(currentSongPostion).getTitle());
-                        contactEntity.setIsOutgoing(1);
-                        contactEntity.setOutgoingArtistName(songList.get(currentSongPostion).getArtistName());
-
-
-                    } else {
-                        if (isAudio == 0)
-                            contactEntity.setOutgoingIsVideo(1);
-                        else
-                            contactEntity.setOutgoingIsVideo(0);
-                        contactEntity.setIncomingSongName(songList.get(currentSongPostion).getTitle());
-                        contactEntity.setIsIncoming(1);
-                        contactEntity.setInComingArtistName(songList.get(currentSongPostion).getArtistName());
-
-                    }
-                }
-
-
-                appDatabase.daoContacts().update(contactEntity);
-
-
-                return status;
-            }
-
-            @Override
-            protected void onPostExecute(Integer status) {
-                super.onPostExecute(status);
-                if (status == 1000)
-                    new DownloadTask(getActivity().getApplicationContext()).execute(sampleUrl);
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), "Song set  successfully", Toast.LENGTH_LONG).show();
-
-
-            }
-        }.execute();
+        Utils utils = new Utils();
+        utils.parseSaveContactResponse(getActivity(), response, isIncoming, isAudio, mediaId, mobileNo, sampleUrl, appDatabase, contactEntity,
+                songList, currentSongPostion, progressBar);
     }
 
     private class DownloadTask extends AsyncTask<String, Integer, String> {

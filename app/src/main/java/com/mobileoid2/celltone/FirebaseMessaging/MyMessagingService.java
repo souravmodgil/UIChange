@@ -74,22 +74,25 @@ public class MyMessagingService extends FirebaseMessagingService implements Netw
         if (remoteMessage.getData().size() > 0) {
 
           //  Boolean isSilent =Boolean.parseBoolean();
+
             if(remoteMessage.getData().get("isSilent").equals("1")) {
                 switch (remoteMessage.getData().get("type")) {
                     case Constant.MEDIA_SET:
                         refreshMediaSetByOther();
                         break;
                     case Constant.MEDIA_UNSET:
-                        refreshMediaSetByOther();
+                        String[] splitArray = remoteMessage.getData().get("info").split(",");
+                        String mobileNumber  = splitArray[0];
+                        String  mediaId = splitArray[1];
+                        Utils utils = new Utils();
+                        if (apiInterface == null)
+                            apiInterface = APIClient.getClient().create(ApiInterface.class);
+                        AppDatabase appDatabase =AppDatabase.getAppDatabase(this);
+                        utils.unsetIncomingothers(this,mediaId,appDatabase,mobileNumber,apiInterface,this);
+                      //  refreshMediaSetByOther();
                         break;
                 }
-                Notification notification = new NotificationCompat.Builder(this)
-                        .setContentTitle(remoteMessage.getData().get("title"))
-                        .setContentText(remoteMessage.getData().get("info"))
-                        .setSmallIcon(R.drawable.ic_check)
-                        .build();
-                NotificationManagerCompat manager = NotificationManagerCompat.from(getApplicationContext());
-                manager.notify(123, notification);
+
 
 
 

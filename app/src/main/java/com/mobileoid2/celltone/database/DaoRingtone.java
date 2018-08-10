@@ -11,8 +11,14 @@ import java.util.List;
 public interface DaoRingtone {
     @Query("SELECT * FROM ringtone")
     List<RingtoneEntity> getAll();
+    @Query("SELECT COUNT(*)  FROM ringtone where outgoing_media_id LIKE :mediaId OR incoming_media_id=:mediaId")
+    int getMediaId(String mediaId);
+
     @Query("SELECT * FROM ringtone where phone_no LIKE :phoneNumber")
     RingtoneEntity getContatcByNumber(String phoneNumber);
+
+
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertAll(List<RingtoneEntity> ringtoneEntity);
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -23,5 +29,6 @@ public interface DaoRingtone {
     void delete(String phoneNo);
     @Update
     int update(RingtoneEntity music);
+
 
 }

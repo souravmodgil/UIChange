@@ -41,6 +41,14 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
     private String outgoingArtistName;
     @ColumnInfo(name = "sample_url" )
     private String sampleUrl;
+    @ColumnInfo(name = "outgoing_sample_file_url")
+    private String outgoingSampleFileUrl;
+    @ColumnInfo(name = "incoming_sample_file_url")
+    private String incomingSampleFileUrl;
+    @ColumnInfo(name = "outgoing_media_id")
+    private String outgoingMediaId;
+    @ColumnInfo(name = "incoming_media_id")
+    private String incomingMediaId;
 
 
 
@@ -177,5 +185,37 @@ public class ContactEntity  implements Serializable , Comparable<ContactEntity>{
 
     public void setSampleUrl(String sampleUrl) {
         this.sampleUrl = sampleUrl;
+    }
+
+    public String getOutgoingSampleFileUrl() {
+        return outgoingSampleFileUrl;
+    }
+
+    public void setOutgoingSampleFileUrl(String outgoingSampleFileUrl) {
+        this.outgoingSampleFileUrl = outgoingSampleFileUrl;
+    }
+
+    public String getIncomingSampleFileUrl() {
+        return incomingSampleFileUrl;
+    }
+
+    public void setIncomingSampleFileUrl(String incomingSampleFileUrl) {
+        this.incomingSampleFileUrl = incomingSampleFileUrl;
+    }
+
+    public String getOutgoingMediaId() {
+        return outgoingMediaId;
+    }
+
+    public void setOutgoingMediaId(String outgoingMediaId) {
+        this.outgoingMediaId = outgoingMediaId;
+    }
+
+    public String getIncomingMediaId() {
+        return incomingMediaId;
+    }
+
+    public void setIncomingMediaId(String incomingMediaId) {
+        this.incomingMediaId = incomingMediaId;
     }
 }

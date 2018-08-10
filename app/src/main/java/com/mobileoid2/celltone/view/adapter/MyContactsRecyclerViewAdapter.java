@@ -14,12 +14,29 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.google.gson.Gson;
 import com.mobileoid2.celltone.R;
+import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.database.ContactEntity;
+import com.mobileoid2.celltone.database.RingtoneEntity;
+import com.mobileoid2.celltone.network.APIClient;
+import com.mobileoid2.celltone.network.ApiConstant;
+import com.mobileoid2.celltone.network.ApiInterface;
+import com.mobileoid2.celltone.network.NetworkCallBack;
+import com.mobileoid2.celltone.network.SendRequest;
+import com.mobileoid2.celltone.network.jsonparsing.JsonResponse;
+import com.mobileoid2.celltone.network.model.MainNetworkModel;
+import com.mobileoid2.celltone.network.model.allmediaforuser.AllMediaForUser;
 import com.mobileoid2.celltone.pojo.PopUpPojo;
+import com.mobileoid2.celltone.pojo.UnsetMedia;
+import com.mobileoid2.celltone.utility.SharedPrefrenceHandler;
+import com.mobileoid2.celltone.utility.Utils;
 import com.mobileoid2.celltone.view.activity.HomeActivity;
 import com.mobileoid2.celltone.view.fragments.ContactsFragment.OnListFragmentInteractionListener;
 import com.mobileoid2.celltone.pojo.Contact;
@@ -30,31 +47,51 @@ import com.mobileoid2.celltone.view.listener.UpdateDailogView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Contact} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContactsRecyclerViewAdapter.ViewHolder> implements UpdateDailogView {
+public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContactsRecyclerViewAdapter.ViewHolder> implements
+        UpdateDailogView, NetworkCallBack {
 
     private final List<ContactEntity> mValues;
     public List<ContactEntity> mlistFiltered;
     private Context context;
-    private  int isSelcted =0;
-    private TextView txtSet,txtDelete;
+    private int isSelcted = 0;
+    private TextView txtSet, txtDelete;
     private SelectedContactListner selectedContactListner;
     private int isEdit;
-    private int isIncoming =1;
+    private int isIncoming = 1;
     CustomFilter filter;
     private ContactEntity selectedContactEntity;
+    private ProgressBar progressBar;
+    private String unsetMediaId;
+    private String unsetMediaPath;
+    private AppDatabase appDatabase;
+    private String unsetMobileNo;
+    private  ContactEntity unsetContactEntity;
+    private int unsetPosition;
+     AlertDialog dialog;
 
 
-    public MyContactsRecyclerViewAdapter(Context context, List<ContactEntity> items, SelectedContactListner selectedContactListner, int isEdit) {
+    public MyContactsRecyclerViewAdapter(Context context, List<ContactEntity> items,
+                                         SelectedContactListner selectedContactListner, int isEdit, ProgressBar progressBar, AppDatabase appDatabase) {
         mValues = items;
         this.context = context;
         mlistFiltered = items;
         this.isEdit = isEdit;
         this.selectedContactListner = selectedContactListner;
+        this.progressBar = progressBar;
+        this.appDatabase = appDatabase;
 
     }
 
@@ -96,10 +133,9 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         if (holder.mItem.getIsOutgoing() == 1) {
             holder.llOutgoing.setVisibility(View.VISIBLE);
             if (holder.mItem.getOutgoingIsVideo() == 0)
-                holder.txtOutgoingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.audio_icon,0);
+                holder.txtOutgoingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.audio_icon, 0);
             else
-                holder.txtOutgoingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.video_icon,0);
-
+                holder.txtOutgoingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.video_icon, 0);
 
 
             holder.txtOutgoingSongTitle.setText(holder.mItem.getOutgoingSongName());
@@ -109,32 +145,29 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         if (holder.mItem.getIsIncoming() == 1) {
             holder.llIncoming.setVisibility(View.VISIBLE);
             if (holder.mItem.getIsincomingVideo() == 0)
-                holder.txtIncomingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.audio_icon,0);
+                holder.txtIncomingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.audio_icon, 0);
             else
-                holder.txtIncomingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,R.drawable.video_icon,0);
+                holder.txtIncomingSongTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.video_icon, 0);
             holder.txtIncomingSongTitle.setText(holder.mItem.getIncomingSongName());
         } else {
             holder.llIncoming.setVisibility(View.GONE);
         }
-      //  showPopUp
+        //  showPopUp
         holder.editIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPopUp(holder.mItem);
+                showPopUp(holder.mItem,position);
             }
         });
         holder.cbContact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(holder.mItem.getIsSelcted()==0)
-                {
+                if (holder.mItem.getIsSelcted() == 0) {
                     selectedContactListner.setContacts(holder.mItem.getNumber(), 1, position);
                     holder.mItem.setIsSelcted(1);
                     mValues.get(position).setIsSelcted(1);
                     notifyDataSetChanged();
-                }
-                else
-                {
+                } else {
                     selectedContactListner.setContacts(holder.mItem.getNumber(), 0, position);
                     holder.mItem.setIsSelcted(0);
                     mValues.get(position).setIsSelcted(0);
@@ -144,30 +177,6 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
 
             }
         });
-
-//        holder.cbContact.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if (isChecked) {
-//                    selectedContactListner.setContacts(holder.mItem.getNumber(), 1, position);
-//                    holder.mItem.setIsSelcted(1);
-//                    mValues.get(position).setIsSelcted(1);
-//                    holder.cbContact.setChecked(true);
-//                 //   notifyDataSetChanged();
-//
-//
-//                } else {
-//                    selectedContactListner.setContacts(holder.mItem.getNumber(), 0, position);
-//                    holder.mItem.setIsSelcted(0);
-//                    mValues.get(position).setIsSelcted(0);
-//                    holder.cbContact.setChecked(false);
-////                   if(isSelcted ==0)
-////                    notifyDataSetChanged();
-//                }
-//
-//
-//            }
-//        });
 
 
     }
@@ -181,16 +190,16 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
             return 0;
     }
 
-    private void showPopUp(ContactEntity entity) {
+    private void showPopUp(ContactEntity entity,int position) {
 
-        int isDeleteButtonShow =0;
+        int isDeleteButtonShow = 0;
         List<PopUpPojo> listItems = new ArrayList<>();
         PopUpPojo popUpPojo;
         popUpPojo = new PopUpPojo();
         popUpPojo.setTitle("Incoming Call");
         popUpPojo.setIsSelected(1);
         if (entity.getIsIncoming() == 1) {
-            isDeleteButtonShow =1;
+            isDeleteButtonShow = 1;
             popUpPojo.setTrackName(entity.getIncomingSongName());
             if (entity.getIsincomingVideo() == 0)
                 popUpPojo.setIsAudio(1);
@@ -212,40 +221,70 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         listItems.add(popUpPojo);
 
 
-
-        final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+       dialog = new AlertDialog.Builder(context).create();
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.dailog_outgoing_incoming_layout, null);
         RecyclerView lv = (RecyclerView) view.findViewById(R.id.rc_dailog_list);
-        txtDelete =view.findViewById(R.id.txt_delete);
+        txtDelete = view.findViewById(R.id.txt_delete);
         txtSet = view.findViewById(R.id.txt_set);
         // Change MyActivity.this and myListOfItems to your own values
-        CustomDailogListAdapterDialog adapter = new CustomDailogListAdapterDialog(context, listItems,this::updateView);
+        CustomDailogListAdapterDialog adapter = new CustomDailogListAdapterDialog(context, listItems, this::updateView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(context);
         lv.setLayoutManager(mLayoutManager);
         lv.setItemAnimator(new DefaultItemAnimator());
         lv.setAdapter(adapter);
         dialog.setView(view);
-        if(isDeleteButtonShow==1)
-        {
+        if (isDeleteButtonShow == 1) {
             txtDelete.setVisibility(View.VISIBLE);
             txtSet.setText(context.getString(R.string.edit));
-        }
-        else
-        {
+        } else {
             txtDelete.setVisibility(View.GONE);
             txtSet.setText(context.getString(R.string.label_set));
         }
+        txtDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ApiInterface apiInterface = APIClient.getClient().create(ApiInterface.class);
+
+
+
+                UnsetMedia unsetMedia = new UnsetMedia();
+                unsetMedia.setMobile(entity.getNumber());
+                if (isIncoming == 1)
+                    unsetMedia.setType("incommingother");
+
+
+                else {
+                    unsetMedia.setType("outgoingself");
+                    unsetMediaId = entity.getOutgoingMediaId();
+                    unsetMediaPath = entity.getOutgoingSampleFileUrl();
+                    unsetMobileNo = entity.getNumber();
+                    unsetContactEntity = entity;
+                    unsetPosition =position;
+
+                }
+
+
+                progressBar.setVisibility(View.VISIBLE);
+                dialog.dismiss();
+                String token = SharedPrefrenceHandler.getInstance().getUSER_TOKEN();
+                SendRequest.sendRequest(ApiConstant.UNSET_API, apiInterface.unsetMedia(token, unsetMedia), MyContactsRecyclerViewAdapter.this);
+
+
+            }
+        });
         txtSet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, HomeActivity.class);
-                intent.putExtra("isEdit",1);
-                intent.putExtra("mobile_no",entity.getNumber());
-                intent.putExtra("contact_name",entity.getName());
-                intent.putExtra("isIncoming",isIncoming);
-                intent.putExtra("contact_entity",entity);
+                intent.putExtra("isEdit", 1);
+                intent.putExtra("mobile_no", entity.getNumber());
+                intent.putExtra("contact_name", entity.getName());
+                intent.putExtra("isIncoming", isIncoming);
+                intent.putExtra("contact_entity", entity);
                 context.startActivity(intent);
+                dialog.dismiss();
+
 
             }
         });
@@ -254,22 +293,116 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
     }
 
     @Override
-    public void updateView(int isDeleteButtonShow,int position) {
-        if(position==0)
-            isIncoming=1;
+    public void updateView(int isDeleteButtonShow, int position) {
+        if (position == 0)
+            isIncoming = 1;
 
         else
-            isIncoming =0;
-        if(isDeleteButtonShow==1)
-        {
+            isIncoming = 0;
+        if (isDeleteButtonShow == 1) {
             txtDelete.setVisibility(View.VISIBLE);
             txtSet.setText(context.getString(R.string.edit));
-        }
-        else
-        {
+        } else {
             txtDelete.setVisibility(View.GONE);
             txtSet.setText(context.getString(R.string.label_set));
         }
+
+    }
+
+    public void parseRequest(String response) {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(parseUnsetMedia(response)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(parseContact()));
+
+    }
+    private Observable<MainNetworkModel> parseUnsetMedia(String response) {
+        Gson gsonObj = new Gson();
+        final MainNetworkModel planBody = gsonObj.fromJson(response, MainNetworkModel.class);
+
+        return Observable.create(new ObservableOnSubscribe<MainNetworkModel>() {
+            @Override
+            public void subscribe(ObservableEmitter<MainNetworkModel> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    if(planBody.getStatus()==1000)
+                    {
+                        if (isIncoming == 0) {
+                            RingtoneEntity ringtoneEntity = new RingtoneEntity();
+                            ringtoneEntity.setNumber(unsetMobileNo);
+                            ringtoneEntity.setOutgoingMediaId("");
+                            ringtoneEntity.setOutgoingSampleFileUrl("");
+                            appDatabase.daoRingtone().update(ringtoneEntity);
+                            Utils utils = new Utils();
+                            ContactEntity contactEntity = new ContactEntity();
+                            contactEntity.setNumber(unsetMobileNo);
+                            contactEntity.setOutgoingMediaId("");
+                            contactEntity.setIsOutgoing(0);
+                            contactEntity.setOutgoingSampleFileUrl("");
+                            contactEntity.setOutgoingSongName("");
+                            appDatabase.daoContacts().update(contactEntity);
+                            utils.deleteMedia(context,unsetMediaId,appDatabase,unsetMediaPath);
+
+                        }
+
+                    }
+                    emitter.onNext(planBody);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
+
+    private DisposableObserver<MainNetworkModel> parseContact() {
+        return new DisposableObserver<MainNetworkModel>() {
+
+            @Override
+            public void onNext(MainNetworkModel profileModel) {
+
+                progressBar.setVisibility(View.GONE);
+                if (profileModel.getStatus() == 1000) {
+                    if(isIncoming==0)
+                    {
+                        dialog.dismiss();
+                        unsetContactEntity.setIsOutgoing(0);
+                        mlistFiltered.add(unsetContactEntity);
+                        notifyDataSetChanged();
+                    }
+                    // profileImage.setImageResource(R.drawable.profile_avatar);
+
+
+                }
+                Toast.makeText(context, profileModel.getMessage(), Toast.LENGTH_LONG).show();
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+
+    @Override
+    public void getResponse(JsonResponse response, int type) {
+        switch (type) {
+            case ApiConstant.UNSET_API:
+                progressBar.setVisibility(View.GONE);
+                if(response.getObject()!=null)
+                    parseRequest(response.getObject());
+
+                break;
+        }
+
 
     }
 
@@ -282,7 +415,7 @@ public class MyContactsRecyclerViewAdapter extends RecyclerView.Adapter<MyContac
         public final TextView mContactsLetter;
         public final TextView txtIncomingSongTitle, txtOutgoingSongTitle;
         public ContactEntity mItem;
-        public ImageView   imageView;
+        public ImageView imageView;
         public CheckBox cbContact;
         public LinearLayout llOutgoing, llIncoming;
 

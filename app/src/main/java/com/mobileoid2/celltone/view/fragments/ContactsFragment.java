@@ -193,7 +193,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             progressBar.setVisibility(View.GONE);
         } else {
             if (contactList != null && contactList.size() > 0) {
-                myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit);
+                myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit,progressBar,appDatabase);
                 listSongs.setAdapter(myContactsRecyclerViewAdapter);
             }
 
@@ -207,6 +207,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
         // Set the adapter
         return view;
     }
+
 
 
     private void parseContacts(String response) {
@@ -246,7 +247,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                     tutSetOnContact.setVisibility(View.GONE);
 
                 progressBar.setVisibility(View.GONE);
-                myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, ContactsFragment.this, isEdit);
+                myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, ContactsFragment.this, isEdit,progressBar,appDatabase);
                 listSongs.setAdapter(myContactsRecyclerViewAdapter);
 
 
@@ -364,11 +365,6 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
             startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_NOTIFICATION);
 
         }
-//        else if (!isAccessibilitySettingsOn(getActivity())) {
-//            isRequestSend = 1;
-//            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-//            startActivityForResult(intent, REQUEST_PERMISSIONS_REQUEST_CODE_ACCESS);
-//        }
         else {
             progressBar.setVisibility(View.VISIBLE);
             sendContact();
@@ -526,7 +522,7 @@ public class ContactsFragment extends Fragment implements NetworkCallBack, View.
                 if (isAllPermissionGranted) {
 
                     if (contactList != null && contactList.size() > 0) {
-                        myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit);
+                        myContactsRecyclerViewAdapter = new MyContactsRecyclerViewAdapter(getActivity(), contactList, this, isEdit,progressBar,appDatabase);
                         listSongs.setAdapter(myContactsRecyclerViewAdapter);
                     } else {
                         getContact();

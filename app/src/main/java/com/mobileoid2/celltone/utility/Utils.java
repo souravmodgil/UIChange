@@ -8,6 +8,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.media.Ringtone;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.PowerManager;
@@ -22,11 +23,13 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.mobileoid2.celltone.Service.ServiceCallScreenChanged;
 import com.mobileoid2.celltone.Util.Constant;
 import com.mobileoid2.celltone.database.AppDatabase;
 import com.mobileoid2.celltone.database.ContactEntity;
 import com.mobileoid2.celltone.database.RingtoneEntity;
+import com.mobileoid2.celltone.network.APIClient;
 import com.mobileoid2.celltone.network.ApiConstant;
 import com.mobileoid2.celltone.network.ApiInterface;
 import com.mobileoid2.celltone.network.NetworkCallBack;
@@ -49,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
@@ -193,7 +197,9 @@ public class Utils {
 
     private Observable<MainNetworkModel<AllMediaForUser>> getMediaForMe(String response) {
         Gson gsonObj = new Gson();
-        final MainNetworkModel<AllMediaForUser> planBody = gsonObj.fromJson(response, MainNetworkModel.class);
+        //  final MainNetworkModel<AllMediaForUser> planBody = gsonObj.fromJson(response, MainNetworkModel.class);
+        MainNetworkModel<AllMediaForUser> planBody = gsonObj.fromJson(response, new TypeToken<MainNetworkModel<AllMediaForUser>>() {
+        }.getType());
 
         return Observable.create(new ObservableOnSubscribe<MainNetworkModel<AllMediaForUser>>() {
             @Override
@@ -217,6 +223,7 @@ public class Utils {
 
                 if (pojoContactsUploadResonse.getStatus() == 1000) {
                     SharedPrefrenceHandler.getInstance().setGET_MEDIA_RESPONSE(response.toString());
+
 
                     new DownloadTask(context, appDatabase).execute(pojoContactsUploadResonse.getBody());
                 }
@@ -285,6 +292,8 @@ public class Utils {
                         contactEntity.setOutgoingSongName(songList.get(currentSongPostion).getTitle());
                         contactEntity.setIsOutgoing(1);
                         contactEntity.setOutgoingArtistName(songList.get(currentSongPostion).getArtistName());
+                        contactEntity.setOutgoingSampleFileUrl(sampleUrl);
+                        contactEntity.setOutgoingMediaId(mediaId);
 
 
                     } else {
@@ -295,6 +304,8 @@ public class Utils {
                         contactEntity.setIncomingSongName(songList.get(currentSongPostion).getTitle());
                         contactEntity.setIsIncoming(1);
                         contactEntity.setInComingArtistName(songList.get(currentSongPostion).getArtistName());
+                        contactEntity.setIncomingSampleFileUrl(sampleUrl);
+                        contactEntity.setIncomingMediaId(mediaId);
 
                     }
                 }
@@ -311,7 +322,7 @@ public class Utils {
                 super.onPostExecute(status);
                 if (status == 1000) {
                     Utils utils = new Utils();
-                    download(context,sampleUrl);
+                    download(context, sampleUrl);
                     Toast.makeText(context, "Song set  successfully", Toast.LENGTH_LONG).show();
                     context.onBackPressed();
 
@@ -321,6 +332,89 @@ public class Utils {
 
             }
         }.execute();
+    }
+
+    private Observable<String> getIncomingSongUrl(Context context, String mediaId, AppDatabase appDatabase, String mobielNo
+    ) {
+        return Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    String path ="";
+
+                    RingtoneEntity entity = getSongUrl(appDatabase, mobielNo);
+                    if(entity!=null)
+                    {
+                        path =  entity.getIncomingSampleFileUrl();
+                        entity.setIncomingSampleFileUrl("");
+                        entity.setIncomingMediaId("");
+                        appDatabase.daoRingtone().update(entity);
+                        if(!path.isEmpty())
+                        {
+                            deleteMedia(context, mediaId, appDatabase, path);
+                        }
+                    }
+
+
+
+
+                    emitter.onNext(path);
+                    emitter.onComplete();
+                }
+
+
+            }
+        });
+    }
+
+    private DisposableObserver<String> getFilePath(ApiInterface apiInterface, NetworkCallBack networkCallBack) {
+        return new DisposableObserver<String>() {
+
+            @Override
+            public void onNext(String path) {
+                if (!path.isEmpty())
+                    Utils.getMediForMe(apiInterface, networkCallBack);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+
+    public void unsetIncomingothers(Context context, String mediaid, AppDatabase appDatabase, String mobileNumber,
+                                    ApiInterface apiInterface, NetworkCallBack callBack)
+
+    {
+        CompositeDisposable disposable = new CompositeDisposable();
+        disposable.add(getIncomingSongUrl(context, mediaid, appDatabase, mobileNumber)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(getFilePath(apiInterface, callBack)));
+    }
+
+    public void deleteMedia(Context context, String mediaid, AppDatabase appDatabase, String filepath) {
+        int count = appDatabase.daoRingtone().getMediaId(mediaid);
+        if (count == 0) {
+            File directoryToZip = new File(Utils.getFilePath(context));
+            File file = new File(directoryToZip.getPath() + File.separator + "" + filepath.split("/")[0]);
+            File deletefile = new File(file, filepath.split("/")[1]);
+
+            if (deletefile.exists()) {
+                deletefile.delete();
+
+            }
+        }
+
+
     }
 
     private boolean downloadFiles(File directoryToZip, String filePath) {
@@ -376,8 +470,8 @@ public class Utils {
         return false;
     }
 
-    public void parseSaveContactResponse(Activity context,String response,List<SelectContact> selectedContacts, List<ContactEntity> contactList,
-                                         int isOutgoing,int isAudio,Song songs,AppDatabase appDatabase,ProgressBar progressBar ) {
+    public void parseSaveContactResponse(Activity context, String response, List<SelectContact> selectedContacts, List<ContactEntity> contactList,
+                                         int isOutgoing, int isAudio, Song songs, AppDatabase appDatabase, ProgressBar progressBar) {
 
 
         new AsyncTask<Void, Void, Integer>() {
@@ -415,6 +509,8 @@ public class Utils {
                             contactEntity.setOutgoingSongName(songs.getTitle());
                             contactEntity.setIsOutgoing(1);
                             contactEntity.setOutgoingArtistName(songs.getArtistName());
+                            contactEntity.setOutgoingMediaId(songs.getId());
+                            contactEntity.setOutgoingSampleFileUrl(songs.getSampleFileUrl());
 
 
                         } else {
@@ -425,6 +521,8 @@ public class Utils {
                             contactEntity.setIncomingSongName(songs.getTitle());
                             contactEntity.setIsIncoming(1);
                             contactEntity.setInComingArtistName(songs.getArtistName());
+                            contactEntity.setIncomingMediaId(songs.getId());
+                            contactEntity.setIncomingSampleFileUrl(songs.getSampleFileUrl());
                         }
                         appDatabase.daoContacts().update(contactEntity);
                     }
@@ -481,6 +579,8 @@ public class Utils {
                     else
                         contactEntity.setOutgoingIsVideo(1);
                     contactEntity.setOutgoingSongName(contactsMedia.getBody().get(i).getOutgoingself().getTitle());
+                    contactEntity.setOutgoingMediaId(contactsMedia.getBody().get(i).getOutgoingself().getId());
+                    contactEntity.setOutgoingSampleFileUrl(contactsMedia.getBody().get(i).getOutgoingself().getSampleFileUrl());
 
 
                 } else
@@ -508,6 +608,9 @@ public class Utils {
                     else
                         contactEntity.setIsincomingVideo(1);
                     contactEntity.setIncomingSongName(contactsMedia.getBody().get(i).getIncommingother().getTitle());
+
+                    contactEntity.setIncomingMediaId(contactsMedia.getBody().get(i).getIncommingother().getId());
+                    contactEntity.setIncomingSampleFileUrl(contactsMedia.getBody().get(i).getIncommingother().getSampleFileUrl());
 
 
                 } else
@@ -589,6 +692,20 @@ public class Utils {
 
     }
 
+    public RingtoneEntity getSongUrl(AppDatabase appDatabase, String phoneNumber)
+
+    {
+
+        String fileUrl = "";
+        RingtoneEntity ringtoneEntity = appDatabase.daoRingtone().getContatcByNumber(phoneNumber);
+//        if (ringtoneEntity != null) {
+//            fileUrl = ringtoneEntity.getIncomingSampleFileUrl();
+//        }
+
+
+        return ringtoneEntity;
+    }
+
 
     private class DownloadTask extends AsyncTask<AllMediaForUser, Integer, String> {
 
@@ -648,6 +765,8 @@ public class Utils {
 
 
                     }
+                }
+                if (allMediaForUser.getForMe() != null && allMediaForUser.getForMe().size() > 0) {
 
                     /// set by others for me
                     for (int i = 0; i < allMediaForUser.getForMe().size(); i++) {
@@ -681,7 +800,7 @@ public class Utils {
                     }
 
                 }
-                  appDatabase.daoRingtone().insertAll(ringtoneEntities);
+                appDatabase.daoRingtone().insertAll(ringtoneEntities);
 
             }
 

@@ -13,6 +13,7 @@ import com.mobileoid2.celltone.pojo.PojoLogin;
 import com.mobileoid2.celltone.pojo.PojoOTPRequest;
 import com.mobileoid2.celltone.pojo.PojoOTPVerifyRequest;
 import com.mobileoid2.celltone.pojo.QUERYREQUEST;
+import com.mobileoid2.celltone.pojo.UnsetMedia;
 
 import org.json.JSONObject;
 
@@ -139,6 +140,9 @@ public interface ApiInterface {
 
     @DELETE("user/remove/avatar")
    public Call<String> deleteAvatar( @Header("token") String token);
+
+    @POST("contacts/media-unset")
+    public Call<String> unsetMedia(@Header("token") String token,@Body UnsetMedia unsetMedia);
 
 
 

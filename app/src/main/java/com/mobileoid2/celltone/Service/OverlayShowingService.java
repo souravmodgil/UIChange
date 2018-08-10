@@ -67,238 +67,226 @@ public class OverlayShowingService extends Service implements OnTouchListener, O
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!Utils.isAccessibilitySettingsOn(this)) {
-            //  Toast.makeText(this, "Switch on Accessibility for this application", Toast.LENGTH_SHORT).show();
-        }
+       if(!Constant.isIncoming ) {
 
-        if (Constant.PHONENUMBER == null && Constant.PHONENUMBER.isEmpty() && !
-                SharedPrefrenceHandler.getInstance().getLoginState()) {
-            stopVideoAndService();
-            return;
-        }
+           if (Constant.PHONENUMBER == null && Constant.PHONENUMBER.isEmpty() && !
+                   SharedPrefrenceHandler.getInstance().getLoginState()) {
+               stopVideoAndService();
+               return;
+           }
 
 
-        Constant.PHONENUMBER = Constant.PHONENUMBER.replaceAll("[^+0-9]", "");
-        if (!Constant.PHONENUMBER.substring(0, 1).equals("+")) {
+           Constant.PHONENUMBER = Constant.PHONENUMBER.replaceAll("[^+0-9]", "");
+           if (!Constant.PHONENUMBER.substring(0, 1).equals("+")) {
 
-            if (Constant.PHONENUMBER.substring(0, 1).equals("0"))
-                Constant.PHONENUMBER = Constant.PHONENUMBER.substring(1);
-            Constant.PHONENUMBER = SharedPrefrenceHandler.getInstance().getCOUTRYCODE() + Constant.PHONENUMBER;
+               if (Constant.PHONENUMBER.substring(0, 1).equals("0"))
+                   Constant.PHONENUMBER = Constant.PHONENUMBER.substring(1);
+               Constant.PHONENUMBER = SharedPrefrenceHandler.getInstance().getCOUTRYCODE() + Constant.PHONENUMBER;
 
-        }
-
-
-        if (!Patterns.PHONE.matcher(Constant.PHONENUMBER).matches()) {
-            stopVideoAndService();
-            return;
-        }
-
-//        if (Constant.PHONENUMBER.length() > 9) {
-//            Constant.PHONENUMBER = Constant.PHONENUMBER.substring(Constant.PHONENUMBER.length() - 9);
-//        }
-//        PojoGETMediaResponse pojoContactsUploadResonse =
-//                Arrays.asList(new Gson().fromJson(SharedPrefrenceHandler.getInstance().getGET_MEDIA_RESPONSE(),
-//                        PojoGETMediaResponse.class)).get(0);
-//        Body body = new Body();
-//        body.setUserId(new UserId());
-//        body.getUserId().setMobile(Constant.PHONENUMBER);
-
-        AppDatabase appDatabase = AppDatabase.getAppDatabase(this);
-        RingtoneEntity ringtoneEntity = appDatabase.daoRingtone().getContatcByNumber(Constant.PHONENUMBER);
-        if (ringtoneEntity == null)
-            return;
-        if (ringtoneEntity != null
-                && ringtoneEntity.getIncomingMediaId()!=null && !ringtoneEntity.getIncomingMediaId().isEmpty()) {
+           }
 
 
-            File path = null;
-
-            File file = new File(Utils.getFilePath(this) + "/" + ringtoneEntity.getIncomingSampleFileUrl());
-            if (file.exists()) {
-                //path=Utils.getFilePath(this) + "/" + body1.getOutgoing().getSampleFileUrl();
-                path = file;
-
-            }
+           if (!Patterns.PHONE.matcher(Constant.PHONENUMBER).matches()) {
+               stopVideoAndService();
+               return;
+           }
 
 
-            if (path == null) {
-                stopVideoAndService();
-                return;
-            }
-            windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-            LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+           AppDatabase appDatabase = AppDatabase.getAppDatabase(this);
+           RingtoneEntity ringtoneEntity = appDatabase.daoRingtone().getContatcByNumber(Constant.PHONENUMBER);
+           if (ringtoneEntity == null)
+               return;
+           if (ringtoneEntity != null
+                   && ringtoneEntity.getIncomingMediaId() != null && !ringtoneEntity.getIncomingMediaId().isEmpty()) {
 
-            mView = (ViewGroup) inflater.inflate(R.layout.video_view, null);
-            //    overlayedLayout = new LinearLayout(this);
-            mView.setOnClickListener(this);
-            mView.setOnTouchListener(this);
 
-            mView.setAlpha(0.0f);
+               File path = null;
+
+               File file = new File(Utils.getFilePath(this) + "/" + ringtoneEntity.getIncomingSampleFileUrl());
+               if (file.exists()) {
+                   //path=Utils.getFilePath(this) + "/" + body1.getOutgoing().getSampleFileUrl();
+                   path = file;
+
+               }
+
+
+               if (path == null) {
+                   stopVideoAndService();
+                   return;
+               }
+               windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+               LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+               mView = (ViewGroup) inflater.inflate(R.layout.video_view, null);
+               //    overlayedLayout = new LinearLayout(this);
+               mView.setOnClickListener(this);
+               mView.setOnTouchListener(this);
+
+               mView.setAlpha(0.0f);
 //
 
 
-            if (path.getPath().endsWith("mp4")) {
-                //  videoView = new CustomVideoView(this);
-                videoView = mView.findViewById(R.id.videoView);
+               if (path.getPath().endsWith("mp4")) {
+                   //  videoView = new CustomVideoView(this);
+                   videoView = mView.findViewById(R.id.videoView);
 
-                Uri video = Uri.fromFile(path);
-                videoView.setVideoURI(video);
-                videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mp.setLooping(true);
-                        mp.start();
-                    }
-                });
-
-
-
-            } else {
-
-                ImageView imageView = new ImageView(this);
+                   Uri video = Uri.fromFile(path);
+                   videoView.setVideoURI(video);
+                   videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                       @Override
+                       public void onPrepared(MediaPlayer mp) {
+                           mp.setLooping(true);
+                           mp.start();
+                       }
+                   });
 
 
+               } else {
 
-                imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
-                imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                //overlayedLayout.addView(imageView);
-                mediaPlayer = new MediaPlayer();
-
-                try {
-                    mediaPlayer.setDataSource(path.getPath());
-                } catch (IllegalArgumentException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IllegalStateException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                try {
-                    mediaPlayer.prepare();
-                } catch (IllegalStateException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                mediaPlayer.start();
+                   ImageView imageView = new ImageView(this);
 
 
-            }
+                   imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
+                   imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                   //overlayedLayout.addView(imageView);
+                   mediaPlayer = new MediaPlayer();
+
+                   try {
+                       mediaPlayer.setDataSource(path.getPath());
+                   } catch (IllegalArgumentException e) {
+                       // TODO Auto-generated catch block
+                       e.printStackTrace();
+                   } catch (IllegalStateException e) {
+                       // TODO Auto-generated catch block
+                       e.printStackTrace();
+                   } catch (IOException e) {
+                       // TODO Auto-generated catch block
+                       e.printStackTrace();
+                   }
+                   try {
+                       mediaPlayer.prepare();
+                   } catch (IllegalStateException e) {
+                       // TODO Auto-generated catch block
+                       e.printStackTrace();
+                   } catch (IOException e) {
+                       // TODO Auto-generated catch block
+                       e.printStackTrace();
+                   }
+                   mediaPlayer.start();
 
 
-            LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-            params.gravity = Gravity.CENTER;
-            params.x = 0;
-            params.y = 0;
-            windowManager.addView(mView, params);
-
-            topLeftView = new View(this);
-            LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-            topLeftParams.gravity = Gravity.CENTER;
-            topLeftParams.x = 0;
-            topLeftParams.y = 0;
-            topLeftParams.width = 0;
-            topLeftParams.height = 0;
-            windowManager.addView(topLeftView, topLeftParams);
-        } else {
-            if (!Constant.isIncoming && ringtoneEntity!=null && ringtoneEntity.getOutgoingMediaId()!=null &&
-                    !ringtoneEntity.getOutgoingMediaId().isEmpty()) {
-                File path = null;
-
-                File file = new File(Utils.getFilePath(this) + "/" + ringtoneEntity.getOutgoingSampleFileUrl());
-                if (file.exists())
-                    path = file;
-
-                if (path == null) {
-                    stopVideoAndService();
-                    return;
-                }
-                //    windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-                windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-                LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-                mView = (ViewGroup) inflater.inflate(R.layout.video_view, null);
-                //    overlayedLayout = new LinearLayout(this);
-                mView.setOnClickListener(this);
-                mView.setOnTouchListener(this);
-
-                mView.setAlpha(0.0f);
-
-                if (path.getPath().endsWith("mp4")) {
-                    videoView = mView.findViewById(R.id.videoView);
-
-                    Uri video = Uri.fromFile(path);
-                    // Uri vidUri = Uri.parse(ApiConstant.MEDIA_URL + ringtoneEntity.getSampleFileUrl());
-                    videoView.setVideoURI(video);
-                    videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                        @Override
-                        public void onPrepared(MediaPlayer mp) {
-                            mp.setLooping(true);
-                            videoView.start();
-                        }
-                    });
-                    //  overlayedLayout.addView(videoView);
+               }
 
 
-                } else {
+               LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
+               params.gravity = Gravity.CENTER;
+               params.x = 0;
+               params.y = 0;
+               windowManager.addView(mView, params);
 
-                    ImageView imageView = new ImageView(this);
-                    imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
-                    imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                    //overlayedLayout.addView(imageView);
-                    mediaPlayer = new MediaPlayer();
+               topLeftView = new View(this);
+               LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
+               topLeftParams.gravity = Gravity.CENTER;
+               topLeftParams.x = 0;
+               topLeftParams.y = 0;
+               topLeftParams.width = 0;
+               topLeftParams.height = 0;
+               windowManager.addView(topLeftView, topLeftParams);
+           } else {
+               if (ringtoneEntity != null && ringtoneEntity.getOutgoingMediaId() != null &&
+                       !ringtoneEntity.getOutgoingMediaId().isEmpty()) {
+                   File path = null;
 
-                    try {
-                        mediaPlayer.setDataSource(path.getPath());
-                    } catch (IllegalArgumentException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IllegalStateException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    try {
-                        mediaPlayer.prepare();
-                    } catch (IllegalStateException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    mediaPlayer.start();
+                   File file = new File(Utils.getFilePath(this) + "/" + ringtoneEntity.getOutgoingSampleFileUrl());
+                   if (file.exists())
+                       path = file;
+
+                   if (path == null) {
+                       stopVideoAndService();
+                       return;
+                   }
+                   //    windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+                   windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+                   LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+                   mView = (ViewGroup) inflater.inflate(R.layout.video_view, null);
+                   //    overlayedLayout = new LinearLayout(this);
+                   mView.setOnClickListener(this);
+                   mView.setOnTouchListener(this);
+
+                   mView.setAlpha(0.0f);
+
+                   if (path.getPath().endsWith("mp4")) {
+                       videoView = mView.findViewById(R.id.videoView);
+
+                       Uri video = Uri.fromFile(path);
+                       // Uri vidUri = Uri.parse(ApiConstant.MEDIA_URL + ringtoneEntity.getSampleFileUrl());
+                       videoView.setVideoURI(video);
+                       videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                           @Override
+                           public void onPrepared(MediaPlayer mp) {
+                               mp.setLooping(true);
+                               videoView.start();
+                           }
+                       });
+                       //  overlayedLayout.addView(videoView);
 
 
-                }
+                   } else {
+
+                       ImageView imageView = new ImageView(this);
+                       imageView.setLayoutParams(new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 300));
+                       imageView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                       //overlayedLayout.addView(imageView);
+                       mediaPlayer = new MediaPlayer();
+
+                       try {
+                           mediaPlayer.setDataSource(path.getPath());
+                       } catch (IllegalArgumentException e) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace();
+                       } catch (IllegalStateException e) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace();
+                       } catch (IOException e) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace();
+                       }
+                       try {
+                           mediaPlayer.prepare();
+                       } catch (IllegalStateException e) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace();
+                       } catch (IOException e) {
+                           // TODO Auto-generated catch block
+                           e.printStackTrace();
+                       }
+                       mediaPlayer.start();
 
 
-                LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-                params.gravity = Gravity.CENTER;
-                params.x = 0;
-                params.y = 0;
-                windowManager.addView(mView, params);
-
-                topLeftView = new View(this);
-                LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-                topLeftParams.gravity = Gravity.CENTER;
-                topLeftParams.x = 0;
-                topLeftParams.y = 0;
-                topLeftParams.width = 0;
-                topLeftParams.height = 0;
-                windowManager.addView(topLeftView, topLeftParams);
+                   }
 
 
-            }
+                   LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
+                   params.gravity = Gravity.CENTER;
+                   params.x = 0;
+                   params.y = 0;
+                   windowManager.addView(mView, params);
 
-        }
+                   topLeftView = new View(this);
+                   LayoutParams topLeftParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ALERT, LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
+                   topLeftParams.gravity = Gravity.CENTER;
+                   topLeftParams.x = 0;
+                   topLeftParams.y = 0;
+                   topLeftParams.width = 0;
+                   topLeftParams.height = 0;
+                   windowManager.addView(topLeftView, topLeftParams);
+
+
+               }
+
+           }
+       }
     }
 
 
